@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User model for authentication
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String         @map("password_hash")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  awsCredentials AwsCredentials?
+  videos         Video[]
+  sharedVideos   VideoShare[]   @relation("SharedByUser")
+
+  @@map("users")
+}
+
+// AWS credentials stored securely (encrypted)
+model AwsCredentials {
+  id                String   @id @default(cuid())
+  userId            String   @unique @map("user_id")
+  accessKeyId       String   @map("access_key_id")      // Will be encrypted
+  secretAccessKey   String   @map("secret_access_key")  // Will be encrypted
+  bucketName        String   @map("bucket_name")
+  region            String
+  mediaConvertRole  String?  @map("media_convert_role") // IAM role ARN for MediaConvert
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("aws_credentials")
+}
+
+// Video model
+model Video {
+  id                  String   @id @default(cuid())
+  userId              String   @map("user_id")
+  title               String
+  description         String?
+  originalKey         String   @map("original_key")       // S3 key of original video
+  hlsManifestKey      String?  @map("hls_manifest_key")   // S3 key of HLS manifest (m3u8)
+  transcodingStatus   TranscodingStatus @default(PENDING) @map("transcoding_status")
+  transcodingJobId    String?  @map("transcoding_job_id") // MediaConvert job ID
+  duration            Int?     // Duration in seconds
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  owner  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shares VideoShare[]
+
+  @@index([userId])
+  @@map("videos")
+}
+
+// Video sharing permissions
+model VideoShare {
+  id              String   @id @default(cuid())
+  videoId         String   @map("video_id")
+  sharedWithEmail String   @map("shared_with_email")
+  sharedByUserId  String   @map("shared_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  video      Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  sharedBy   User  @relation("SharedByUser", fields: [sharedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([videoId, sharedWithEmail])
+  @@index([sharedWithEmail])
+  @@map("video_shares")
+}
+
+enum TranscodingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
