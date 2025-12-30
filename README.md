@@ -16,7 +16,7 @@ A secure, business-focused video sharing platform built with Next.js, AWS S3, an
 - **HLS Video Streaming**: Automatic transcoding to HLS format using AWS MediaConvert
 - **Email-Based Sharing**: Share videos with specific users (Google Docs-style permissions)
 - **Pre-Signed URLs**: Short-lived, secure video URLs that expire after 3 hours
-- **Email Notifications**: Automatic notifications when videos are shared
+- **Email Notifications**: Bring your own email provider (Resend, AWS SES, or SMTP)
 - **Dashboard**: Clean UI with "My Videos" and "Shared with Me" sections
 - **TypeScript**: Fully typed for better development experience
 
@@ -28,7 +28,7 @@ A secure, business-focused video sharing platform built with Next.js, AWS S3, an
 - **Authentication**: NextAuth.js with JWT
 - **Video Storage**: AWS S3 (user-provided)
 - **Video Transcoding**: AWS MediaConvert (HLS)
-- **Email**: Resend (or AWS SES)
+- **Email**: User-configured (Resend, AWS SES, or SMTP)
 - **Hosting**: Vercel (app) + Railway (database)
 
 ## Prerequisites
@@ -38,7 +38,7 @@ A secure, business-focused video sharing platform built with Next.js, AWS S3, an
 - AWS Account with:
   - S3 bucket
   - IAM credentials with specific permissions (see below)
-- Resend account (for email notifications)
+- Email provider account (Resend, AWS SES, or SMTP - configured in Settings)
 
 ## AWS Setup Guide
 
@@ -250,12 +250,26 @@ openssl rand -base64 32
 openssl rand -hex 32
 ```
 
-#### Email Service (Resend)
+#### Email Configuration
 
-- Sign up at [resend.com](https://resend.com)
-- Create an API key
-- Add your API key to `RESEND_API_KEY`
-- Set `FROM_EMAIL` to your verified domain email
+Private Video supports multiple email providers. Configure your preferred provider in **Settings** after deployment.
+
+**Supported Providers:**
+- **Resend** - Simple API (recommended for getting started)
+- **AWS SES** - Low cost, high volume
+- **SMTP** - Universal (Gmail, Outlook, custom servers)
+
+**Setup:**
+1. Deploy the application
+2. Log in and go to **Settings**
+3. Scroll to **Email Settings**
+4. Choose your provider and enter credentials
+5. Click **Send Test Email** to verify
+
+For detailed setup instructions for each provider, see:
+**[Email Provider Setup Guide](docs/EMAIL_SETUP.md)**
+
+> **Note**: For local development, you can use Gmail SMTP or Resend's free tier. Email credentials are encrypted before being stored in the database.
 
 ### 4. Set up the database
 
