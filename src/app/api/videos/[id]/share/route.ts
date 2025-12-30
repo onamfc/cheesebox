@@ -3,13 +3,13 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Resend } from "resend";
+import { decrypt } from "@/lib/encryption";
+import { createEmailProvider } from "@/lib/email/factory";
+import { EmailProviderType } from "@/lib/email/interface";
 
 const shareSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // POST - Share video with a user
 export async function POST(
@@ -88,11 +88,64 @@ export async function POST(
       },
     });
 
-    // Send email notification
+    // Send email notification using user's email provider
     try {
+      const emailCredentials = await prisma.emailCredentials.findUnique({
+        where: { userId: session.user.id },
+      });
+
+      if (!emailCredentials) {
+        console.warn("No email credentials configured for user");
+        // Still return success - email is optional
+        return NextResponse.json(
+          {
+            message:
+              "Video shared successfully (no email sent - credentials not configured)",
+            share: {
+              id: share.id,
+              sharedWithEmail: share.sharedWithEmail,
+              createdAt: share.createdAt,
+            },
+          },
+          { status: 201 },
+        );
+      }
+
+      // Decrypt credentials
+      const decryptedCredentials = {
+        provider: emailCredentials.provider as EmailProviderType,
+        fromEmail: emailCredentials.fromEmail,
+        fromName: emailCredentials.fromName || undefined,
+        apiKey: emailCredentials.apiKey
+          ? decrypt(emailCredentials.apiKey)
+          : undefined,
+        awsAccessKeyId: emailCredentials.awsAccessKeyId
+          ? decrypt(emailCredentials.awsAccessKeyId)
+          : undefined,
+        awsSecretKey: emailCredentials.awsSecretKey
+          ? decrypt(emailCredentials.awsSecretKey)
+          : undefined,
+        awsRegion: emailCredentials.awsRegion || undefined,
+        smtpHost: emailCredentials.smtpHost || undefined,
+        smtpPort: emailCredentials.smtpPort || undefined,
+        smtpUsername: emailCredentials.smtpUsername
+          ? decrypt(emailCredentials.smtpUsername)
+          : undefined,
+        smtpPassword: emailCredentials.smtpPassword
+          ? decrypt(emailCredentials.smtpPassword)
+          : undefined,
+        smtpSecure: emailCredentials.smtpSecure || undefined,
+      };
+
+      // Create email provider instance
+      const emailProvider = createEmailProvider(
+        emailCredentials.provider as EmailProviderType,
+        decryptedCredentials,
+      );
+
+      // Send email
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      await resend.emails.send({
-        from: process.env.FROM_EMAIL || "noreply@yourdomain.com",
+      await emailProvider.sendEmail({
         to: email,
         subject: `${session.user.email} shared a video with you`,
         html: `
@@ -102,6 +155,7 @@ export async function POST(
           <p><a href="${appUrl}/dashboard">Click here to view it</a></p>
           <p>You'll need to log in or create an account to watch the video.</p>
         `,
+        text: `${session.user.email} has shared a video titled "${video.title}" with you. Visit ${appUrl}/dashboard to view it.`,
       });
     } catch (emailError) {
       console.error("Email sending error:", emailError);

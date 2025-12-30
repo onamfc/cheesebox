@@ -18,6 +18,28 @@ export default function SettingsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Email provider state
+  const [emailProvider, setEmailProvider] = useState<
+    "RESEND" | "AWS_SES" | "SMTP"
+  >("RESEND");
+  const [fromEmail, setFromEmail] = useState("");
+  const [fromName, setFromName] = useState("");
+  const [emailApiKey, setEmailApiKey] = useState("");
+  const [awsEmailAccessKeyId, setAwsEmailAccessKeyId] = useState("");
+  const [awsEmailSecretKey, setAwsEmailSecretKey] = useState("");
+  const [awsEmailRegion, setAwsEmailRegion] = useState("us-east-1");
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState(587);
+  const [smtpUsername, setSmtpUsername] = useState("");
+  const [smtpPassword, setSmtpPassword] = useState("");
+  const [smtpSecure, setSmtpSecure] = useState(false);
+  const [hasEmailCredentials, setHasEmailCredentials] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [emailSuccess, setEmailSuccess] = useState("");
+  const [testEmailLoading, setTestEmailLoading] = useState(false);
+  const [testEmailMessage, setTestEmailMessage] = useState("");
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
@@ -44,6 +66,31 @@ export default function SettingsPage() {
 
     if (status === "authenticated") {
       fetchCredentials();
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const fetchEmailCredentials = async () => {
+      try {
+        const response = await fetch("/api/email-credentials");
+        if (response.ok) {
+          const data = await response.json();
+          setEmailProvider(data.provider);
+          setFromEmail(data.fromEmail);
+          setFromName(data.fromName || "");
+          setAwsEmailRegion(data.awsRegion || "us-east-1");
+          setSmtpHost(data.smtpHost || "");
+          setSmtpPort(data.smtpPort || 587);
+          setSmtpSecure(data.smtpSecure || false);
+          setHasEmailCredentials(true);
+        }
+      } catch (error) {
+        console.error("Error fetching email credentials:", error);
+      }
+    };
+
+    if (status === "authenticated") {
+      fetchEmailCredentials();
     }
   }, [status]);
 
@@ -82,6 +129,89 @@ export default function SettingsPage() {
     } catch (err) {
       setError("Failed to save credentials");
       setLoading(false);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    setTestEmailLoading(true);
+    setTestEmailMessage("");
+    setEmailError("");
+    setEmailSuccess("");
+
+    try {
+      const response = await fetch("/api/email-credentials/test", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setEmailError(data.error || "Failed to send test email");
+        setTestEmailLoading(false);
+        return;
+      }
+
+      setTestEmailMessage(data.message);
+      setEmailSuccess(
+        `Test email sent! Check your inbox at ${session?.user?.email}`,
+      );
+      setTestEmailLoading(false);
+    } catch (err) {
+      setEmailError("Failed to send test email");
+      setTestEmailLoading(false);
+    }
+  };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError("");
+    setEmailSuccess("");
+    setEmailLoading(true);
+
+    try {
+      const payload: any = {
+        provider: emailProvider,
+        fromEmail,
+        fromName: fromName || undefined,
+      };
+
+      // Add provider-specific fields
+      if (emailProvider === "RESEND") {
+        payload.apiKey = emailApiKey;
+      } else if (emailProvider === "AWS_SES") {
+        payload.awsAccessKeyId = awsEmailAccessKeyId;
+        payload.awsSecretKey = awsEmailSecretKey;
+        payload.awsRegion = awsEmailRegion;
+      } else if (emailProvider === "SMTP") {
+        payload.smtpHost = smtpHost;
+        payload.smtpPort = smtpPort;
+        payload.smtpUsername = smtpUsername;
+        payload.smtpPassword = smtpPassword;
+        payload.smtpSecure = smtpSecure;
+      }
+
+      const response = await fetch("/api/email-credentials", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setEmailError(data.error || "Failed to save email credentials");
+        setEmailLoading(false);
+        return;
+      }
+
+      setEmailSuccess("Email credentials saved successfully!");
+      setHasEmailCredentials(true);
+      setEmailLoading(false);
+    } catch (err) {
+      setEmailError("Failed to save email credentials");
+      setEmailLoading(false);
     }
   };
 
@@ -295,6 +425,377 @@ export default function SettingsPage() {
                 </button>
               </div>
             </form>
+          </div>
+
+          {/* Email Settings Section */}
+          <div className="mt-8">
+            <h1 className="text-2xl font-bold text-gray-900 mb-6">
+              Email Settings
+            </h1>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+              <h3 className="text-sm font-medium text-blue-800 mb-2">
+                Configure Your Email Provider
+              </h3>
+              <p className="text-sm text-blue-700 mb-2">
+                Choose your preferred email service to send video sharing
+                notifications. Your credentials are encrypted before being
+                stored.
+              </p>
+              <p className="text-sm text-blue-700">
+                Need help setting up?{" "}
+                <a
+                  href="https://github.com/onamfc/private-video-sharing/blob/main/docs/EMAIL_SETUP.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-medium"
+                >
+                  View detailed setup guides
+                </a>
+              </p>
+            </div>
+
+            <div className="bg-white shadow rounded-lg p-6">
+              {emailError && (
+                <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-3">
+                  <p className="text-sm text-red-800">{emailError}</p>
+                </div>
+              )}
+
+              {emailSuccess && (
+                <div className="mb-4 bg-green-50 border border-green-200 rounded-md p-3">
+                  <p className="text-sm text-green-800">{emailSuccess}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleEmailSubmit} className="space-y-4">
+                {/* Provider Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Provider
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setEmailProvider("RESEND")}
+                      className={`p-3 border rounded-md ${
+                        emailProvider === "RESEND"
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <div className="font-medium text-black">Resend</div>
+                      <div className="text-xs text-gray-600">
+                        Simple API
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setEmailProvider("AWS_SES")}
+                      className={`p-3 border rounded-md ${
+                        emailProvider === "AWS_SES"
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <div className="font-medium text-black">AWS SES</div>
+                      <div className="text-xs text-gray-600">
+                        Low cost
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setEmailProvider("SMTP")}
+                      className={`p-3 border rounded-md ${
+                        emailProvider === "SMTP"
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <div className="font-medium text-black">SMTP</div>
+                      <div className="text-xs text-gray-600">
+                        Universal
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Common Fields */}
+                <div>
+                  <label
+                    htmlFor="fromEmail"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    From Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="fromEmail"
+                    value={fromEmail}
+                    onChange={(e) => setFromEmail(e.target.value)}
+                    disabled={emailLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                    placeholder="noreply@yourdomain.com"
+                    required
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Emails will be sent from this address
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="fromName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    From Name (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    id="fromName"
+                    value={fromName}
+                    onChange={(e) => setFromName(e.target.value)}
+                    disabled={emailLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                    placeholder="Private Video"
+                  />
+                </div>
+
+                {/* Resend Fields */}
+                {emailProvider === "RESEND" && (
+                  <div>
+                    <label
+                      htmlFor="emailApiKey"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Resend API Key
+                    </label>
+                    <input
+                      type="password"
+                      id="emailApiKey"
+                      value={emailApiKey}
+                      onChange={(e) => setEmailApiKey(e.target.value)}
+                      disabled={emailLoading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                      placeholder="re_xxxxxxxxxxxxx"
+                      required
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Get your API key from{" "}
+                      <a
+                        href="https://resend.com/api-keys"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        resend.com/api-keys
+                      </a>
+                    </p>
+                  </div>
+                )}
+
+                {/* AWS SES Fields */}
+                {emailProvider === "AWS_SES" && (
+                  <div className="space-y-4">
+                    <div>
+                      <label
+                        htmlFor="awsEmailAccessKeyId"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        AWS Access Key ID
+                      </label>
+                      <input
+                        type="text"
+                        id="awsEmailAccessKeyId"
+                        value={awsEmailAccessKeyId}
+                        onChange={(e) =>
+                          setAwsEmailAccessKeyId(e.target.value)
+                        }
+                        disabled={emailLoading}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="awsEmailSecretKey"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        AWS Secret Access Key
+                      </label>
+                      <input
+                        type="password"
+                        id="awsEmailSecretKey"
+                        value={awsEmailSecretKey}
+                        onChange={(e) => setAwsEmailSecretKey(e.target.value)}
+                        disabled={emailLoading}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="awsEmailRegion"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        AWS Region
+                      </label>
+                      <select
+                        id="awsEmailRegion"
+                        value={awsEmailRegion}
+                        onChange={(e) => setAwsEmailRegion(e.target.value)}
+                        disabled={emailLoading}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                      >
+                        <option value="us-east-1">US East (N. Virginia)</option>
+                        <option value="us-west-2">US West (Oregon)</option>
+                        <option value="eu-west-1">EU (Ireland)</option>
+                      </select>
+                    </div>
+
+                    <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                      <p className="text-xs text-yellow-800">
+                        Note: Your sender email must be verified in AWS SES.{" "}
+                        <a
+                          href="https://docs.aws.amazon.com/ses/latest/dg/verify-email-addresses.html"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >
+                          Learn how
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* SMTP Fields */}
+                {emailProvider === "SMTP" && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="smtpHost"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          SMTP Host
+                        </label>
+                        <input
+                          type="text"
+                          id="smtpHost"
+                          value={smtpHost}
+                          onChange={(e) => setSmtpHost(e.target.value)}
+                          disabled={emailLoading}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                          placeholder="smtp.gmail.com"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="smtpPort"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          SMTP Port
+                        </label>
+                        <input
+                          type="number"
+                          id="smtpPort"
+                          value={smtpPort}
+                          onChange={(e) =>
+                            setSmtpPort(parseInt(e.target.value))
+                          }
+                          disabled={emailLoading}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                          placeholder="587"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="smtpUsername"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        id="smtpUsername"
+                        value={smtpUsername}
+                        onChange={(e) => setSmtpUsername(e.target.value)}
+                        disabled={emailLoading}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="smtpPassword"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        id="smtpPassword"
+                        value={smtpPassword}
+                        onChange={(e) => setSmtpPassword(e.target.value)}
+                        disabled={emailLoading}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={smtpSecure}
+                          onChange={(e) => setSmtpSecure(e.target.checked)}
+                          disabled={emailLoading}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">
+                          Use TLS/SSL (port 465)
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  {hasEmailCredentials && (
+                    <button
+                      type="button"
+                      onClick={handleTestEmail}
+                      disabled={testEmailLoading || emailLoading}
+                      className="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300"
+                    >
+                      {testEmailLoading ? "Sending..." : "Send Test Email"}
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={emailLoading || testEmailLoading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+                  >
+                    {emailLoading
+                      ? "Saving..."
+                      : hasEmailCredentials
+                        ? "Update Email Settings"
+                        : "Save Email Settings"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>

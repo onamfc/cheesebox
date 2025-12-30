@@ -18,9 +18,10 @@ model User {
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  awsCredentials AwsCredentials?
-  videos         Video[]
-  sharedVideos   VideoShare[]   @relation("SharedByUser")
+  awsCredentials   AwsCredentials?
+  emailCredentials EmailCredentials?
+  videos           Video[]
+  sharedVideos     VideoShare[]   @relation("SharedByUser")
 
   @@map("users")
 }
@@ -41,6 +42,46 @@ model AwsCredentials {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("aws_credentials")
+}
+
+// Email credentials stored securely (encrypted)
+model EmailCredentials {
+  id                String   @id @default(cuid())
+  userId            String   @unique @map("user_id")
+
+  // Provider type
+  provider          EmailProvider @default(RESEND)
+
+  // Common fields
+  fromEmail         String   @map("from_email")
+  fromName          String?  @map("from_name")
+
+  // API-based providers (Resend, SendGrid, Mailgun, Postmark)
+  apiKey            String?  @map("api_key")  // Encrypted
+
+  // AWS SES specific
+  awsAccessKeyId    String?  @map("aws_access_key_id")  // Encrypted
+  awsSecretKey      String?  @map("aws_secret_key")     // Encrypted
+  awsRegion         String?  @map("aws_region")
+
+  // SMTP specific
+  smtpHost          String?  @map("smtp_host")
+  smtpPort          Int?     @map("smtp_port")
+  smtpUsername      String?  @map("smtp_username")      // Encrypted
+  smtpPassword      String?  @map("smtp_password")      // Encrypted
+  smtpSecure        Boolean? @map("smtp_secure")
+
+  // Health check
+  lastValidated     DateTime? @map("last_validated")
+  isValid           Boolean  @default(true) @map("is_valid")
+
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_credentials")
 }
 
 // Video model
@@ -87,4 +128,11 @@ enum TranscodingStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+enum EmailProvider {
+  RESEND
+  AWS_SES
+  SENDGRID
+  SMTP
 }
