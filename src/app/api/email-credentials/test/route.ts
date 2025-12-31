@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     // Send test email to the logged-in user
     await emailProvider.sendEmail({
       to: session.user.email,
-      subject: "Test Email from Private Video",
+      subject: "Test Email from Cheesebox",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">Email Configuration Test Successful!</h2>
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
 
           <p style="color: #6b7280; font-size: 14px;">
-            This is a test email from <strong>Private Video</strong>.<br>
+            This is a test email from <strong>Cheesebox</strong>.<br>
             If you didn't request this test, you can safely ignore it.
           </p>
         </div>
@@ -103,7 +103,7 @@ ${emailCredentials.fromName ? `- From Name: ${emailCredentials.fromName}\n` : ""
 You're all set! Video sharing notifications will now be sent using this email provider.
 
 ---
-This is a test email from Private Video.
+This is a test email from Cheesebox.
 If you didn't request this test, you can safely ignore it.
       `,
     });

@@ -1,6 +1,6 @@
-# Contributing to Private Video
+# Contributing to Cheesebox
 
-Thank you for your interest in contributing to Private Video! We welcome contributions from the community.
+Thank you for your interest in contributing to Cheesebox! We welcome contributions from the community.
 
 ## Getting Started
 
