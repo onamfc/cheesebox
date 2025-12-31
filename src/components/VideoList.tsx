@@ -3,12 +3,15 @@
 import { useEffect, useState } from "react";
 import VideoPlayer from "./VideoPlayer";
 import ShareVideoModal from "./ShareVideoModal";
+import EmbedCodeModal from "./EmbedCodeModal";
+import VisibilityToggle from "./VisibilityToggle";
 
 interface Video {
   id: string;
   title: string;
   description: string | null;
   transcodingStatus: string;
+  visibility: "PRIVATE" | "PUBLIC";
   createdAt: string;
   shares?: Array<{ sharedWithEmail: string; createdAt: string }>;
   sharedBy?: string;
@@ -24,6 +27,7 @@ export default function VideoList({ type }: VideoListProps) {
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [shareVideoId, setShareVideoId] = useState<string | null>(null);
+  const [embedVideoId, setEmbedVideoId] = useState<string | null>(null);
 
   const fetchVideos = async () => {
     try {
@@ -109,19 +113,32 @@ export default function VideoList({ type }: VideoListProps) {
                 <h3 className="text-lg font-medium text-gray-900 truncate">
                   {video.title}
                 </h3>
-                <span
-                  className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    video.transcodingStatus === "COMPLETED"
-                      ? "bg-green-100 text-green-800"
-                      : video.transcodingStatus === "PROCESSING"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : video.transcodingStatus === "FAILED"
-                          ? "bg-red-100 text-red-800"
+                <div className="flex gap-2">
+                  <span
+                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      video.transcodingStatus === "COMPLETED"
+                        ? "bg-green-100 text-green-800"
+                        : video.transcodingStatus === "PROCESSING"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : video.transcodingStatus === "FAILED"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {video.transcodingStatus}
+                  </span>
+                  {type === "owned" && video.transcodingStatus === "COMPLETED" && (
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        video.visibility === "PUBLIC"
+                          ? "bg-blue-100 text-blue-800"
                           : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {video.transcodingStatus}
-                </span>
+                      }`}
+                    >
+                      {video.visibility === "PUBLIC" ? "Public" : "Private"}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {video.description && (
@@ -145,7 +162,19 @@ export default function VideoList({ type }: VideoListProps) {
                   )}
               </div>
 
-              <div className="flex space-x-2">
+              {/* Visibility Toggle */}
+              {type === "owned" && video.transcodingStatus === "COMPLETED" && (
+                <div className="mb-3">
+                  <VisibilityToggle
+                    videoId={video.id}
+                    currentVisibility={video.visibility}
+                    onUpdate={fetchVideos}
+                  />
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2">
                 {video.transcodingStatus === "COMPLETED" && (
                   <button
                     onClick={() => setSelectedVideo(video.id)}
@@ -156,6 +185,15 @@ export default function VideoList({ type }: VideoListProps) {
                 )}
                 {type === "owned" && (
                   <>
+                    {video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (
+                      <button
+                        onClick={() => setEmbedVideoId(video.id)}
+                        className="px-3 py-2 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700"
+                        title="Get embed code"
+                      >
+                        Embed
+                      </button>
+                    )}
                     <button
                       onClick={() => setShareVideoId(video.id)}
                       className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300"
@@ -190,6 +228,13 @@ export default function VideoList({ type }: VideoListProps) {
             setShareVideoId(null);
             fetchVideos(); // Refresh to show new shares
           }}
+        />
+      )}
+
+      {embedVideoId && (
+        <EmbedCodeModal
+          videoId={embedVideoId}
+          onClose={() => setEmbedVideoId(null)}
         />
       )}
     </>
