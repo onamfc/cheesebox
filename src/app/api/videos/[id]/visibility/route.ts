@@ -5,12 +5,12 @@ import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
   params: Promise<{
-    videoId: string;
+    id: string;
   }>;
 }
 
 /**
- * PATCH /api/videos/[videoId]/visibility
+ * PATCH /api/videos/[id]/visibility
  *
  * Update video visibility (PRIVATE or PUBLIC)
  */
@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { videoId } = await params;
+    const { id: videoId } = await params;
     const body = await request.json();
     const { visibility } = body;
 
