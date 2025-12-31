@@ -23,7 +23,7 @@ export default function EmbedPlayer({
   useEffect(() => {
     const loadVideo = async () => {
       try {
-        // Get the public video streaming URL
+        // Get the public video metadata
         const response = await fetch(`/api/embed/${videoId}/stream`);
 
         if (!response.ok) {
@@ -33,13 +33,16 @@ export default function EmbedPlayer({
           return;
         }
 
-        const { streamUrl } = await response.json();
+        const { manifestFilename } = await response.json();
 
-        if (!streamUrl) {
+        if (!manifestFilename) {
           setError("Video stream not available");
           setLoading(false);
           return;
         }
+
+        // Use streaming proxy endpoint to load all HLS segments
+        const streamUrl = `/api/embed/${videoId}/stream/${manifestFilename}`;
 
         if (!videoRef.current) return;
 
