@@ -7,10 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2025-12-24
 
+## [1.2.0] - 2025-12-31
 ### Added
+- renamed package from private-video-sharing to cheesebox
+- created a cloud formation template and instruction page for one-click AWS setup
+- include vercel analytics package
 
+## [1.1.0] - 2025-12-30
+### Added
+- Bring your own email provider. Support for Resend, AWS SES, and SMTP
+
+## [1.0.0] - 2025-12-24
+### Added
 - Initial release of Cheesebox platform
 - User authentication with NextAuth.js
 - AWS credentials management with AES-256-GCM encryption
@@ -27,7 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive AWS setup documentation
 
 ### Security
-
 - Encrypted AWS credentials storage
 - JWT-based authentication
 - Pre-signed URL generation for video playback
@@ -35,7 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - bcrypt password hashing
 
 ### Fixed
-
 - CORS errors during video playback
 - 403 Forbidden errors for HLS segments
 - Video status not auto-updating from AWS MediaConvert
@@ -45,29 +52,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## How to Update
-
 When making changes, please update this file following this format:
 
 ### Added
-
 - New features
 
 ### Changed
-
 - Changes in existing functionality
 
 ### Deprecated
-
 - Soon-to-be removed features
 
 ### Removed
-
 - Removed features
 
 ### Fixed
-
 - Bug fixes
 
 ### Security
-
 - Security improvements
