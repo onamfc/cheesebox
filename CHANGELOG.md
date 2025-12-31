@@ -13,7 +13,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - renamed package from private-video-sharing to cheesebox
 - created a cloud formation template and instruction page for one-click AWS setup
 - include vercel analytics package
+- Add visibility field to Video model (PRIVATE/PUBLIC)
+- Create /embed/[videoId] route for public video embeds
+- Add VisibilityToggle component for easy public/private switching
+- Add EmbedCodeModal showing responsive and fixed embed codes
+- Create API endpoint for public video streaming (no auth required)
+- Update dashboard with visibility badges and Embed button
+- Display embed button only for public videos
 
+### Database:
+- Migration adds visibility enum and field to videos table
+- Default visibility is PRIVATE for existing videos
+- Added index on visibility field for performance
+
+### UI Updates:
+- Visibility toggle switch in video cards
+- Public/Private badge display
+- Purple 'Embed' button for public videos
+- Modal with embed code preview and copy functionality
+- Support for both responsive (16:9) and fixed (640x360) embeds
+
+### API Endpoints:
+- GET /api/embed/[videoId]/stream - Public stream URL (no auth)
+- PATCH /api/videos/[videoId]/visibility - Update visibility
+
+### Security:
+- Only COMPLETED videos can be made public
+- Only video owners can change visibility
+- Confirmation dialog when making videos public
+- Public embeds only work for videos explicitly marked PUBLIC
+- 
 ## [1.1.0] - 2025-12-30
 ### Added
 - Bring your own email provider. Support for Resend, AWS SES, and SMTP
