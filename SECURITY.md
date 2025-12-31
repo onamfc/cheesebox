@@ -6,7 +6,7 @@ If you discover a security vulnerability, please report it privately to the main
 
 You can report security issues by:
 
-1. Opening a [GitHub Security Advisory](https://github.com/onamfc/private-video-sharing/security/advisories/new)
+1. Opening a [GitHub Security Advisory](https://github.com/onamfc/cheesebox/security/advisories/new)
 2. Emailing the maintainers directly
 
 We will acknowledge your report within 48 hours and provide a detailed response within 7 days.
