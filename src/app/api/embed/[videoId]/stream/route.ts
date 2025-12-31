@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { createS3Client } from "@/lib/aws-services";
-import { decrypt } from "@/lib/encryption";
 
 interface RouteParams {
   params: Promise<{
@@ -14,7 +10,8 @@ interface RouteParams {
 /**
  * GET /api/embed/[videoId]/stream
  *
- * Public endpoint for getting stream URL for embeddable videos.
+ * Public endpoint for getting stream metadata for embeddable videos.
+ * Returns the manifest filename to construct the streaming proxy URL.
  * No authentication required - only works for PUBLIC videos.
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -28,12 +25,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         visibility: "PUBLIC",
         transcodingStatus: "COMPLETED",
       },
-      include: {
-        owner: {
-          include: {
-            awsCredentials: true,
-          },
-        },
+      select: {
+        id: true,
+        title: true,
+        hlsManifestKey: true,
       },
     });
 
@@ -51,41 +46,23 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (!video.owner.awsCredentials) {
+    // Extract manifest filename
+    const manifestFilename = video.hlsManifestKey.split("/").pop();
+
+    if (!manifestFilename) {
       return NextResponse.json(
-        { error: "Video storage not configured" },
+        { error: "Invalid manifest path" },
         { status: 500 }
       );
     }
 
-    // Get AWS credentials
-    const credentials = video.owner.awsCredentials;
-
-    // Create S3 client with decrypted credentials
-    const s3Client = createS3Client({
-      accessKeyId: decrypt(credentials.accessKeyId),
-      secretAccessKey: decrypt(credentials.secretAccessKey),
-      region: credentials.region,
-      bucketName: credentials.bucketName,
-    });
-
-    // Generate pre-signed URL for the manifest (valid for 3 hours)
-    const command = new GetObjectCommand({
-      Bucket: credentials.bucketName,
-      Key: video.hlsManifestKey,
-    });
-
-    const streamUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: 3600 * 3, // 3 hours
-    });
-
     return NextResponse.json({
-      streamUrl,
+      manifestFilename,
       videoId: video.id,
       title: video.title,
     });
   } catch (error) {
-    console.error("Error getting embed stream URL:", error);
+    console.error("Error getting embed stream metadata:", error);
     return NextResponse.json(
       { error: "Failed to get video stream" },
       { status: 500 }
