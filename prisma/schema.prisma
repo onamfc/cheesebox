@@ -95,6 +95,7 @@ model Video {
   transcodingStatus   TranscodingStatus @default(PENDING) @map("transcoding_status")
   transcodingJobId    String?  @map("transcoding_job_id") // MediaConvert job ID
   duration            Int?     // Duration in seconds
+  visibility          VideoVisibility @default(PRIVATE)   // Public videos can be embedded
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
@@ -103,6 +104,7 @@ model Video {
   shares VideoShare[]
 
   @@index([userId])
+  @@index([visibility])
   @@map("videos")
 }
 
@@ -128,6 +130,11 @@ enum TranscodingStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+enum VideoVisibility {
+  PRIVATE  // Only owner and shared users can view
+  PUBLIC   // Anyone with the link can view (embeddable)
 }
 
 enum EmailProvider {

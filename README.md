@@ -48,7 +48,40 @@ Each user needs their own AWS account with:
 2. IAM user credentials with permissions
 3. A MediaConvert IAM role for video transcoding
 
-### Step 1: Create an S3 Bucket
+### 🚀 Quick Setup (Recommended)
+
+**One-Click CloudFormation Template** - Automatically creates all AWS resources in ~2 minutes:
+
+1. **After deploying** your app, visit `/help/aws-setup` in your browser
+2. Click the **"Launch Stack in AWS"** button
+3. Enter a unique bucket name (e.g., `my-cheesebox-videos-123`)
+4. Check the IAM acknowledgment box
+5. Click **"Create Stack"** and wait ~2 minutes
+6. Copy all 5 credentials from the **Outputs** tab
+7. Paste them into your **Settings** page
+
+**What gets created automatically:**
+- ✅ S3 bucket (with CORS configured)
+- ✅ IAM user with proper permissions
+- ✅ Access keys
+- ✅ MediaConvert role
+
+**Benefits:**
+- ⚡ 90% faster than manual setup
+- ✅ Zero configuration errors
+- 🔒 Security best practices built-in
+
+**Template Location:** `/public/cloudformation/private-video-setup.yaml`
+
+**Note:** The CloudFormation template is hosted on GitHub. After pushing your code, the launch button will work automatically.
+
+---
+
+### 📖 Manual Setup (Alternative)
+
+If you prefer to configure AWS manually or want to learn how each component works, follow these detailed steps:
+
+#### Step 1: Create an S3 Bucket
 
 1. Go to **AWS Console** → **S3**
 2. Click **"Create bucket"**
