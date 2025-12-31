@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of Private Video platform
+- Initial release of Cheesebox platform
 - User authentication with NextAuth.js
 - AWS credentials management with AES-256-GCM encryption
 - Video upload to user-owned S3 buckets

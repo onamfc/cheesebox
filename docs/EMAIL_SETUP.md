@@ -1,10 +1,10 @@
 # Email Provider Setup Guide
 
-This guide will help you configure your email provider to send video sharing notifications from Private Video.
+This guide will help you configure your email provider to send video sharing notifications from Cheesebox.
 
 ## Overview
 
-Private Video supports multiple email providers, allowing you to use your own email service. This gives you:
+Cheesebox supports multiple email providers, allowing you to use your own email service. This gives you:
 
 - **Cost Control**: Use your existing email service or free tiers
 - **Branding**: Emails come from your own domain
@@ -47,18 +47,18 @@ Private Video supports multiple email providers, allowing you to use your own em
 
 1. Click **API Keys** in sidebar
 2. Click **Create API Key**
-3. Give it a name (e.g., "Private Video")
+3. Give it a name (e.g., "Cheesebox")
 4. Select permissions: **Sending access**
 5. Copy the API key (starts with `re_`)
 
-### Step 4: Configure in Private Video
+### Step 4: Configure in Cheesebox
 
-1. Go to **Settings** in Private Video
+1. Go to **Settings** in Cheesebox
 2. Scroll to **Email Settings**
 3. Select **Resend**
 4. Enter:
    - **From Email**: `noreply@yourdomain.com` (must match verified domain)
-   - **From Name**: `Private Video` (optional)
+   - **From Name**: `Cheesebox` (optional)
    - **API Key**: Paste the key from Step 3
 5. Click **Save Email Settings**
 6. Click **Send Test Email** to verify
@@ -136,14 +136,14 @@ Private Video supports multiple email providers, allowing you to use your own em
 9. Select **Application running outside AWS**
 10. Copy the **Access Key ID** and **Secret Access Key**
 
-### Step 5: Configure in Private Video
+### Step 5: Configure in Cheesebox
 
-1. Go to **Settings** in Private Video
+1. Go to **Settings** in Cheesebox
 2. Scroll to **Email Settings**
 3. Select **AWS SES**
 4. Enter:
    - **From Email**: Your verified email (e.g., `noreply@yourdomain.com`)
-   - **From Name**: `Private Video` (optional)
+   - **From Name**: `Cheesebox` (optional)
    - **AWS Access Key ID**: From Step 4
    - **AWS Secret Access Key**: From Step 4
    - **AWS Region**: Same region where you verified the email/domain (e.g., `us-east-1`)
@@ -215,18 +215,18 @@ Instead of `AmazonSESFullAccess`, use this custom policy:
 
 1. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
 2. Select **Mail** and **Other (Custom name)**
-3. Enter name: "Private Video"
+3. Enter name: "Cheesebox"
 4. Click **Generate**
 5. Copy the 16-character password (remove spaces)
 
-#### Step 3: Configure in Private Video
+#### Step 3: Configure in Cheesebox
 
-1. Go to **Settings** in Private Video
+1. Go to **Settings** in Cheesebox
 2. Scroll to **Email Settings**
 3. Select **SMTP**
 4. Enter:
    - **From Email**: Your Gmail address (e.g., `you@gmail.com`)
-   - **From Name**: `Private Video` (optional)
+   - **From Name**: `Cheesebox` (optional)
    - **SMTP Host**: `smtp.gmail.com`
    - **SMTP Port**: `587`
    - **Username**: Your full Gmail address
@@ -242,9 +242,9 @@ Instead of `AmazonSESFullAccess`, use this custom policy:
 - **Email**: Your Outlook email
 - **Password**: Your Outlook password (or app password if 2FA enabled)
 
-#### Step 2: Configure in Private Video
+#### Step 2: Configure in Cheesebox
 
-1. Go to **Settings** in Private Video
+1. Go to **Settings** in Cheesebox
 2. Select **SMTP**
 3. Enter:
    - **From Email**: Your Outlook email
@@ -335,7 +335,7 @@ After configuring any provider:
 
 Currently, you can configure one provider per account. You can switch providers anytime in Settings.
 
-### What emails does Private Video send?
+### What emails does Cheesebox send?
 
 Currently, only **video sharing notifications**. Future features may include:
 - Welcome emails
@@ -378,7 +378,7 @@ Currently, email templates are fixed. Custom templates may be added in a future 
 ## Support
 
 For issues with:
-- **Private Video configuration**: Check our [GitHub Issues](https://github.com/onamfc/private-video-sharing/issues)
+- **Cheesebox configuration**: Check our [GitHub Issues](https://github.com/onamfc/private-video-sharing/issues)
 - **Resend**: [resend.com/docs](https://resend.com/docs)
 - **AWS SES**: [AWS SES Documentation](https://docs.aws.amazon.com/ses/)
 - **Gmail SMTP**: [Google Support](https://support.google.com/mail)

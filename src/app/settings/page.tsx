@@ -233,7 +233,7 @@ export default function SettingsPage() {
                 href="/dashboard"
                 className="text-xl font-bold text-gray-900"
               >
-                Private Video
+                Cheesebox
               </Link>
             </div>
             <div className="flex items-center space-x-4">
@@ -559,7 +559,7 @@ export default function SettingsPage() {
                     onChange={(e) => setFromName(e.target.value)}
                     disabled={emailLoading}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
-                    placeholder="Private Video"
+                    placeholder="Cheesebox"
                   />
                 </div>
 

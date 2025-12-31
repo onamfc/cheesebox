@@ -1,4 +1,4 @@
-# Private Video - Secure Video Sharing Platform
+# Cheesebox - Secure Video Sharing Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
@@ -52,7 +52,7 @@ Each user needs their own AWS account with:
 
 1. Go to **AWS Console** → **S3**
 2. Click **"Create bucket"**
-3. **Bucket name**: Choose a unique name (e.g., `my-private-videos`)
+3. **Bucket name**: Choose a unique name (e.g., `my-cheesebox-videos`)
 4. **Region**: Choose your preferred region (e.g., `us-east-1`)
 5. **Block Public Access**: Keep all boxes CHECKED (videos should be private)
 6. Click **"Create bucket"**
@@ -90,7 +90,7 @@ After creating the bucket, you need to configure CORS to allow your browser to s
 
 1. Go to **AWS Console** → **IAM** → **Users**
 2. Click **"Create user"**
-3. **User name**: e.g., `private-video-user`
+3. **User name**: e.g., `cheesebox-user`
 4. Click **"Next"**
 5. Select **"Attach policies directly"**
 6. Click **"Create policy"** (opens in new tab)
@@ -140,10 +140,10 @@ After creating the bucket, you need to configure CORS to allow your browser to s
 **Note**: Replace `YOUR-ACCOUNT-ID` with your AWS account ID (the 12-digit number, e.g., `123456789012`). You can find this in the top-right of the AWS Console.
 
 9. Click **"Next"**
-10. **Policy name**: `PrivateVideoUserPolicy`
+10. **Policy name**: `CheeseboxUserPolicy`
 11. Click **"Create policy"**
 12. **Go back to the user creation tab**, refresh the policies list
-13. Search for `PrivateVideoUserPolicy` and check the box
+13. Search for `CheeseboxUserPolicy` and check the box
 14. Click **"Next"** → **"Create user"**
 15. Click on your newly created user
 16. Go to **"Security credentials"** tab
@@ -202,7 +202,7 @@ This role allows MediaConvert to access your S3 bucket for transcoding.
 
 You should now have:
 
-- ✅ S3 bucket name (e.g., `my-private-videos`)
+- ✅ S3 bucket name (e.g., `my-cheesebox-videos`)
 - ✅ IAM Access Key ID (e.g., `AKIAIOSFODNN7EXAMPLE`)
 - ✅ IAM Secret Access Key (e.g., `wJalrXUtnFEMI/K7MDENG...`)
 - ✅ AWS Region (e.g., `us-east-1`)
@@ -215,8 +215,8 @@ Keep these handy - you'll enter them in the app's Settings page!
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/onamfc/private-video-sharing.git
-cd private-video-sharing
+git clone https://github.com/onamfc/cheesebox.git
+cd cheesebox
 ```
 
 ### 2. Install dependencies
@@ -252,7 +252,7 @@ openssl rand -hex 32
 
 #### Email Configuration
 
-Private Video supports multiple email providers. Configure your preferred provider in **Settings** after deployment.
+Cheesebox supports multiple email providers. Configure your preferred provider in **Settings** after deployment.
 
 **Supported Providers:**
 - **Resend** - Simple API (recommended for getting started)
@@ -413,7 +413,7 @@ For detailed solutions, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ## Roadmap
 
-We're actively working on improving Private Video. Here are some features we'd love to add:
+We're actively working on improving Cheesebox. Here are some features we'd love to add:
 
 - [ ] Video upload progress indicator
 - [ ] Video thumbnails and previews
@@ -454,8 +454,8 @@ Security is a top priority. Please review our [Security Policy](SECURITY.md) for
 ## Support
 
 - **Documentation**: Check the README and [SECURITY.md](SECURITY.md)
-- **Issues**: Open a [GitHub issue](https://github.com/onamfc/private-video-sharing/issues)
-- **Discussions**: Join [GitHub discussions](https://github.com/onamfc/private-video-sharing/discussions)
+- **Issues**: Open a [GitHub issue](https://github.com/onamfc/cheesebox/issues)
+- **Discussions**: Join [GitHub discussions](https://github.com/onamfc/cheesebox/discussions)
 - **Bugs**: Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md)
 - **Features**: Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md)
 
@@ -463,7 +463,7 @@ Security is a top priority. Please review our [Security Policy](SECURITY.md) for
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-Copyright (c) 2025 Private Video Contributors
+Copyright (c) 2025 Cheesebox Contributors
 
 ## Acknowledgments
 

@@ -1,12 +1,12 @@
 {
-  "name": "private-video",
-  "version": "1.0.0",
+  "name": "cheesebox",
+  "version": "1.2.0",
   "description": "Secure video sharing platform with HLS streaming and AWS S3 storage",
-  "author": "Private Video Contributors",
+  "author": "Cheesebox Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/onamfc/private-video-sharing.git"
+    "url": "https://github.com/onamfc/cheesebox.git"
   },
   "keywords": [
     "video",

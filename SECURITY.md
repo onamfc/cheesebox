@@ -162,4 +162,4 @@ Security updates will be released as soon as possible. We recommend:
 - Testing updates in staging before production
 - Maintaining a rollback plan
 
-Thank you for helping keep Private Video secure!
+Thank you for helping keep Cheesebox secure!

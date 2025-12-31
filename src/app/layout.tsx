@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Private Video - Secure Video Sharing",
+  title: "Cheesebox - Secure Video Sharing",
   description:
     "Share business-sensitive videos securely with AWS S3 and HLS streaming",
 };
