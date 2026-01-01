@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-01-01
 ### Added - Mobile Share Management Parity
 - **Mobile App Enhancement**: Mobile app now has full feature parity with web for share management
   - Mobile users can view all existing shares (individual and group) in ShareVideoScreen
@@ -150,9 +151,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Email credentials lookup now falls back to team credentials when user has no direct credentials
 - Video upload and retrieval now work correctly for team members using shared credentials
 - Video streaming and transcoding status checks now support team credentials
-
-
-## [1.3.0] - 2026-01-01
 
 ### Added - Mobile In-App Video Recording
 - **Video Recording Interface**: Record videos directly within the mobile app
