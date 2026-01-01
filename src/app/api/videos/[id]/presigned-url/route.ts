@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/encryption";
 import { createS3Client, generatePresignedUrl } from "@/lib/aws-services";
@@ -10,9 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -36,9 +35,9 @@ export async function GET(
     }
 
     // Check if user has access (either owner or shared with)
-    const isOwner = video.userId === session.user.id;
+    const isOwner = video.userId === user.id;
     const isSharedWith = video.shares.some(
-      (share) => share.sharedWithEmail === session.user.email,
+      (share) => share.sharedWithEmail === user.email,
     );
 
     if (!isOwner && !isSharedWith) {
@@ -92,12 +91,12 @@ export async function GET(
     );
 
     // Extract manifest filename for streaming proxy
-    const manifestFilename = video.hlsManifestKey.split("/").pop();
+    const hlsManifestKey = video.hlsManifestKey.split("/").pop();
 
     return NextResponse.json({
       url: presignedUrl,
       expiresIn,
-      manifestFilename,
+      hlsManifestKey,
       useStreamingProxy: true, // Flag to use streaming proxy instead of pre-signed URL
     });
   } catch (error) {

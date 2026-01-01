@@ -47,9 +47,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // Extract manifest filename
-    const manifestFilename = video.hlsManifestKey.split("/").pop();
+    const hlsManifestKey = video.hlsManifestKey.split("/").pop();
 
-    if (!manifestFilename) {
+    if (!hlsManifestKey) {
       return NextResponse.json(
         { error: "Invalid manifest path" },
         { status: 500 }
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json({
-      manifestFilename,
+      hlsManifestKey,
       videoId: video.id,
       title: video.title,
     });

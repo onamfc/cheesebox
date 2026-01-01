@@ -11,17 +11,21 @@ datasource db {
 
 // User model for authentication
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  passwordHash  String         @map("password_hash")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  pushToken     String?  @map("push_token")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
-  awsCredentials   AwsCredentials?
-  emailCredentials EmailCredentials?
-  videos           Video[]
-  sharedVideos     VideoShare[]   @relation("SharedByUser")
+  awsCredentials    AwsCredentials?
+  emailCredentials  EmailCredentials?
+  videos            Video[]
+  sharedVideos      VideoShare[]      @relation("SharedByUser")
+  ownedGroups       ShareGroup[]
+  teamMemberships   TeamMember[]
+  groupShares       VideoGroupShare[]
 
   @@map("users")
 }
@@ -29,86 +33,151 @@ model User {
 // AWS credentials stored securely (encrypted)
 model AwsCredentials {
   id                String   @id @default(cuid())
-  userId            String   @unique @map("user_id")
-  accessKeyId       String   @map("access_key_id")      // Will be encrypted
-  secretAccessKey   String   @map("secret_access_key")  // Will be encrypted
+  userId            String?  @unique @map("user_id")
+  teamId            String?  @unique @map("team_id")
+  accessKeyId       String   @map("access_key_id")
+  secretAccessKey   String   @map("secret_access_key")
   bucketName        String   @map("bucket_name")
   region            String
-  mediaConvertRole  String?  @map("media_convert_role") // IAM role ARN for MediaConvert
+  mediaConvertRole  String?  @map("media_convert_role")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team? @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@map("aws_credentials")
 }
 
 // Email credentials stored securely (encrypted)
 model EmailCredentials {
-  id                String   @id @default(cuid())
-  userId            String   @unique @map("user_id")
-
-  // Provider type
-  provider          EmailProvider @default(RESEND)
-
-  // Common fields
-  fromEmail         String   @map("from_email")
-  fromName          String?  @map("from_name")
-
-  // API-based providers (Resend, SendGrid, Mailgun, Postmark)
-  apiKey            String?  @map("api_key")  // Encrypted
-
-  // AWS SES specific
-  awsAccessKeyId    String?  @map("aws_access_key_id")  // Encrypted
-  awsSecretKey      String?  @map("aws_secret_key")     // Encrypted
-  awsRegion         String?  @map("aws_region")
-
-  // SMTP specific
-  smtpHost          String?  @map("smtp_host")
-  smtpPort          Int?     @map("smtp_port")
-  smtpUsername      String?  @map("smtp_username")      // Encrypted
-  smtpPassword      String?  @map("smtp_password")      // Encrypted
-  smtpSecure        Boolean? @map("smtp_secure")
-
-  // Health check
-  lastValidated     DateTime? @map("last_validated")
-  isValid           Boolean  @default(true) @map("is_valid")
-
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id               String         @id @default(cuid())
+  userId           String?        @unique @map("user_id")
+  teamId           String?        @unique @map("team_id")
+  provider         EmailProvider  @default(RESEND)
+  fromEmail        String         @map("from_email")
+  fromName         String?        @map("from_name")
+  apiKey           String?        @map("api_key")
+  awsAccessKeyId   String?        @map("aws_access_key_id")
+  awsSecretKey     String?        @map("aws_secret_key")
+  awsRegion        String?        @map("aws_region")
+  smtpHost         String?        @map("smtp_host")
+  smtpPort         Int?           @map("smtp_port")
+  smtpUsername     String?        @map("smtp_username")
+  smtpPassword     String?        @map("smtp_password")
+  smtpSecure       Boolean?       @map("smtp_secure")
+  lastValidated    DateTime?      @map("last_validated")
+  isValid          Boolean        @default(true) @map("is_valid")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team? @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@map("email_credentials")
 }
 
-// Video model
-model Video {
-  id                  String   @id @default(cuid())
-  userId              String   @map("user_id")
-  title               String
-  description         String?
-  originalKey         String   @map("original_key")       // S3 key of original video
-  hlsManifestKey      String?  @map("hls_manifest_key")   // S3 key of HLS manifest (m3u8)
-  transcodingStatus   TranscodingStatus @default(PENDING) @map("transcoding_status")
-  transcodingJobId    String?  @map("transcoding_job_id") // MediaConvert job ID
-  duration            Int?     // Duration in seconds
-  visibility          VideoVisibility @default(PRIVATE)   // Public videos can be embedded
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+// Team model
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  owner  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  shares VideoShare[]
+  members          TeamMember[]
+  awsCredentials   AwsCredentials?
+  emailCredentials EmailCredentials?
+  videos           Video[]
+  groups           ShareGroup[]
+
+  @@map("teams")
+}
+
+// Team membership with roles
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String   @map("team_id")
+  userId    String   @map("user_id")
+  role      TeamRole @default(MEMBER)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@map("team_members")
+}
+
+// Share groups for batch video sharing
+model ShareGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String   @map("user_id")
+  teamId      String?  @map("team_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  owner       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team        Team?              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  members     ShareGroupMember[]
+  videoShares VideoGroupShare[]
 
   @@index([userId])
+  @@index([teamId])
+  @@map("share_groups")
+}
+
+// Share group members (email addresses)
+model ShareGroupMember {
+  id      String @id @default(cuid())
+  groupId String @map("group_id")
+  email   String
+
+  // Relations
+  group ShareGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, email])
+  @@index([email])
+  @@map("share_group_members")
+}
+
+// Video model
+model Video {
+  id                String            @id @default(cuid())
+  userId            String            @map("user_id")
+  teamId            String?           @map("team_id")
+  title             String
+  description       String?
+  originalKey       String            @map("original_key")
+  hlsManifestKey    String?           @map("hls_manifest_key")
+  transcodingJobId  String?           @map("transcoding_job_id")
+  transcodingStatus TranscodingStatus @default(PENDING) @map("transcoding_status")
+  duration          Int?
+  visibility        VideoVisibility   @default(PRIVATE)
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  owner       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team        Team?              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  shares      VideoShare[]
+  groupShares VideoGroupShare[]
+
+  @@index([userId])
+  @@index([teamId])
   @@index([visibility])
   @@map("videos")
 }
 
-// Video sharing permissions
+// Video sharing permissions (individual)
 model VideoShare {
   id              String   @id @default(cuid())
   videoId         String   @map("video_id")
@@ -117,14 +186,33 @@ model VideoShare {
   createdAt       DateTime @default(now()) @map("created_at")
 
   // Relations
-  video      Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  sharedBy   User  @relation("SharedByUser", fields: [sharedByUserId], references: [id], onDelete: Cascade)
+  video    Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  sharedBy User  @relation("SharedByUser", fields: [sharedByUserId], references: [id], onDelete: Cascade)
 
   @@unique([videoId, sharedWithEmail])
   @@index([sharedWithEmail])
   @@map("video_shares")
 }
 
+// Video sharing with groups
+model VideoGroupShare {
+  id             String   @id @default(cuid())
+  videoId        String   @map("video_id")
+  groupId        String   @map("group_id")
+  sharedByUserId String   @map("shared_by_user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  video    Video      @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  group    ShareGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  sharedBy User       @relation(fields: [sharedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([videoId, groupId])
+  @@index([groupId])
+  @@map("video_group_shares")
+}
+
+// Enums
 enum TranscodingStatus {
   PENDING
   PROCESSING
@@ -133,8 +221,8 @@ enum TranscodingStatus {
 }
 
 enum VideoVisibility {
-  PRIVATE  // Only owner and shared users can view
-  PUBLIC   // Anyone with the link can view (embeddable)
+  PRIVATE
+  PUBLIC
 }
 
 enum EmailProvider {
@@ -142,4 +230,10 @@ enum EmailProvider {
   AWS_SES
   SENDGRID
   SMTP
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
 }

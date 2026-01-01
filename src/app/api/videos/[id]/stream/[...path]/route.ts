@@ -1,24 +1,68 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/encryption";
 import { createS3Client, generatePresignedUrl } from "@/lib/aws-services";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { verify } from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this-in-production";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; path: string[] }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const { id, path } = await params;
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Validate path
+    if (!path || path.length === 0 || path[0] === 'undefined' || path[0] === '') {
+      return NextResponse.json(
+        { error: "Invalid file path" },
+        { status: 400 }
+      );
     }
 
-    const { id, path } = await params;
     const filePath = path.join("/");
+
+    // Try to get user from auth header first (for web)
+    let user = await getAuthUser(request);
+    let videoIdFromToken: string | null = null;
+
+    // If no user from auth header, try streaming token from query param (for mobile)
+    if (!user) {
+      const { searchParams } = new URL(request.url);
+      const streamingToken = searchParams.get("token");
+
+      if (streamingToken) {
+        try {
+          const payload = verify(streamingToken, JWT_SECRET) as {
+            userId: string;
+            videoId: string;
+            type: string;
+          };
+
+          if (payload.type === "streaming" && payload.videoId === id) {
+            // Get user from token
+            const tokenUser = await prisma.user.findUnique({
+              where: { id: payload.userId },
+              select: { id: true, email: true },
+            });
+
+            if (tokenUser) {
+              user = tokenUser;
+              videoIdFromToken = payload.videoId;
+            }
+          }
+        } catch (error) {
+          console.error("Invalid streaming token:", error);
+        }
+      }
+    }
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Get the video
     const video = await prisma.video.findUnique({
@@ -38,9 +82,9 @@ export async function GET(
     }
 
     // Check if user has access (either owner or shared with)
-    const isOwner = video.userId === session.user.id;
+    const isOwner = video.userId === user.id;
     const isSharedWith = video.shares.some(
-      (share) => share.sharedWithEmail === session.user.email,
+      (share) => share.sharedWithEmail === user.email,
     );
 
     if (!isOwner && !isSharedWith) {
@@ -55,6 +99,14 @@ export async function GET(
           status: video.transcodingStatus,
         },
         { status: 400 },
+      );
+    }
+
+    // Check if HLS manifest exists
+    if (!video.hlsManifestKey) {
+      return NextResponse.json(
+        { error: "Video stream not available" },
+        { status: 404 },
       );
     }
 
@@ -103,12 +155,36 @@ export async function GET(
     for await (const chunk of response.Body as any) {
       chunks.push(chunk);
     }
-    const buffer = Buffer.concat(chunks);
+    let buffer = Buffer.concat(chunks);
 
     // Determine content type
     let contentType = response.ContentType || "application/octet-stream";
     if (filePath.endsWith(".m3u8")) {
       contentType = "application/vnd.apple.mpegurl";
+
+      // Rewrite manifest to add token to relative URLs
+      const { searchParams } = new URL(request.url);
+      const token = searchParams.get("token");
+
+      if (token) {
+        let manifestContent = buffer.toString("utf-8");
+
+        // Add token to all relative URLs (lines that don't start with # or http)
+        manifestContent = manifestContent.split("\n").map(line => {
+          const trimmed = line.trim();
+          // If line is not empty, not a comment, not an absolute URL, and ends with .m3u8 or .ts
+          if (trimmed &&
+              !trimmed.startsWith("#") &&
+              !trimmed.startsWith("http") &&
+              (trimmed.endsWith(".m3u8") || trimmed.endsWith(".ts"))) {
+            // Add token to the URL
+            return `${trimmed}?token=${token}`;
+          }
+          return line;
+        }).join("\n");
+
+        buffer = Buffer.from(manifestContent, "utf-8");
+      }
     } else if (filePath.endsWith(".ts")) {
       contentType = "video/mp2t";
     }

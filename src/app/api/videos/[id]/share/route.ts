@@ -1,15 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getAuthUser } from "@/lib/auth-helpers";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/encryption";
 import { createEmailProvider } from "@/lib/email/factory";
 import { EmailProviderType } from "@/lib/email/interface";
+import { sendPushNotification, sendBulkPushNotifications } from "@/lib/push-notifications";
 
-const shareSchema = z.object({
-  email: z.string().email("Invalid email address"),
-});
+// Helper to get email credentials (user's own or team's)
+async function getEmailCredentials(userId: string) {
+  // Try to get user's own credentials first
+  let emailCredentials = await prisma.emailCredentials.findUnique({
+    where: { userId },
+  });
+
+  // If no direct credentials, check if user belongs to a team with credentials
+  if (!emailCredentials) {
+    const teamMembership = await prisma.teamMember.findFirst({
+      where: { userId },
+      include: {
+        team: {
+          include: {
+            emailCredentials: true,
+          },
+        },
+      },
+    });
+
+    emailCredentials = teamMembership?.team?.emailCredentials ?? null;
+  }
+
+  return emailCredentials;
+}
+
+const shareSchema = z.union([
+  z.object({
+    email: z.string().email("Invalid email address"),
+  }),
+  z.object({
+    groupId: z.string().min(1, "Group ID is required"),
+  }),
+]);
 
 // POST - Share video with a user
 export async function POST(
@@ -17,9 +48,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -35,7 +66,7 @@ export async function POST(
       );
     }
 
-    const { email } = validationResult.data;
+    const data = validationResult.data;
 
     // Get the video
     const video = await prisma.video.findUnique({
@@ -47,15 +78,199 @@ export async function POST(
     }
 
     // Check if user is the owner
-    if (video.userId !== session.user.id) {
+    if (video.userId !== user.id) {
       return NextResponse.json(
         { error: "Only the video owner can share it" },
         { status: 403 },
       );
     }
 
+    // Handle group sharing
+    if ("groupId" in data) {
+      const { groupId } = data;
+
+      // Verify group exists and user has access
+      const group = await prisma.shareGroup.findUnique({
+        where: { id: groupId },
+        include: {
+          members: true,
+          team: {
+            include: {
+              members: {
+                where: { userId: user.id },
+              },
+            },
+          },
+        },
+      });
+
+      if (!group) {
+        return NextResponse.json({ error: "Group not found" }, { status: 404 });
+      }
+
+      // Check if user owns the group or is a member of the group's team
+      const isOwner = group.userId === user.id;
+      const isTeamMember = (group.team?.members?.length ?? 0) > 0;
+
+      if (!isOwner && !isTeamMember) {
+        return NextResponse.json(
+          { error: "Access denied to this group" },
+          { status: 403 },
+        );
+      }
+
+      // Check if already shared with group
+      const existingGroupShare = await prisma.videoGroupShare.findUnique({
+        where: {
+          videoId_groupId: {
+            videoId: id,
+            groupId,
+          },
+        },
+      });
+
+      if (existingGroupShare) {
+        return NextResponse.json(
+          { error: "Video already shared with this group" },
+          { status: 400 },
+        );
+      }
+
+      // Create group share
+      const groupShare = await prisma.videoGroupShare.create({
+        data: {
+          videoId: id,
+          groupId,
+          sharedByUserId: user.id,
+        },
+        include: {
+          group: {
+            include: {
+              members: true,
+            },
+          },
+        },
+      });
+
+      // Send email to all group members
+      try {
+        const emailCredentials = await getEmailCredentials(user.id);
+
+        if (emailCredentials) {
+          // Decrypt credentials
+          const decryptedCredentials = {
+            provider: emailCredentials.provider as EmailProviderType,
+            fromEmail: emailCredentials.fromEmail,
+            fromName: emailCredentials.fromName || undefined,
+            apiKey: emailCredentials.apiKey
+              ? decrypt(emailCredentials.apiKey)
+              : undefined,
+            awsAccessKeyId: emailCredentials.awsAccessKeyId
+              ? decrypt(emailCredentials.awsAccessKeyId)
+              : undefined,
+            awsSecretKey: emailCredentials.awsSecretKey
+              ? decrypt(emailCredentials.awsSecretKey)
+              : undefined,
+            awsRegion: emailCredentials.awsRegion || undefined,
+            smtpHost: emailCredentials.smtpHost || undefined,
+            smtpPort: emailCredentials.smtpPort || undefined,
+            smtpUsername: emailCredentials.smtpUsername
+              ? decrypt(emailCredentials.smtpUsername)
+              : undefined,
+            smtpPassword: emailCredentials.smtpPassword
+              ? decrypt(emailCredentials.smtpPassword)
+              : undefined,
+            smtpSecure: emailCredentials.smtpSecure || undefined,
+          };
+
+          // Create email provider instance
+          const emailProvider = createEmailProvider(
+            emailCredentials.provider as EmailProviderType,
+            decryptedCredentials,
+          );
+
+          const appUrl =
+            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+          // Send email to all group members
+          for (const member of groupShare.group.members) {
+            try {
+              await emailProvider.sendEmail({
+                to: member.email,
+                subject: `${user.email} shared a video with ${group.name}`,
+                html: `
+                  <h2>A video has been shared with your group!</h2>
+                  <p><strong>${user.email}</strong> has shared a video titled "<strong>${video.title}</strong>" with the group <strong>${group.name}</strong>.</p>
+                  ${video.description ? `<p>Description: ${video.description}</p>` : ""}
+                  <p><a href="${appUrl}/dashboard">Click here to view it</a></p>
+                  <p>You'll need to log in or create an account to watch the video.</p>
+                `,
+                text: `${user.email} has shared a video titled "${video.title}" with the group ${group.name}. Visit ${appUrl}/dashboard to view it.`,
+              });
+            } catch (emailError) {
+              console.error(
+                `Failed to send email to ${member.email}:`,
+                emailError,
+              );
+            }
+          }
+        }
+      } catch (emailError) {
+        console.error("Email sending error:", emailError);
+        // Continue even if email fails
+      }
+
+      // Send push notifications to group members who have push tokens
+      try {
+        const groupMemberEmails = groupShare.group.members.map((m) => m.email);
+        const usersWithPushTokens = await prisma.user.findMany({
+          where: {
+            email: { in: groupMemberEmails },
+            pushToken: { not: null },
+          },
+          select: {
+            pushToken: true,
+          },
+        });
+
+        if (usersWithPushTokens.length > 0) {
+          const notifications = usersWithPushTokens.map((u) => ({
+            pushToken: u.pushToken!,
+            title: "Video Shared with Your Group",
+            body: `${user.email} shared "${video.title}" with ${group.name}`,
+            data: {
+              videoId: video.id,
+              sharedBy: user.email,
+            },
+          }));
+
+          await sendBulkPushNotifications(notifications);
+        }
+      } catch (pushError) {
+        console.error("Push notification error:", pushError);
+        // Continue even if push notification fails
+      }
+
+      return NextResponse.json(
+        {
+          message: `Video shared successfully with ${group.members.length} members`,
+          groupShare: {
+            id: groupShare.id,
+            groupId: groupShare.groupId,
+            groupName: group.name,
+            memberCount: group.members.length,
+            createdAt: groupShare.createdAt,
+          },
+        },
+        { status: 201 },
+      );
+    }
+
+    // Handle individual email sharing
+    const { email } = data as { email: string };
+
     // Don't allow sharing with self
-    if (email === session.user.email) {
+    if (email === user.email) {
       return NextResponse.json(
         { error: "Cannot share video with yourself" },
         { status: 400 },
@@ -84,15 +299,13 @@ export async function POST(
       data: {
         videoId: id,
         sharedWithEmail: email,
-        sharedByUserId: session.user.id,
+        sharedByUserId: user.id,
       },
     });
 
     // Send email notification using user's email provider
     try {
-      const emailCredentials = await prisma.emailCredentials.findUnique({
-        where: { userId: session.user.id },
-      });
+      const emailCredentials = await getEmailCredentials(user.id);
 
       if (!emailCredentials) {
         console.warn("No email credentials configured for user");
@@ -147,19 +360,42 @@ export async function POST(
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
       await emailProvider.sendEmail({
         to: email,
-        subject: `${session.user.email} shared a video with you`,
+        subject: `${user.email} shared a video with you`,
         html: `
           <h2>A video has been shared with you!</h2>
-          <p><strong>${session.user.email}</strong> has shared a video titled "<strong>${video.title}</strong>" with you.</p>
+          <p><strong>${user.email}</strong> has shared a video titled "<strong>${video.title}</strong>" with you.</p>
           ${video.description ? `<p>Description: ${video.description}</p>` : ""}
           <p><a href="${appUrl}/dashboard">Click here to view it</a></p>
           <p>You'll need to log in or create an account to watch the video.</p>
         `,
-        text: `${session.user.email} has shared a video titled "${video.title}" with you. Visit ${appUrl}/dashboard to view it.`,
+        text: `${user.email} has shared a video titled "${video.title}" with you. Visit ${appUrl}/dashboard to view it.`,
       });
     } catch (emailError) {
       console.error("Email sending error:", emailError);
       // Continue even if email fails
+    }
+
+    // Send push notification if the recipient has a push token
+    try {
+      const recipient = await prisma.user.findUnique({
+        where: { email },
+        select: { pushToken: true },
+      });
+
+      if (recipient?.pushToken) {
+        await sendPushNotification(
+          recipient.pushToken,
+          "Video Shared with You",
+          `${user.email} shared "${video.title}" with you`,
+          {
+            videoId: video.id,
+            sharedBy: user.email,
+          }
+        );
+      }
+    } catch (pushError) {
+      console.error("Push notification error:", pushError);
+      // Continue even if push notification fails
     }
 
     return NextResponse.json(
@@ -188,9 +424,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -215,7 +451,7 @@ export async function DELETE(
     }
 
     // Check if user is the owner
-    if (video.userId !== session.user.id) {
+    if (video.userId !== user.id) {
       return NextResponse.json(
         { error: "Only the video owner can unshare it" },
         { status: 403 },
