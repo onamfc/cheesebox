@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model aws_credentials {
+  id                 String   @id
+  user_id            String?  @unique
+  access_key_id      String
+  secret_access_key  String
+  bucket_name        String
+  region             String
+  created_at         DateTime @default(now())
+  updated_at         DateTime
+  media_convert_role String?
+  team_id            String?  @unique
+  teams              teams?   @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  users              users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model email_credentials {
+  id                String        @id
+  user_id           String?       @unique
+  provider          EmailProvider @default(RESEND)
+  from_email        String
+  from_name         String?
+  api_key           String?
+  aws_access_key_id String?
+  aws_secret_key    String?
+  aws_region        String?
+  smtp_host         String?
+  smtp_port         Int?
+  smtp_username     String?
+  smtp_password     String?
+  smtp_secure       Boolean?
+  last_validated    DateTime?
+  is_valid          Boolean       @default(true)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime
+  team_id           String?       @unique
+  teams             teams?        @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  users             users?        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model share_group_members {
+  id           String       @id
+  group_id     String
+  email        String
+  share_groups share_groups @relation(fields: [group_id], references: [id], onDelete: Cascade)
+
+  @@unique([group_id, email])
+  @@index([email])
+}
+
+model share_groups {
+  id                  String                @id
+  name                String
+  description         String?
+  user_id             String
+  team_id             String?
+  created_at          DateTime              @default(now())
+  updated_at          DateTime
+  share_group_members share_group_members[]
+  teams               teams?                @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  users               users                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  video_group_shares  video_group_shares[]
+
+  @@index([team_id])
+  @@index([user_id])
+}
+
+model team_members {
+  id         String   @id
+  team_id    String
+  user_id    String
+  role       TeamRole @default(MEMBER)
+  created_at DateTime @default(now())
+  teams      teams    @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([team_id, user_id])
+  @@index([user_id])
+}
+
+model teams {
+  id                String             @id
+  name              String
+  slug              String             @unique
+  created_at        DateTime           @default(now())
+  updated_at        DateTime
+  aws_credentials   aws_credentials?
+  email_credentials email_credentials?
+  share_groups      share_groups[]
+  team_members      team_members[]
+  videos            videos[]
+}
+
+model users {
+  id                 String               @id
+  email              String               @unique
+  password_hash      String
+  created_at         DateTime             @default(now())
+  updated_at         DateTime
+  aws_credentials    aws_credentials?
+  email_credentials  email_credentials?
+  share_groups       share_groups[]
+  team_members       team_members[]
+  video_group_shares video_group_shares[]
+  video_shares       video_shares[]
+  videos             videos[]
+}
+
+model video_group_shares {
+  id                String       @id
+  video_id          String
+  group_id          String
+  shared_by_user_id String
+  created_at        DateTime     @default(now())
+  share_groups      share_groups @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  users             users        @relation(fields: [shared_by_user_id], references: [id])
+  videos            videos       @relation(fields: [video_id], references: [id], onDelete: Cascade)
+
+  @@unique([video_id, group_id])
+  @@index([group_id])
+}
+
+model video_shares {
+  id                String   @id
+  video_id          String
+  shared_with_email String
+  shared_by_user_id String
+  created_at        DateTime @default(now())
+  users             users    @relation(fields: [shared_by_user_id], references: [id], onDelete: Cascade)
+  videos            videos   @relation(fields: [video_id], references: [id], onDelete: Cascade)
+
+  @@unique([video_id, shared_with_email])
+  @@index([shared_with_email])
+}
+
+model videos {
+  id                 String               @id
+  user_id            String
+  title              String
+  description        String?
+  original_key       String
+  hls_manifest_key   String?
+  transcoding_status TranscodingStatus    @default(PENDING)
+  transcoding_job_id String?
+  duration           Int?
+  created_at         DateTime             @default(now())
+  updated_at         DateTime
+  visibility         VideoVisibility      @default(PRIVATE)
+  team_id            String?
+  video_group_shares video_group_shares[]
+  video_shares       video_shares[]
+  teams              teams?               @relation(fields: [team_id], references: [id])
+  users              users                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([team_id])
+  @@index([user_id])
+  @@index([visibility])
+}
+
+enum EmailProvider {
+  RESEND
+  AWS_SES
+  SENDGRID
+  SMTP
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum TranscodingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum VideoVisibility {
+  PRIVATE
+  PUBLIC
+}

@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/encryption";
 import {
   MediaConvertClient,
   GetJobCommand,
 } from "@aws-sdk/client-mediaconvert";
+import { getAuthUser } from "@/lib/auth-helpers";
 
 // GET - Retrieve user's videos and videos shared with them
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -23,7 +22,7 @@ export async function GET(request: NextRequest) {
     if (type === "owned") {
       // Get user's own videos
       const videos = await prisma.video.findMany({
-        where: { userId: session.user.id },
+        where: { userId: user.id },
         orderBy: { createdAt: "desc" },
         include: {
           shares: {
@@ -32,21 +31,45 @@ export async function GET(request: NextRequest) {
               createdAt: true,
             },
           },
+          groupShares: {
+            select: {
+              id: true,
+              createdAt: true,
+              group: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
         },
       });
 
       // Check MediaConvert status for processing videos
-      await updateProcessingVideos(videos, session.user.id);
+      await updateProcessingVideos(videos, user.id);
 
       // Refetch videos to get updated status
       const updatedVideos = await prisma.video.findMany({
-        where: { userId: session.user.id },
+        where: { userId: user.id },
         orderBy: { createdAt: "desc" },
         include: {
           shares: {
             select: {
               sharedWithEmail: true,
               createdAt: true,
+            },
+          },
+          groupShares: {
+            select: {
+              id: true,
+              createdAt: true,
+              group: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -54,9 +77,9 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json(updatedVideos);
     } else if (type === "shared") {
-      // Get videos shared with the user
-      const shares = await prisma.videoShare.findMany({
-        where: { sharedWithEmail: session.user.email },
+      // Get videos shared with the user directly
+      const directShares = await prisma.videoShare.findMany({
+        where: { sharedWithEmail: user.email },
         include: {
           video: {
             include: {
@@ -71,11 +94,67 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: "desc" },
       });
 
-      const videos = shares.map((share) => ({
-        ...share.video,
-        sharedBy: share.video.owner.email,
-        sharedAt: share.createdAt,
-      }));
+      // Get videos shared via groups where user's email is a member
+      const groupShares = await prisma.videoGroupShare.findMany({
+        where: {
+          group: {
+            members: {
+              some: {
+                email: user.email,
+              },
+            },
+          },
+        },
+        include: {
+          video: {
+            include: {
+              owner: {
+                select: {
+                  email: true,
+                },
+              },
+            },
+          },
+          group: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      // Combine and deduplicate videos
+      const videoMap = new Map();
+
+      directShares.forEach((share) => {
+        if (!videoMap.has(share.video.id)) {
+          videoMap.set(share.video.id, {
+            ...share.video,
+            sharedBy: share.video.owner.email,
+            sharedAt: share.createdAt,
+            sharedVia: "direct",
+          });
+        }
+      });
+
+      groupShares.forEach((share) => {
+        if (!videoMap.has(share.video.id)) {
+          videoMap.set(share.video.id, {
+            ...share.video,
+            sharedBy: share.video.owner.email,
+            sharedAt: share.createdAt,
+            sharedVia: "group",
+            groupName: share.group.name,
+          });
+        }
+      });
+
+      const videos = Array.from(videoMap.values()).sort(
+        (a, b) =>
+          new Date(b.sharedAt).getTime() - new Date(a.sharedAt).getTime()
+      );
 
       return NextResponse.json(videos);
     } else {
@@ -102,10 +181,26 @@ async function updateProcessingVideos(videos: any[], userId: string) {
   if (processingVideos.length === 0) return;
 
   try {
-    // Get user's AWS credentials
-    const awsCredentials = await prisma.awsCredentials.findUnique({
+    // Get user's AWS credentials (either directly owned or through a team)
+    let awsCredentials = await prisma.awsCredentials.findUnique({
       where: { userId },
     });
+
+    // If no direct credentials, check if user belongs to a team with credentials
+    if (!awsCredentials) {
+      const teamMembership = await prisma.teamMember.findFirst({
+        where: { userId },
+        include: {
+          team: {
+            include: {
+              awsCredentials: true,
+            },
+          },
+        },
+      });
+
+      awsCredentials = teamMembership?.team?.awsCredentials ?? null;
+    }
 
     if (!awsCredentials) return;
 

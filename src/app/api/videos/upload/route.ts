@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/encryption";
 import {
@@ -12,22 +11,38 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get AWS credentials
-    const awsCredentials = await prisma.awsCredentials.findUnique({
-      where: { userId: session.user.id },
+    // Get AWS credentials (either directly owned or through a team)
+    let awsCredentials = await prisma.awsCredentials.findUnique({
+      where: { userId: user.id },
     });
+
+    // If no direct credentials, check if user belongs to a team with credentials
+    if (!awsCredentials) {
+      const teamMembership = await prisma.teamMember.findFirst({
+        where: { userId: user.id },
+        include: {
+          team: {
+            include: {
+              awsCredentials: true,
+            },
+          },
+        },
+      });
+
+      awsCredentials = teamMembership?.team?.awsCredentials ?? null;
+    }
 
     if (!awsCredentials) {
       return NextResponse.json(
         {
           error:
-            "AWS credentials not configured. Please add your AWS credentials first.",
+            "AWS credentials not configured. Please add your AWS credentials first or join a team with credentials.",
         },
         { status: 400 },
       );
@@ -103,8 +118,8 @@ export async function POST(request: NextRequest) {
     // Generate unique key for the video
     const timestamp = Date.now();
     const fileExtension = file.name.split(".").pop();
-    const originalKey = `videos/${session.user.id}/${timestamp}-original.${fileExtension}`;
-    const outputKeyPrefix = `videos/${session.user.id}/${timestamp}-hls/`;
+    const originalKey = `videos/${user.id}/${timestamp}-original.${fileExtension}`;
+    const outputKeyPrefix = `videos/${user.id}/${timestamp}-hls/`;
 
     // Upload to S3
     const s3Client = createS3Client(credentials);
@@ -121,7 +136,7 @@ export async function POST(request: NextRequest) {
     // Create video record in database
     const video = await prisma.video.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         title,
         description,
         originalKey,
@@ -148,7 +163,7 @@ export async function POST(request: NextRequest) {
 
       // MediaConvert names the manifest based on input filename
       // Input: timestamp-original.ext -> Output: timestamp-original.m3u8
-      const manifestFilename = `${timestamp}-original.m3u8`;
+      const hlsManifestKey = `${timestamp}-original.m3u8`;
 
       // Update video with job ID and status
       await prisma.video.update({
@@ -156,7 +171,7 @@ export async function POST(request: NextRequest) {
         data: {
           transcodingJobId: jobId,
           transcodingStatus: "PROCESSING",
-          hlsManifestKey: `${outputKeyPrefix}${manifestFilename}`,
+          hlsManifestKey: `${outputKeyPrefix}${hlsManifestKey}`,
         },
       });
 

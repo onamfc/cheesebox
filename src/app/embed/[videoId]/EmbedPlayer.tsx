@@ -33,16 +33,16 @@ export default function EmbedPlayer({
           return;
         }
 
-        const { manifestFilename } = await response.json();
+        const { hlsManifestKey } = await response.json();
 
-        if (!manifestFilename) {
+        if (!hlsManifestKey) {
           setError("Video stream not available");
           setLoading(false);
           return;
         }
 
         // Use streaming proxy endpoint to load all HLS segments
-        const streamUrl = `/api/embed/${videoId}/stream/${manifestFilename}`;
+        const streamUrl = `/api/embed/${videoId}/stream/${hlsManifestKey}`;
 
         if (!videoRef.current) return;
 

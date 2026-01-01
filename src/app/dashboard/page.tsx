@@ -144,12 +144,20 @@ export default function DashboardPage() {
             </div>
 
             {activeTab === "my-videos" && hasCredentials && (
-              <button
-                onClick={() => setShowUpload(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Upload Video
-              </button>
+              <div className="flex gap-3">
+                <Link
+                  href="/dashboard/record"
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
+                >
+                  📹 Record Video
+                </Link>
+                <button
+                  onClick={() => setShowUpload(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Upload Video
+                </button>
+              </div>
             )}
           </div>
 

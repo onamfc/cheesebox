@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/encryption";
 import {
@@ -15,9 +14,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -40,7 +39,7 @@ export async function DELETE(
     }
 
     // Check if user is the owner
-    if (video.userId !== session.user.id) {
+    if (video.userId !== user.id) {
       return NextResponse.json(
         { error: "Only the video owner can delete it" },
         { status: 403 },

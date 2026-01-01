@@ -27,9 +27,9 @@ export default function VideoPlayer({ videoId, onClose }: VideoPlayerProps) {
           return;
         }
 
-        const { manifestFilename } = await response.json();
+        const { hlsManifestKey } = await response.json();
 
-        if (!manifestFilename) {
+        if (!hlsManifestKey) {
           setError("Video manifest not found");
           setLoading(false);
           return;
@@ -37,7 +37,7 @@ export default function VideoPlayer({ videoId, onClose }: VideoPlayerProps) {
 
         // Use our streaming proxy endpoint instead of pre-signed URLs
         // This allows HLS.js to load all segments through our authenticated proxy
-        const streamUrl = `/api/videos/${videoId}/stream/${manifestFilename}`;
+        const streamUrl = `/api/videos/${videoId}/stream/${hlsManifestKey}`;
 
         if (!videoRef.current) return;
 
