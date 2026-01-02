@@ -166,7 +166,10 @@ export async function createHLSTranscodeJob(
             DefaultSelection: "DEFAULT",
           },
         },
-        VideoSelector: {},
+        VideoSelector: {
+          // Auto-rotate video based on metadata (preserves portrait orientation)
+          Rotate: "AUTO",
+        },
       },
     ],
     OutputGroups: [
