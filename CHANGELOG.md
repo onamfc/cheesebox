@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-01-02
+### Added
+- display ••••••• when Resend API key exists
+- 
 ## [1.3.1] - 2026-01-02
 ### Added
 - add web page for email setup instructions

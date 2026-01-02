@@ -78,9 +78,14 @@ export default function SettingsPage() {
           setEmailProvider(data.provider);
           setFromEmail(data.fromEmail);
           setFromName(data.fromName || "");
+          setEmailApiKey(data.apiKey || "");
+          setAwsEmailAccessKeyId(data.awsAccessKeyId || "");
+          setAwsEmailSecretKey(data.awsSecretKey || "");
           setAwsEmailRegion(data.awsRegion || "us-east-1");
           setSmtpHost(data.smtpHost || "");
           setSmtpPort(data.smtpPort || 587);
+          setSmtpUsername(data.smtpUsername || "");
+          setSmtpPassword(data.smtpPassword || "");
           setSmtpSecure(data.smtpSecure || false);
           setHasEmailCredentials(true);
         }

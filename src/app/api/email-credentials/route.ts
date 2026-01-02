@@ -30,14 +30,12 @@ export async function GET() {
       provider: credentials.provider,
       fromEmail: credentials.fromEmail,
       fromName: credentials.fromName,
-      // Don't send encrypted values back
-      hasApiKey: !!credentials.apiKey,
-      hasAwsCredentials: !!(
-        credentials.awsAccessKeyId && credentials.awsSecretKey
-      ),
-      hasSmtpCredentials: !!(
-        credentials.smtpUsername && credentials.smtpPassword
-      ),
+      // Send placeholder values to indicate credentials exist (don't send actual encrypted values)
+      apiKey: credentials.apiKey ? "••••••••••••••••" : "",
+      awsAccessKeyId: credentials.awsAccessKeyId ? "••••••••••••••••" : "",
+      awsSecretKey: credentials.awsSecretKey ? "••••••••••••••••" : "",
+      smtpUsername: credentials.smtpUsername ? "••••••••••••••••" : "",
+      smtpPassword: credentials.smtpPassword ? "••••••••••••••••" : "",
       awsRegion: credentials.awsRegion,
       smtpHost: credentials.smtpHost,
       smtpPort: credentials.smtpPort,
@@ -79,6 +77,15 @@ export async function POST(request: NextRequest) {
       smtpSecure,
     } = body;
 
+    // Helper function to check if value is a placeholder
+    const isPlaceholder = (value: string | undefined) =>
+      value === "••••••••••••••••";
+
+    // Fetch existing credentials to preserve encrypted values
+    const existingCredentials = await prisma.emailCredentials.findUnique({
+      where: { userId: session.user.id },
+    });
+
     // Validate based on provider
     if (!provider || !fromEmail) {
       return NextResponse.json(
@@ -87,8 +94,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate provider-specific required fields
-    if (provider === "RESEND" && !apiKey) {
+    // Validate provider-specific required fields (accounting for placeholders)
+    if (provider === "RESEND" && !apiKey && !existingCredentials?.apiKey) {
       return NextResponse.json(
         { error: "API key is required for Resend" },
         { status: 400 },
@@ -97,7 +104,9 @@ export async function POST(request: NextRequest) {
 
     if (
       provider === "AWS_SES" &&
-      (!awsAccessKeyId || !awsSecretKey || !awsRegion)
+      ((!awsAccessKeyId && !existingCredentials?.awsAccessKeyId) ||
+        (!awsSecretKey && !existingCredentials?.awsSecretKey) ||
+        !awsRegion)
     ) {
       return NextResponse.json(
         { error: "AWS credentials are required for AWS SES" },
@@ -107,7 +116,10 @@ export async function POST(request: NextRequest) {
 
     if (
       provider === "SMTP" &&
-      (!smtpHost || !smtpPort || !smtpUsername || !smtpPassword)
+      (!smtpHost ||
+        !smtpPort ||
+        (!smtpUsername && !existingCredentials?.smtpUsername) ||
+        (!smtpPassword && !existingCredentials?.smtpPassword))
     ) {
       return NextResponse.json(
         { error: "SMTP credentials are required" },
@@ -115,24 +127,52 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Prepare credentials for validation (decrypt existing if placeholders sent)
+    const credentialsForValidation = {
+      provider: provider as EmailProviderType,
+      fromEmail,
+      fromName,
+      apiKey:
+        apiKey && !isPlaceholder(apiKey)
+          ? apiKey
+          : existingCredentials?.apiKey
+            ? decrypt(existingCredentials.apiKey)
+            : undefined,
+      awsAccessKeyId:
+        awsAccessKeyId && !isPlaceholder(awsAccessKeyId)
+          ? awsAccessKeyId
+          : existingCredentials?.awsAccessKeyId
+            ? decrypt(existingCredentials.awsAccessKeyId)
+            : undefined,
+      awsSecretKey:
+        awsSecretKey && !isPlaceholder(awsSecretKey)
+          ? awsSecretKey
+          : existingCredentials?.awsSecretKey
+            ? decrypt(existingCredentials.awsSecretKey)
+            : undefined,
+      awsRegion,
+      smtpHost,
+      smtpPort,
+      smtpUsername:
+        smtpUsername && !isPlaceholder(smtpUsername)
+          ? smtpUsername
+          : existingCredentials?.smtpUsername
+            ? decrypt(existingCredentials.smtpUsername)
+            : undefined,
+      smtpPassword:
+        smtpPassword && !isPlaceholder(smtpPassword)
+          ? smtpPassword
+          : existingCredentials?.smtpPassword
+            ? decrypt(existingCredentials.smtpPassword)
+            : undefined,
+      smtpSecure,
+    };
+
     // Test credentials before saving
     try {
       const emailProvider = createEmailProvider(
         provider as EmailProviderType,
-        {
-          provider: provider as EmailProviderType,
-          fromEmail,
-          fromName,
-          apiKey,
-          awsAccessKeyId,
-          awsSecretKey,
-          awsRegion,
-          smtpHost,
-          smtpPort,
-          smtpUsername,
-          smtpPassword,
-          smtpSecure,
-        },
+        credentialsForValidation,
       );
 
       const isValid = await emailProvider.validateCredentials();
@@ -155,6 +195,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Prepare encrypted values (preserve existing if placeholder sent)
+    const encryptedApiKey =
+      apiKey && !isPlaceholder(apiKey)
+        ? encrypt(apiKey)
+        : existingCredentials?.apiKey || null;
+    const encryptedAwsAccessKeyId =
+      awsAccessKeyId && !isPlaceholder(awsAccessKeyId)
+        ? encrypt(awsAccessKeyId)
+        : existingCredentials?.awsAccessKeyId || null;
+    const encryptedAwsSecretKey =
+      awsSecretKey && !isPlaceholder(awsSecretKey)
+        ? encrypt(awsSecretKey)
+        : existingCredentials?.awsSecretKey || null;
+    const encryptedSmtpUsername =
+      smtpUsername && !isPlaceholder(smtpUsername)
+        ? encrypt(smtpUsername)
+        : existingCredentials?.smtpUsername || null;
+    const encryptedSmtpPassword =
+      smtpPassword && !isPlaceholder(smtpPassword)
+        ? encrypt(smtpPassword)
+        : existingCredentials?.smtpPassword || null;
+
     // Save to database with encryption
     await prisma.emailCredentials.upsert({
       where: { userId: session.user.id },
@@ -163,14 +225,14 @@ export async function POST(request: NextRequest) {
         provider,
         fromEmail,
         fromName: fromName || null,
-        apiKey: apiKey ? encrypt(apiKey) : null,
-        awsAccessKeyId: awsAccessKeyId ? encrypt(awsAccessKeyId) : null,
-        awsSecretKey: awsSecretKey ? encrypt(awsSecretKey) : null,
+        apiKey: encryptedApiKey,
+        awsAccessKeyId: encryptedAwsAccessKeyId,
+        awsSecretKey: encryptedAwsSecretKey,
         awsRegion: awsRegion || null,
         smtpHost: smtpHost || null,
         smtpPort: smtpPort || null,
-        smtpUsername: smtpUsername ? encrypt(smtpUsername) : null,
-        smtpPassword: smtpPassword ? encrypt(smtpPassword) : null,
+        smtpUsername: encryptedSmtpUsername,
+        smtpPassword: encryptedSmtpPassword,
         smtpSecure: smtpSecure || null,
         isValid: true,
         lastValidated: new Date(),
@@ -179,14 +241,14 @@ export async function POST(request: NextRequest) {
         provider,
         fromEmail,
         fromName: fromName || null,
-        apiKey: apiKey ? encrypt(apiKey) : null,
-        awsAccessKeyId: awsAccessKeyId ? encrypt(awsAccessKeyId) : null,
-        awsSecretKey: awsSecretKey ? encrypt(awsSecretKey) : null,
+        apiKey: encryptedApiKey,
+        awsAccessKeyId: encryptedAwsAccessKeyId,
+        awsSecretKey: encryptedAwsSecretKey,
         awsRegion: awsRegion || null,
         smtpHost: smtpHost || null,
         smtpPort: smtpPort || null,
-        smtpUsername: smtpUsername ? encrypt(smtpUsername) : null,
-        smtpPassword: smtpPassword ? encrypt(smtpPassword) : null,
+        smtpUsername: encryptedSmtpUsername,
+        smtpPassword: encryptedSmtpPassword,
         smtpSecure: smtpSecure || null,
         isValid: true,
         lastValidated: new Date(),
