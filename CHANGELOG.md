@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-01-02
+### Added
+- add web page for email setup instructions
+### Fixed
+- fix rotation issue with mobile video recorder
+
+
 ## [1.3.0] - 2026-01-01
 ### Added - Mobile Share Management Parity
 - **Mobile App Enhancement**: Mobile app now has full feature parity with web for share management
