@@ -7,10 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-01-02
+### Added - Universal Deep Linking with LinkForty
+- **Deep Link Service**: Backend service for generating LinkForty universal links
+  - Created `DeepLinkService` class in `/src/lib/deep-link.ts`
+  - Generates video-specific deep links with fallback URLs
+  - Supports custom parameters (video ID, recipient email)
+  - Environment-based configuration (dev/production URLs)
+  - Configurable via `LINKFORTY_BASE_URL` environment variable
+- **Enhanced Email Templates**: Video sharing emails now use universal links
+  - Updated `/api/videos/[id]/share` endpoint to use LinkForty links
+  - Generated links work for both individual and group sharing
+  - Links open directly in mobile app if installed
+  - Automatic web fallback if app not installed (`/watch/{videoId}`)
+  - Styled "Watch Video" button with improved visual design
+  - Helper text explaining app-first behavior
+- **Universal Link Flow**:
+  - LinkForty detects platform and routes appropriately
+  - Mobile app opens directly to video player
+  - Web users redirected to web video viewer
+  - Supports deferred deep linking for new app installs
+
+### Changed - Video Sharing
+- Updated email HTML templates with styled button and user guidance
+- Enhanced both individual and group share emails with deep links
+- Improved email messaging to explain universal link behavior
+
+### Technical - Deep Linking
+- LinkForty handles platform detection automatically
+- Deep links include recipient tracking for analytics
+- Privacy-focused operation (no persistent device IDs)
+- Works seamlessly across iOS, Android, and web platforms
+
+### Configuration Required
+- Set up custom domain at LinkForty cloud service
+- Configure `LINKFORTY_BASE_URL` in environment
+- Coordinate with mobile app configuration for scheme handling
+
 ## [1.3.3] - 2026-01-02
 ### Added
 - display ••••••• when Resend API key exists
-- 
+
 ## [1.3.1] - 2026-01-02
 ### Added
 - add web page for email setup instructions

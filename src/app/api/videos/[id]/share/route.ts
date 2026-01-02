@@ -6,6 +6,7 @@ import { decrypt } from "@/lib/encryption";
 import { createEmailProvider } from "@/lib/email/factory";
 import { EmailProviderType } from "@/lib/email/interface";
 import { sendPushNotification, sendBulkPushNotifications } from "@/lib/push-notifications";
+import { deepLinkService } from "@/lib/deep-link";
 
 // Helper to get email credentials (user's own or team's)
 async function getEmailCredentials(userId: string) {
@@ -189,12 +190,15 @@ export async function POST(
             decryptedCredentials,
           );
 
-          const appUrl =
-            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
-          // Send email to all group members
+          // Send email to all group members with deep links
           for (const member of groupShare.group.members) {
             try {
+              // Generate deep link for this specific member
+              const videoLink = deepLinkService.generateVideoShareLink({
+                videoId: id,
+                recipientEmail: member.email,
+              });
+
               await emailProvider.sendEmail({
                 to: member.email,
                 subject: `${user.email} shared a video with ${group.name}`,
@@ -202,10 +206,10 @@ export async function POST(
                   <h2>A video has been shared with your group!</h2>
                   <p><strong>${user.email}</strong> has shared a video titled "<strong>${video.title}</strong>" with the group <strong>${group.name}</strong>.</p>
                   ${video.description ? `<p>Description: ${video.description}</p>` : ""}
-                  <p><a href="${appUrl}/dashboard">Click here to view it</a></p>
-                  <p>You'll need to log in or create an account to watch the video.</p>
+                  <p><a href="${videoLink}" style="display: inline-block; padding: 12px 24px; background-color: #3B82F6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Watch Video</a></p>
+                  <p style="color: #6B7280; font-size: 14px;">This link will open the video in the Cheesebox app if you have it installed, or in your browser if not. You may need to log in or create an account to watch the video.</p>
                 `,
-                text: `${user.email} has shared a video titled "${video.title}" with the group ${group.name}. Visit ${appUrl}/dashboard to view it.`,
+                text: `${user.email} has shared a video titled "${video.title}" with the group ${group.name}. Click this link to watch: ${videoLink}`,
               });
             } catch (emailError) {
               console.error(
@@ -356,8 +360,13 @@ export async function POST(
         decryptedCredentials,
       );
 
-      // Send email
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      // Generate deep link for the video
+      const videoLink = deepLinkService.generateVideoShareLink({
+        videoId: id,
+        recipientEmail: email,
+      });
+
+      // Send email with universal deep link
       await emailProvider.sendEmail({
         to: email,
         subject: `${user.email} shared a video with you`,
@@ -365,10 +374,10 @@ export async function POST(
           <h2>A video has been shared with you!</h2>
           <p><strong>${user.email}</strong> has shared a video titled "<strong>${video.title}</strong>" with you.</p>
           ${video.description ? `<p>Description: ${video.description}</p>` : ""}
-          <p><a href="${appUrl}/dashboard">Click here to view it</a></p>
-          <p>You'll need to log in or create an account to watch the video.</p>
+          <p><a href="${videoLink}" style="display: inline-block; padding: 12px 24px; background-color: #3B82F6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Watch Video</a></p>
+          <p style="color: #6B7280; font-size: 14px;">This link will open the video in the Cheesebox app if you have it installed, or in your browser if not. You may need to log in or create an account to watch the video.</p>
         `,
-        text: `${user.email} has shared a video titled "${video.title}" with you. Visit ${appUrl}/dashboard to view it.`,
+        text: `${user.email} has shared a video titled "${video.title}" with you. Click this link to watch: ${videoLink}`,
       });
     } catch (emailError) {
       console.error("Email sending error:", emailError);
