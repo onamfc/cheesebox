@@ -3,10 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-helpers";
 
 // Helper to check if user has access to group
-async function checkGroupAccess(groupId: string, userId: string) {
+async function checkGroupAccess(groupId: string, userId: string, userEmail: string) {
   const group = await prisma.shareGroup.findUnique({
     where: { id: groupId },
     include: {
+      members: true,
       team: {
         include: {
           members: {
@@ -24,10 +25,11 @@ async function checkGroupAccess(groupId: string, userId: string) {
   }
 
   const isOwner = group.userId === userId;
+  const isGroupMember = group.members.some((m) => m.email === userEmail);
   const isTeamMember = (group.team?.members?.length ?? 0) > 0;
 
   return {
-    allowed: isOwner || isTeamMember,
+    allowed: isOwner || isGroupMember || isTeamMember,
     group,
     isOwner,
   };
@@ -46,7 +48,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const { allowed, group } = await checkGroupAccess(id, user.id);
+    const { allowed, group } = await checkGroupAccess(id, user.id, user.email);
 
     if (!allowed || !group) {
       return NextResponse.json(
@@ -105,7 +107,7 @@ export async function PATCH(
     const { name, description } = body;
 
     // Only group owner can edit
-    const { isOwner } = await checkGroupAccess(id, user.id);
+    const { isOwner } = await checkGroupAccess(id, user.id, user.email);
     if (!isOwner) {
       return NextResponse.json(
         { error: "Only group owner can edit the group" },
@@ -156,7 +158,7 @@ export async function DELETE(
     const { id } = await params;
 
     // Only group owner can delete
-    const { isOwner } = await checkGroupAccess(id, user.id);
+    const { isOwner } = await checkGroupAccess(id, user.id, user.email);
     if (!isOwner) {
       return NextResponse.json(
         { error: "Only group owner can delete the group" },

@@ -38,6 +38,10 @@ export default function GroupDetailsPage() {
   const [newEmails, setNewEmails] = useState("");
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [renameError, setRenameError] = useState("");
 
   useEffect(() => {
     loadGroup();
@@ -119,6 +123,37 @@ export default function GroupDetailsPage() {
     }
   };
 
+  const handleRenameGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRenameError("");
+    setRenaming(true);
+
+    try {
+      if (!newName.trim()) {
+        throw new Error("Group name cannot be empty");
+      }
+
+      const res = await fetch(`/api/groups/${groupId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName.trim() }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to rename group");
+      }
+
+      await loadGroup();
+      setShowRenameModal(false);
+      setNewName("");
+    } catch (err: any) {
+      setRenameError(err.message);
+    } finally {
+      setRenaming(false);
+    }
+  };
+
   const handleDeleteGroup = async () => {
     if (!confirm(`Delete "${group?.name}"? This cannot be undone.`)) return;
 
@@ -181,7 +216,31 @@ export default function GroupDetailsPage() {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
+                <button
+                  onClick={() => {
+                    setNewName(group.name);
+                    setShowRenameModal(true);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Rename group"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                </button>
+              </div>
               {group.description && (
                 <p className="mt-1 text-gray-600">{group.description}</p>
               )}
@@ -349,6 +408,60 @@ export default function GroupDetailsPage() {
                       className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                     >
                       {adding ? "Adding..." : "Add Members"}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Rename Group Modal */}
+        {showRenameModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-lg w-full p-6">
+              <h2 className="text-2xl font-bold mb-4">Rename Group</h2>
+              <form onSubmit={handleRenameGroup}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Group Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter new group name"
+                      autoFocus
+                    />
+                  </div>
+
+                  {renameError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                      {renameError}
+                    </div>
+                  )}
+
+                  <div className="flex space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowRenameModal(false);
+                        setNewName("");
+                        setRenameError("");
+                      }}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={renaming}
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                    >
+                      {renaming ? "Renaming..." : "Rename Group"}
                     </button>
                   </div>
                 </div>

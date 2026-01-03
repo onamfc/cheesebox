@@ -109,11 +109,12 @@ export async function POST(
         return NextResponse.json({ error: "Group not found" }, { status: 404 });
       }
 
-      // Check if user owns the group or is a member of the group's team
+      // Check if user owns the group, is a member of the group, or is a team member
       const isOwner = group.userId === user.id;
+      const isGroupMember = group.members.some((m) => m.email === user.email);
       const isTeamMember = (group.team?.members?.length ?? 0) > 0;
 
-      if (!isOwner && !isTeamMember) {
+      if (!isOwner && !isGroupMember && !isTeamMember) {
         return NextResponse.json(
           { error: "Access denied to this group" },
           { status: 403 },
