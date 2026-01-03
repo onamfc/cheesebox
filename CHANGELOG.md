@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-01-02
 ### Added - Teams Feature (Family Accounts)
 - **Teams System**: Share AWS and email credentials with family or team members
   - Create teams with unique names (e.g., "Smith Family")
@@ -43,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - PATCH `/api/teams/[id]/members/[userId]` - Update member role (OWNER only)
   - DELETE `/api/teams/[id]/members/[userId]` - Remove member
   - DELETE `/api/teams/[id]/leave` - Leave team
+  - Grid and list views on the dashboard
+  - Group/Team selector on the dashboard
 
 ### Changed
 - Updated video upload to support teamId parameter
