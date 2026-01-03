@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
+import VideoList from "@/components/VideoList";
 
 interface TeamMember {
   id: string;
@@ -21,17 +22,6 @@ interface Team {
   createdAt: string;
   userRole: "OWNER" | "ADMIN" | "MEMBER";
   members: TeamMember[];
-  awsCredentials: {
-    id: string;
-    bucketName: string;
-    region: string;
-  } | null;
-  emailCredentials: {
-    id: string;
-    provider: string;
-    fromEmail: string;
-    fromName: string | null;
-  } | null;
   _count: {
     videos: number;
     groups: number;
@@ -250,6 +240,19 @@ export default function TeamDetailsPage() {
     }
   };
 
+  const getRoleDescription = (role: string) => {
+    switch (role) {
+      case "OWNER":
+        return "Full control: invite members, change roles, remove members, and delete the team.";
+      case "ADMIN":
+        return "Can invite and remove basic members. Cannot change roles or delete the team.";
+      case "MEMBER":
+        return "Basic access: can view and upload videos, but cannot manage members.";
+      default:
+        return "";
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -326,87 +329,16 @@ export default function TeamDetailsPage() {
           </div>
         </div>
 
-        {/* AWS Credentials Section */}
+        {/* Team Videos Section */}
         <div className="bg-white rounded-lg shadow mb-8">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">AWS Credentials</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Team Videos</h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Videos uploaded using this team's AWS account
+            </p>
           </div>
           <div className="p-6">
-            {team.awsCredentials ? (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-gray-600 mb-1">Bucket Name</div>
-                    <div className="font-mono text-gray-900">
-                      {team.awsCredentials.bucketName}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-gray-600 mb-1">Region</div>
-                    <div className="font-mono text-gray-900">
-                      {team.awsCredentials.region}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-gray-500 mb-3">No AWS credentials configured</p>
-                {(team.userRole === "OWNER" || team.userRole === "ADMIN") && (
-                  <Link
-                    href="/dashboard/settings"
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                  >
-                    Configure in Settings →
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Email Credentials Section */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Email Credentials
-            </h2>
-          </div>
-          <div className="p-6">
-            {team.emailCredentials ? (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-gray-600 mb-1">Provider</div>
-                    <div className="font-mono text-gray-900">
-                      {team.emailCredentials.provider}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-gray-600 mb-1">From Email</div>
-                    <div className="font-mono text-gray-900">
-                      {team.emailCredentials.fromName && (
-                        <span>{team.emailCredentials.fromName} &lt;</span>
-                      )}
-                      {team.emailCredentials.fromEmail}
-                      {team.emailCredentials.fromName && <span>&gt;</span>}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-gray-500 mb-3">No email credentials configured</p>
-                {(team.userRole === "OWNER" || team.userRole === "ADMIN") && (
-                  <Link
-                    href="/dashboard/settings"
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                  >
-                    Configure in Settings →
-                  </Link>
-                )}
-              </div>
-            )}
+            <VideoList type="owned" teamId={teamId} />
           </div>
         </div>
 
@@ -600,6 +532,9 @@ export default function TeamDetailsPage() {
                         <option value="ADMIN">Admin</option>
                         <option value="OWNER">Owner</option>
                       </select>
+                      <p className="mt-2 text-sm text-gray-600">
+                        {getRoleDescription(inviteRole)}
+                      </p>
                     </div>
                   )}
 
@@ -667,6 +602,9 @@ export default function TeamDetailsPage() {
                       <option value="ADMIN">Admin</option>
                       <option value="OWNER">Owner</option>
                     </select>
+                    <p className="mt-2 text-sm text-gray-600">
+                      {getRoleDescription(newRole)}
+                    </p>
                   </div>
 
                   {error && (

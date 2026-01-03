@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
+import VideoList from "@/components/VideoList";
 
 interface GroupMember {
   id: string;
@@ -283,6 +284,21 @@ export default function GroupDetailsPage() {
             <li>Choose "{group.name}" from the dropdown</li>
             <li>All {group.members.length} members will receive the video!</li>
           </ol>
+        </div>
+
+        {/* Shared Videos Section */}
+        <div className="bg-white rounded-lg shadow mb-8">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Videos Shared with This Group
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              All videos that have been shared with "{group.name}"
+            </p>
+          </div>
+          <div className="p-6">
+            <VideoList type="group" groupId={groupId} />
+          </div>
         </div>
 
         {/* Add Members Modal */}

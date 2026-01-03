@@ -80,8 +80,7 @@ export default function GroupsPage() {
         throw new Error(data.error || "Failed to create group");
       }
 
-      const newGroup = await res.json();
-      setGroups([newGroup, ...groups]);
+      await loadGroups(); // Reload groups to get complete data including _count
       setShowCreateModal(false);
       setFormData({ name: "", description: "", members: "" });
     } catch (err: any) {
