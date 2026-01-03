@@ -34,32 +34,27 @@ export default function DashboardPage() {
   }, [status, router]);
 
   useEffect(() => {
-    // Check if user has AWS credentials
+    // Check if user has AWS credentials or is part of a team
     const checkCredentials = async () => {
       try {
         const response = await fetch("/api/aws-credentials");
-        setHasCredentials(response.ok);
-      } catch {
-        setHasCredentials(false);
-      }
-    };
+        const hasPersonalCredentials = response.ok;
 
-    // Fetch user's teams for filtering
-    const fetchTeams = async () => {
-      try {
-        const response = await fetch("/api/teams");
-        if (response.ok) {
-          const data = await response.json();
-          setTeams(data);
-        }
+        // Also check if user is part of any teams
+        const teamsResponse = await fetch("/api/teams");
+        const userTeams = teamsResponse.ok ? await teamsResponse.json() : [];
+
+        // User can upload if they have personal credentials OR are part of a team
+        setHasCredentials(hasPersonalCredentials || userTeams.length > 0);
+        setTeams(userTeams);
       } catch (error) {
-        console.error("Error fetching teams:", error);
+        console.error("Error checking credentials:", error);
+        setHasCredentials(false);
       }
     };
 
     if (status === "authenticated") {
       checkCredentials();
-      fetchTeams();
     }
   }, [status]);
 
@@ -99,10 +94,14 @@ export default function DashboardPage() {
                 </h3>
                 <div className="mt-2 text-sm text-yellow-700">
                   <p>
-                    You need to configure your AWS credentials before uploading
-                    videos.{" "}
+                    To upload videos, you need to either configure your own AWS
+                    credentials or join a team.{" "}
                     <Link href="/settings" className="font-medium underline">
-                      Go to Settings
+                      Configure Settings
+                    </Link>
+                    {" or "}
+                    <Link href="/dashboard/teams" className="font-medium underline">
+                      Browse Teams
                     </Link>
                   </p>
                 </div>
