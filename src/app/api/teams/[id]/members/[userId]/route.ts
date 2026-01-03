@@ -2,28 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-helpers";
 
-// Helper to check if user is team member with specific role
-async function checkTeamRole(teamId: string, userId: string, requiredRoles: string[]) {
-  const membership = await prisma.teamMember.findUnique({
-    where: {
-      teamId_userId: {
-        teamId,
-        userId,
-      },
-    },
-  });
-
-  if (!membership) {
-    return { allowed: false, membership: null };
-  }
-
-  return {
-    allowed: requiredRoles.includes(membership.role),
-    membership,
-  };
-}
-
-// PATCH /api/teams/[id]/members/[userId] - Update member role
+// PATCH /api/teams/[id]/members/[userId] - Update member role (OWNER only)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; userId: string }> }
@@ -39,84 +18,43 @@ export async function PATCH(
     const { role } = body;
 
     if (!role || !["OWNER", "ADMIN", "MEMBER"].includes(role)) {
-      return NextResponse.json(
-        { error: "Valid role is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
     }
 
-    // Check if user is OWNER or ADMIN
-    const { allowed, membership: userMembership } = await checkTeamRole(
-      teamId,
-      user.id,
-      ["OWNER", "ADMIN"]
-    );
-    if (!allowed) {
+    // Check if user is OWNER
+    const membership = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership || membership.role !== "OWNER") {
       return NextResponse.json(
-        { error: "Only team owners and admins can update member roles" },
+        { error: "Only team owners can update member roles" },
         { status: 403 }
       );
     }
 
-    // Only OWNERs can modify OWNER roles
-    if (role === "OWNER" || userMembership?.role !== "OWNER") {
-      const targetMembership = await prisma.teamMember.findUnique({
-        where: {
-          teamId_userId: {
-            teamId,
-            userId: targetUserId,
-          },
-        },
-      });
-
-      if (targetMembership?.role === "OWNER" || role === "OWNER") {
-        const { allowed: isOwner } = await checkTeamRole(teamId, user.id, ["OWNER"]);
-        if (!isOwner) {
-          return NextResponse.json(
-            { error: "Only team owners can modify owner roles" },
-            { status: 403 }
-          );
-        }
-      }
-    }
-
-    // Prevent removing the last owner
-    if (role !== "OWNER") {
-      const ownerCount = await prisma.teamMember.count({
-        where: {
-          teamId,
-          role: "OWNER",
-        },
-      });
-
-      const targetMembership = await prisma.teamMember.findUnique({
-        where: {
-          teamId_userId: {
-            teamId,
-            userId: targetUserId,
-          },
-        },
-      });
-
-      if (targetMembership?.role === "OWNER" && ownerCount === 1) {
-        return NextResponse.json(
-          { error: "Cannot change role of the last team owner" },
-          { status: 400 }
-        );
-      }
+    // Can't change your own role
+    if (targetUserId === user.id) {
+      return NextResponse.json(
+        { error: "You cannot change your own role" },
+        { status: 400 }
+      );
     }
 
     // Update member role
-    const membership = await prisma.teamMember.update({
+    const updatedMember = await prisma.teamMember.update({
       where: {
         teamId_userId: {
           teamId,
           userId: targetUserId,
         },
       },
-      data: {
-        role,
-      },
+      data: { role },
       include: {
         user: {
           select: {
@@ -127,17 +65,17 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(membership);
+    return NextResponse.json(updatedMember);
   } catch (error) {
-    console.error("Error updating team member:", error);
+    console.error("Error updating member role:", error);
     return NextResponse.json(
-      { error: "Failed to update team member" },
+      { error: "Failed to update member role" },
       { status: 500 }
     );
   }
 }
 
-// DELETE /api/teams/[id]/members/[userId] - Remove member
+// DELETE /api/teams/[id]/members/[userId] - Remove team member (OWNER/ADMIN)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; userId: string }> }
@@ -150,20 +88,33 @@ export async function DELETE(
 
     const { id: teamId, userId: targetUserId } = await params;
 
-    // Check if user is OWNER or ADMIN (or removing themselves)
-    const isSelf = user.id === targetUserId;
-    if (!isSelf) {
-      const { allowed } = await checkTeamRole(teamId, user.id, ["OWNER", "ADMIN"]);
-      if (!allowed) {
-        return NextResponse.json(
-          { error: "Only team owners and admins can remove members" },
-          { status: 403 }
-        );
-      }
+    // Check if user is OWNER or ADMIN
+    const membership = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership || (membership.role !== "OWNER" && membership.role !== "ADMIN")) {
+      return NextResponse.json(
+        { error: "Only team owners and admins can remove members" },
+        { status: 403 }
+      );
     }
 
-    // Check if target is the last owner
-    const targetMembership = await prisma.teamMember.findUnique({
+    // Can't remove yourself (use leave endpoint instead)
+    if (targetUserId === user.id) {
+      return NextResponse.json(
+        { error: "Use the leave endpoint to remove yourself from the team" },
+        { status: 400 }
+      );
+    }
+
+    // Get target member
+    const targetMember = await prisma.teamMember.findUnique({
       where: {
         teamId_userId: {
           teamId,
@@ -172,20 +123,22 @@ export async function DELETE(
       },
     });
 
-    if (targetMembership?.role === "OWNER") {
-      const ownerCount = await prisma.teamMember.count({
-        where: {
-          teamId,
-          role: "OWNER",
-        },
-      });
+    if (!targetMember) {
+      return NextResponse.json(
+        { error: "Member not found" },
+        { status: 404 }
+      );
+    }
 
-      if (ownerCount === 1) {
-        return NextResponse.json(
-          { error: "Cannot remove the last team owner" },
-          { status: 400 }
-        );
-      }
+    // Only OWNER can remove ADMIN or other OWNER
+    if (
+      (targetMember.role === "OWNER" || targetMember.role === "ADMIN") &&
+      membership.role !== "OWNER"
+    ) {
+      return NextResponse.json(
+        { error: "Only team owners can remove admins or other owners" },
+        { status: 403 }
+      );
     }
 
     // Remove member

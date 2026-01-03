@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface Team {
+  id: string;
+  name: string;
+  userRole: string;
+}
 
 interface VideoUploadProps {
   onClose: () => void;
@@ -13,6 +19,25 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<string>("");
+
+  useEffect(() => {
+    // Fetch user's teams
+    const fetchTeams = async () => {
+      try {
+        const res = await fetch("/api/teams");
+        if (res.ok) {
+          const data = await res.json();
+          setTeams(data);
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+      }
+    };
+
+    fetchTeams();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -54,6 +79,9 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
       formData.append("title", title);
       if (description) {
         formData.append("description", description);
+      }
+      if (selectedTeam) {
+        formData.append("teamId", selectedTeam);
       }
 
       const xhr = new XMLHttpRequest();
@@ -159,6 +187,34 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
               placeholder="Enter video description (optional)"
             />
           </div>
+
+          {teams.length > 0 && (
+            <div className="mb-4">
+              <label
+                htmlFor="team"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Upload To
+              </label>
+              <select
+                id="team"
+                value={selectedTeam}
+                onChange={(e) => setSelectedTeam(e.target.value)}
+                disabled={uploading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+              >
+                <option value="">My Personal Account</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name} ({team.userRole})
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Choose which account to use for storage and email settings
+              </p>
+            </div>
+          )}
 
           <div className="mb-4">
             <label

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import VideoUpload from "@/components/VideoUpload";
 import VideoList from "@/components/VideoList";
+import DashboardNav from "@/components/DashboardNav";
 
 type Tab = "my-videos" | "shared";
 
@@ -38,11 +39,6 @@ export default function DashboardPage() {
     }
   }, [status]);
 
-  const handleSignOut = async () => {
-    const { signOut } = await import("next-auth/react");
-    await signOut({ callbackUrl: "/auth/signin" });
-  };
-
   if (status === "loading" || hasCredentials === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -53,32 +49,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Cheesebox</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">
-                {session?.user?.email}
-              </span>
-              <Link
-                href="/settings"
-                className="text-sm text-blue-600 hover:text-blue-500"
-              >
-                Settings
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="text-sm text-gray-700 hover:text-gray-900"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <DashboardNav />
 
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {!hasCredentials && (

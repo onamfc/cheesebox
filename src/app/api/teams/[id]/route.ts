@@ -2,27 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-helpers";
 
-// Helper to check if user is team member with specific role
-async function checkTeamRole(teamId: string, userId: string, requiredRoles: string[]) {
-  const membership = await prisma.teamMember.findUnique({
-    where: {
-      teamId_userId: {
-        teamId,
-        userId,
-      },
-    },
-  });
-
-  if (!membership) {
-    return { allowed: false, membership: null };
-  }
-
-  return {
-    allowed: requiredRoles.includes(membership.role),
-    membership,
-  };
-}
-
 // GET /api/teams/[id] - Get team details
 export async function GET(
   request: NextRequest,
@@ -57,7 +36,6 @@ export async function GET(
             id: true,
             bucketName: true,
             region: true,
-            createdAt: true,
           },
         },
         emailCredentials: {
@@ -66,7 +44,6 @@ export async function GET(
             provider: true,
             fromEmail: true,
             fromName: true,
-            createdAt: true,
           },
         },
         _count: {
@@ -85,10 +62,7 @@ export async function GET(
     // Check if user is a member
     const membership = team.members.find((m) => m.userId === user.id);
     if (!membership) {
-      return NextResponse.json(
-        { error: "Access denied" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     return NextResponse.json({
@@ -104,7 +78,7 @@ export async function GET(
   }
 }
 
-// PATCH /api/teams/[id] - Update team
+// PATCH /api/teams/[id] - Update team (OWNER/ADMIN only)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -117,44 +91,55 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, slug } = body;
+    const { name } = body;
 
     // Check if user is OWNER or ADMIN
-    const { allowed } = await checkTeamRole(id, user.id, ["OWNER", "ADMIN"]);
-    if (!allowed) {
+    const membership = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId: id,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership || (membership.role !== "OWNER" && membership.role !== "ADMIN")) {
       return NextResponse.json(
         { error: "Only team owners and admins can update team settings" },
         { status: 403 }
       );
     }
 
-    // If updating slug, check if it's available
-    if (slug) {
-      if (!/^[a-z0-9-]+$/.test(slug)) {
-        return NextResponse.json(
-          { error: "Slug must contain only lowercase letters, numbers, and hyphens" },
-          { status: 400 }
-        );
-      }
+    if (name) {
+      // Generate new slug
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
 
+      // Check if slug is taken by another team
       const existingTeam = await prisma.team.findUnique({
         where: { slug },
       });
 
       if (existingTeam && existingTeam.id !== id) {
         return NextResponse.json(
-          { error: "Slug is already taken" },
-          { status: 409 }
+          { error: "A team with this name already exists" },
+          { status: 400 }
         );
       }
     }
 
-    // Update team
     const team = await prisma.team.update({
       where: { id },
       data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
+        ...(name && {
+          name,
+          slug: name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, ""),
+        }),
       },
       include: {
         members: {
@@ -167,10 +152,19 @@ export async function PATCH(
             },
           },
         },
+        _count: {
+          select: {
+            videos: true,
+            groups: true,
+          },
+        },
       },
     });
 
-    return NextResponse.json(team);
+    return NextResponse.json({
+      ...team,
+      userRole: membership.role,
+    });
   } catch (error) {
     console.error("Error updating team:", error);
     return NextResponse.json(
@@ -180,7 +174,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/teams/[id] - Delete team
+// DELETE /api/teams/[id] - Delete team (OWNER only)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -194,10 +188,18 @@ export async function DELETE(
     const { id } = await params;
 
     // Check if user is OWNER
-    const { allowed } = await checkTeamRole(id, user.id, ["OWNER"]);
-    if (!allowed) {
+    const membership = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId: id,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership || membership.role !== "OWNER") {
       return NextResponse.json(
-        { error: "Only team owner can delete the team" },
+        { error: "Only team owners can delete teams" },
         { status: 403 }
       );
     }
