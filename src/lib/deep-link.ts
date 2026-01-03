@@ -24,39 +24,15 @@ export class DeepLinkService {
   }
 
   /**
-   * Generate a universal link for a shared video
-   * This link will:
-   * 1. Open the video in the mobile app if installed
-   * 2. Open the video on the web if app is not installed
-   * 3. Support deferred deep linking (install then open to video)
+   * Generate a link for a shared video
+   * TEMPORARY: Returns direct web portal link until mobile app is ready
+   * TODO: Switch back to universal deep links when mobile app launches
    */
   generateVideoShareLink(options: DeepLinkOptions): string {
-    const { videoId, recipientEmail } = options;
+    const { videoId } = options;
 
-    // Build the deep link path
-    // The mobile app will handle this path: cheesebox://video/{videoId}
-    const path = `video/${videoId}`;
-
-    // Web fallback URL
-    const webFallbackUrl = `${this.webAppUrl}/watch/${videoId}`;
-
-    // LinkForty link with query parameters
-    // LinkForty will handle the routing logic:
-    // - If app is installed: open deep link
-    // - If not: redirect to web fallback
-    const deepLinkUrl = new URL(`${this.linkFortyBaseUrl}/${path}`);
-
-    // Add fallback URL as query parameter
-    deepLinkUrl.searchParams.set('$fallback_url', webFallbackUrl);
-
-    // Add custom data for analytics and attribution
-    deepLinkUrl.searchParams.set('video_id', videoId);
-
-    if (recipientEmail) {
-      deepLinkUrl.searchParams.set('recipient', recipientEmail);
-    }
-
-    return deepLinkUrl.toString();
+    // Return direct web portal URL
+    return `${this.webAppUrl}/watch/${videoId}`;
   }
 
   /**
