@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       id: session.user.id,
       email: session.user.email,
-      name: session.user.name,
     });
   } catch (error) {
     console.error("Error fetching current user:", error);
