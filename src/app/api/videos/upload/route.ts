@@ -17,15 +17,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get AWS credentials (either directly owned or through a team)
-    let awsCredentials = await prisma.awsCredentials.findUnique({
-      where: { userId: user.id },
-    });
+    // Parse form data
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string | null;
+    const teamId = formData.get("teamId") as string | null;
 
-    // If no direct credentials, check if user belongs to a team with credentials
-    if (!awsCredentials) {
-      const teamMembership = await prisma.teamMember.findFirst({
-        where: { userId: user.id },
+    // Get AWS credentials based on teamId or user's personal credentials
+    let awsCredentials;
+    let selectedTeamId: string | null = null;
+
+    if (teamId) {
+      // User wants to upload to a specific team
+      // First, verify they're a member of that team
+      const teamMembership = await prisma.teamMember.findUnique({
+        where: {
+          teamId_userId: {
+            teamId,
+            userId: user.id,
+          },
+        },
         include: {
           team: {
             include: {
@@ -35,24 +47,58 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      awsCredentials = teamMembership?.team?.awsCredentials ?? null;
-    }
+      if (!teamMembership) {
+        return NextResponse.json(
+          { error: "You are not a member of the selected team" },
+          { status: 403 },
+        );
+      }
 
-    if (!awsCredentials) {
-      return NextResponse.json(
-        {
-          error:
-            "AWS credentials not configured. Please add your AWS credentials first or join a team with credentials.",
-        },
-        { status: 400 },
-      );
-    }
+      awsCredentials = teamMembership.team.awsCredentials;
+      selectedTeamId = teamId;
 
-    // Parse form data
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string | null;
+      if (!awsCredentials) {
+        return NextResponse.json(
+          {
+            error:
+              "Selected team does not have AWS credentials configured. Please configure team credentials first.",
+          },
+          { status: 400 },
+        );
+      }
+    } else {
+      // User wants to upload to personal account
+      awsCredentials = await prisma.awsCredentials.findUnique({
+        where: { userId: user.id },
+      });
+
+      // If no direct credentials, check if user belongs to a team with credentials
+      if (!awsCredentials) {
+        const teamMembership = await prisma.teamMember.findFirst({
+          where: { userId: user.id },
+          include: {
+            team: {
+              include: {
+                awsCredentials: true,
+              },
+            },
+          },
+        });
+
+        awsCredentials = teamMembership?.team?.awsCredentials ?? null;
+        selectedTeamId = teamMembership?.teamId ?? null;
+      }
+
+      if (!awsCredentials) {
+        return NextResponse.json(
+          {
+            error:
+              "AWS credentials not configured. Please add your AWS credentials first or join a team with credentials.",
+          },
+          { status: 400 },
+        );
+      }
+    }
 
     console.log("Upload request received:", {
       hasFile: !!file,
@@ -137,6 +183,7 @@ export async function POST(request: NextRequest) {
     const video = await prisma.video.create({
       data: {
         userId: user.id,
+        teamId: selectedTeamId,
         title,
         description,
         originalKey,

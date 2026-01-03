@@ -19,10 +19,13 @@ interface Video {
 }
 
 interface VideoListProps {
-  type: "owned" | "shared";
+  type: "owned" | "shared" | "group";
+  teamId?: string | null;
+  groupId?: string | null;
+  viewMode?: "grid" | "list";
 }
 
-export default function VideoList({ type }: VideoListProps) {
+export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: VideoListProps) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
@@ -31,7 +34,11 @@ export default function VideoList({ type }: VideoListProps) {
 
   const fetchVideos = async () => {
     try {
-      const response = await fetch(`/api/videos?type=${type}`);
+      let url = `/api/videos?type=${type}`;
+      if (teamId) url += `&teamId=${teamId}`;
+      if (groupId) url += `&groupId=${groupId}`;
+
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setVideos(data);
@@ -45,7 +52,7 @@ export default function VideoList({ type }: VideoListProps) {
 
   useEffect(() => {
     fetchVideos();
-  }, [type]);
+  }, [type, teamId, groupId]);
 
   const handleDelete = async (videoId: string) => {
     if (!confirm("Are you sure you want to delete this video?")) {
@@ -102,83 +109,126 @@ export default function VideoList({ type }: VideoListProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className={viewMode === "grid" ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" : "space-y-4"}>
         {videos.map((video) => (
           <div
             key={video.id}
-            className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow"
+            className={`bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow ${
+              viewMode === "list" ? "flex items-center" : ""
+            }`}
           >
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-medium text-gray-900 truncate">
-                  {video.title}
-                </h3>
-                <div className="flex gap-2">
-                  <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      video.transcodingStatus === "COMPLETED"
-                        ? "bg-green-100 text-green-800"
-                        : video.transcodingStatus === "PROCESSING"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : video.transcodingStatus === "FAILED"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {video.transcodingStatus}
-                  </span>
-                  {type === "owned" && video.transcodingStatus === "COMPLETED" && (
-                    <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        video.visibility === "PUBLIC"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {video.visibility === "PUBLIC" ? "Public" : "Private"}
-                    </span>
+            <div className={`p-5 ${viewMode === "list" ? "flex-1 flex items-center gap-6" : ""}`}>
+              {/* Video Info Section */}
+              <div className={viewMode === "list" ? "flex-1" : ""}>
+                <div className={`flex items-center ${viewMode === "list" ? "gap-4 mb-2" : "justify-between mb-3"}`}>
+                  <h3 className={`font-medium text-gray-900 ${viewMode === "list" ? "text-xl" : "text-lg truncate"}`}>
+                    {video.title}
+                  </h3>
+                  {viewMode === "grid" && (
+                    <div className="flex gap-2">
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          video.transcodingStatus === "COMPLETED"
+                            ? "bg-green-100 text-green-800"
+                            : video.transcodingStatus === "PROCESSING"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : video.transcodingStatus === "FAILED"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {video.transcodingStatus}
+                      </span>
+                      {type === "owned" && video.transcodingStatus === "COMPLETED" && (
+                        <span
+                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            video.visibility === "PUBLIC"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {video.visibility === "PUBLIC" ? "Public" : "Private"}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
+
+                {viewMode === "list" && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        video.transcodingStatus === "COMPLETED"
+                          ? "bg-green-100 text-green-800"
+                          : video.transcodingStatus === "PROCESSING"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : video.transcodingStatus === "FAILED"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {video.transcodingStatus}
+                    </span>
+                    {type === "owned" && video.transcodingStatus === "COMPLETED" && (
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          video.visibility === "PUBLIC"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {video.visibility === "PUBLIC" ? "Public" : "Private"}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {video.description && (
+                  <p className={`text-sm text-gray-500 mb-3 ${viewMode === "list" ? "line-clamp-1" : "line-clamp-2"}`}>
+                    {video.description}
+                  </p>
+                )}
+
+                {type === "shared" && video.sharedBy && (
+                  <p className="text-xs text-gray-500 mb-3">
+                    Shared by: {video.sharedBy}
+                  </p>
+                )}
+
+                <div className={`flex items-center text-xs text-gray-500 ${viewMode === "list" ? "gap-4" : "justify-between mb-4"}`}>
+                  <span>{new Date(video.createdAt).toLocaleDateString()}</span>
+                  {type === "owned" &&
+                    video.shares &&
+                    video.shares.length > 0 && (
+                      <span>{video.shares.length} shares</span>
+                    )}
+                </div>
+
+                {/* Visibility Toggle for Grid View */}
+                {viewMode === "grid" && type === "owned" && video.transcodingStatus === "COMPLETED" && (
+                  <div className="mb-3">
+                    <VisibilityToggle
+                      videoId={video.id}
+                      currentVisibility={video.visibility}
+                      onUpdate={fetchVideos}
+                    />
+                  </div>
+                )}
               </div>
 
-              {video.description && (
-                <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-                  {video.description}
-                </p>
-              )}
-
-              {type === "shared" && video.sharedBy && (
-                <p className="text-xs text-gray-500 mb-3">
-                  Shared by: {video.sharedBy}
-                </p>
-              )}
-
-              <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                <span>{new Date(video.createdAt).toLocaleDateString()}</span>
-                {type === "owned" &&
-                  video.shares &&
-                  video.shares.length > 0 && (
-                    <span>{video.shares.length} shares</span>
-                  )}
-              </div>
-
-              {/* Visibility Toggle */}
-              {type === "owned" && video.transcodingStatus === "COMPLETED" && (
-                <div className="mb-3">
+              {/* Action Buttons */}
+              <div className={viewMode === "list" ? "flex items-center gap-2" : "flex flex-wrap gap-2"}>
+                {viewMode === "list" && type === "owned" && video.transcodingStatus === "COMPLETED" && (
                   <VisibilityToggle
                     videoId={video.id}
                     currentVisibility={video.visibility}
                     onUpdate={fetchVideos}
                   />
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-2">
+                )}
                 {video.transcodingStatus === "COMPLETED" && (
                   <button
                     onClick={() => setSelectedVideo(video.id)}
-                    className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                    className={`px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 ${viewMode === "grid" ? "flex-1" : ""}`}
                   >
                     Watch
                   </button>

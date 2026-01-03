@@ -6,8 +6,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import VideoUpload from "@/components/VideoUpload";
 import VideoList from "@/components/VideoList";
+import DashboardNav from "@/components/DashboardNav";
 
 type Tab = "my-videos" | "shared";
+type ViewMode = "grid" | "list";
+
+interface Team {
+  id: string;
+  name: string;
+  userRole: string;
+}
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -15,6 +23,9 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>("my-videos");
   const [showUpload, setShowUpload] = useState(false);
   const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -33,15 +44,24 @@ export default function DashboardPage() {
       }
     };
 
+    // Fetch user's teams for filtering
+    const fetchTeams = async () => {
+      try {
+        const response = await fetch("/api/teams");
+        if (response.ok) {
+          const data = await response.json();
+          setTeams(data);
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+      }
+    };
+
     if (status === "authenticated") {
       checkCredentials();
+      fetchTeams();
     }
   }, [status]);
-
-  const handleSignOut = async () => {
-    const { signOut } = await import("next-auth/react");
-    await signOut({ callbackUrl: "/auth/signin" });
-  };
 
   if (status === "loading" || hasCredentials === null) {
     return (
@@ -53,32 +73,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Cheesebox</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">
-                {session?.user?.email}
-              </span>
-              <Link
-                href="/settings"
-                className="text-sm text-blue-600 hover:text-blue-500"
-              >
-                Settings
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="text-sm text-gray-700 hover:text-gray-900"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <DashboardNav />
 
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {!hasCredentials && (
@@ -118,38 +113,87 @@ export default function DashboardPage() {
 
         <div className="px-4 py-6 sm:px-0">
           <div className="flex justify-between items-center mb-6">
-            <div className="border-b border-gray-200">
-              <nav className="-mb-px flex space-x-8">
-                <button
-                  onClick={() => setActiveTab("my-videos")}
-                  className={`${
-                    activeTab === "my-videos"
-                      ? "border-blue-500 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                >
-                  My Videos
-                </button>
-                <button
-                  onClick={() => setActiveTab("shared")}
-                  className={`${
-                    activeTab === "shared"
-                      ? "border-blue-500 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                >
-                  Shared with Me
-                </button>
-              </nav>
+            <div className="flex items-center gap-6">
+              <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                  <button
+                    onClick={() => setActiveTab("my-videos")}
+                    className={`${
+                      activeTab === "my-videos"
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  >
+                    My Videos
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("shared")}
+                    className={`${
+                      activeTab === "shared"
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  >
+                    Shared with Me
+                  </button>
+                </nav>
+              </div>
+
+              {activeTab === "my-videos" && teams.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <label
+                    htmlFor="team-filter"
+                    className="text-sm text-gray-700 font-medium"
+                  >
+                    Filter:
+                  </label>
+                  <select
+                    id="team-filter"
+                    value={selectedTeamFilter}
+                    onChange={(e) => setSelectedTeamFilter(e.target.value)}
+                    className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="all">All Videos</option>
+                    <option value="personal">Personal Account</option>
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
-            {activeTab === "my-videos" && hasCredentials && (
-              <div className="flex gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "text-gray-600 hover:bg-gray-100"}`}
+                  title="Grid view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "text-gray-600 hover:bg-gray-100"}`}
+                  title="List view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
+
+              {activeTab === "my-videos" && hasCredentials && (
+                <>
                 <Link
                   href="/dashboard/record"
                   className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
                 >
-                  📹 Record Video
+                  Record Video
                 </Link>
                 <button
                   onClick={() => setShowUpload(true)}
@@ -157,11 +201,20 @@ export default function DashboardPage() {
                 >
                   Upload Video
                 </button>
-              </div>
-            )}
+                </>
+              )}
+            </div>
           </div>
 
-          <VideoList type={activeTab === "my-videos" ? "owned" : "shared"} />
+          <VideoList
+            type={activeTab === "my-videos" ? "owned" : "shared"}
+            teamId={
+              activeTab === "my-videos" && selectedTeamFilter !== "all"
+                ? selectedTeamFilter
+                : null
+            }
+            viewMode={viewMode}
+          />
         </div>
       </div>
 

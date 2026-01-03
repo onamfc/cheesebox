@@ -2,28 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-helpers";
 
-// Helper to check if user is team member with specific role
-async function checkTeamRole(teamId: string, userId: string, requiredRoles: string[]) {
-  const membership = await prisma.teamMember.findUnique({
-    where: {
-      teamId_userId: {
-        teamId,
-        userId,
-      },
-    },
-  });
-
-  if (!membership) {
-    return { allowed: false, membership: null };
-  }
-
-  return {
-    allowed: requiredRoles.includes(membership.role),
-    membership,
-  };
-}
-
-// POST /api/teams/[id]/members - Invite member
+// POST /api/teams/[id]/members - Invite team member (OWNER/ADMIN only)
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -47,30 +26,32 @@ export async function POST(
 
     // Validate role
     if (!["OWNER", "ADMIN", "MEMBER"].includes(role)) {
-      return NextResponse.json(
-        { error: "Invalid role" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
     }
 
     // Check if user is OWNER or ADMIN
-    const { allowed } = await checkTeamRole(teamId, user.id, ["OWNER", "ADMIN"]);
-    if (!allowed) {
+    const membership = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership || (membership.role !== "OWNER" && membership.role !== "ADMIN")) {
       return NextResponse.json(
         { error: "Only team owners and admins can invite members" },
         { status: 403 }
       );
     }
 
-    // Only OWNERs can add other OWNERs
-    if (role === "OWNER") {
-      const { allowed: isOwner } = await checkTeamRole(teamId, user.id, ["OWNER"]);
-      if (!isOwner) {
-        return NextResponse.json(
-          { error: "Only team owners can add other owners" },
-          { status: 403 }
-        );
-      }
+    // Only OWNER can add other OWNERs or ADMINs
+    if ((role === "OWNER" || role === "ADMIN") && membership.role !== "OWNER") {
+      return NextResponse.json(
+        { error: "Only team owners can add admins or other owners" },
+        { status: 403 }
+      );
     }
 
     // Find user by email
@@ -80,13 +61,13 @@ export async function POST(
 
     if (!invitedUser) {
       return NextResponse.json(
-        { error: "User not found" },
+        { error: "User not found. They need to create an account first." },
         { status: 404 }
       );
     }
 
     // Check if user is already a member
-    const existingMembership = await prisma.teamMember.findUnique({
+    const existingMember = await prisma.teamMember.findUnique({
       where: {
         teamId_userId: {
           teamId,
@@ -95,15 +76,15 @@ export async function POST(
       },
     });
 
-    if (existingMembership) {
+    if (existingMember) {
       return NextResponse.json(
         { error: "User is already a team member" },
-        { status: 409 }
+        { status: 400 }
       );
     }
 
-    // Add user to team
-    const membership = await prisma.teamMember.create({
+    // Add member
+    const newMember = await prisma.teamMember.create({
       data: {
         teamId,
         userId: invitedUser.id,
@@ -119,7 +100,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(membership, { status: 201 });
+    return NextResponse.json(newMember, { status: 201 });
   } catch (error) {
     console.error("Error adding team member:", error);
     return NextResponse.json(

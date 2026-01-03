@@ -3,14 +3,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import DashboardNav from "@/components/DashboardNav";
 
 interface Team {
   id: string;
   name: string;
   slug: string;
-  userRole: string;
   createdAt: string;
+  userRole: "OWNER" | "ADMIN" | "MEMBER";
   members: Array<{
+    id: string;
     role: string;
     user: {
       id: string;
@@ -29,7 +31,9 @@ export default function TeamsPage() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [formData, setFormData] = useState({ name: "", slug: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+  });
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -58,7 +62,9 @@ export default function TeamsPage() {
       const res = await fetch("/api/teams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name,
+        }),
       });
 
       if (!res.ok) {
@@ -67,9 +73,7 @@ export default function TeamsPage() {
       }
 
       const newTeam = await res.json();
-      setTeams([newTeam, ...teams]);
-      setShowCreateModal(false);
-      setFormData({ name: "", slug: "" });
+      router.push(`/dashboard/teams/${newTeam.id}`);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -77,11 +81,15 @@ export default function TeamsPage() {
     }
   };
 
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case "OWNER":
+        return "bg-purple-100 text-purple-800";
+      case "ADMIN":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
   if (loading) {
@@ -93,15 +101,16 @@ export default function TeamsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
+      <DashboardNav />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Teams</h1>
               <p className="mt-2 text-gray-600">
-                Collaborate with your team using shared AWS and email credentials
+                Share AWS and email settings with family or team members
               </p>
             </div>
             <button
@@ -131,11 +140,9 @@ export default function TeamsPage() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No teams yet
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No teams yet</h3>
             <p className="text-gray-500 mb-4">
-              Create your first team to start collaborating
+              Create a team to share your AWS and email settings with family or colleagues
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
@@ -152,24 +159,19 @@ export default function TeamsPage() {
                 href={`/dashboard/teams/${team.id}`}
                 className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 border border-gray-200"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
                     <h3 className="text-xl font-semibold text-gray-900">
                       {team.name}
                     </h3>
-                    <p className="text-sm text-gray-500">/{team.slug}</p>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded ${getRoleBadgeColor(
+                        team.userRole
+                      )}`}
+                    >
+                      {team.userRole}
+                    </span>
                   </div>
-                  <span
-                    className={`px-2 py-1 text-xs font-semibold rounded ${
-                      team.userRole === "OWNER"
-                        ? "bg-purple-100 text-purple-800"
-                        : team.userRole === "ADMIN"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {team.userRole}
-                  </span>
                 </div>
 
                 <div className="space-y-2 text-sm text-gray-600">
@@ -187,8 +189,7 @@ export default function TeamsPage() {
                         d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
                       />
                     </svg>
-                    {team.members.length} member
-                    {team.members.length !== 1 ? "s" : ""}
+                    {team.members.length} member{team.members.length !== 1 ? "s" : ""}
                   </div>
                   <div className="flex items-center">
                     <svg
@@ -231,7 +232,7 @@ export default function TeamsPage() {
         {/* Create Team Modal */}
         {showCreateModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="bg-white rounded-lg max-w-lg w-full p-6">
               <h2 className="text-2xl font-bold mb-4">Create Team</h2>
               <form onSubmit={handleCreateTeam}>
                 <div className="space-y-4">
@@ -243,36 +244,25 @@ export default function TeamsPage() {
                       type="text"
                       required
                       value={formData.name}
-                      onChange={(e) => {
-                        setFormData({
-                          name: e.target.value,
-                          slug: generateSlug(e.target.value),
-                        });
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Acme Inc"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Team Slug
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.slug}
                       onChange={(e) =>
-                        setFormData({ ...formData, slug: e.target.value })
+                        setFormData({ ...formData, name: e.target.value })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="acme-inc"
-                      pattern="[a-z0-9-]+"
-                      title="Only lowercase letters, numbers, and hyphens allowed"
+                      placeholder="Smith Family"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Used in URLs, only lowercase letters, numbers, and hyphens
+                      This will be the name of your family or team account
                     </p>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="font-medium text-blue-900 mb-2">How Teams Work</h4>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• You'll be the team owner</li>
+                      <li>• Invite family or colleagues by their email</li>
+                      <li>• Members use your AWS & email settings</li>
+                      <li>• Members can choose which team to upload to</li>
+                    </ul>
                   </div>
 
                   {error && (
@@ -286,7 +276,7 @@ export default function TeamsPage() {
                       type="button"
                       onClick={() => {
                         setShowCreateModal(false);
-                        setFormData({ name: "", slug: "" });
+                        setFormData({ name: "" });
                         setError("");
                       }}
                       className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"

@@ -18,11 +18,25 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type") || "owned"; // 'owned' or 'shared'
+    const teamId = searchParams.get("teamId"); // Optional filter by team
+    const groupId = searchParams.get("groupId"); // Optional filter by group
 
     if (type === "owned") {
+      // Build where clause with optional team filter
+      const whereClause: any = { userId: user.id };
+
+      if (teamId === "personal") {
+        // Filter for personal videos only (no team)
+        whereClause.teamId = null;
+      } else if (teamId) {
+        // Filter for specific team
+        whereClause.teamId = teamId;
+      }
+      // If no teamId specified, show all videos (personal + all teams)
+
       // Get user's own videos
       const videos = await prisma.video.findMany({
-        where: { userId: user.id },
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         include: {
           shares: {
@@ -51,7 +65,7 @@ export async function GET(request: NextRequest) {
 
       // Refetch videos to get updated status
       const updatedVideos = await prisma.video.findMany({
-        where: { userId: user.id },
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         include: {
           shares: {
@@ -76,6 +90,52 @@ export async function GET(request: NextRequest) {
       });
 
       return NextResponse.json(updatedVideos);
+    } else if (type === "group" && groupId) {
+      // Get videos shared with a specific group
+      // First, verify user is a member of the group
+      const groupMember = await prisma.shareGroupMember.findFirst({
+        where: {
+          groupId,
+          email: user.email,
+        },
+      });
+
+      const group = await prisma.shareGroup.findUnique({
+        where: { id: groupId },
+      });
+
+      // Check if user owns the group OR is a member
+      if (!group || (group.userId !== user.id && !groupMember)) {
+        return NextResponse.json(
+          { error: "You don't have access to this group" },
+          { status: 403 }
+        );
+      }
+
+      // Get all videos shared with this group
+      const groupShares = await prisma.videoGroupShare.findMany({
+        where: { groupId },
+        include: {
+          video: {
+            include: {
+              owner: {
+                select: {
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const videos = groupShares.map((share) => ({
+        ...share.video,
+        sharedBy: share.video.owner.email,
+        sharedAt: share.createdAt.toISOString(),
+      }));
+
+      return NextResponse.json(videos);
     } else if (type === "shared") {
       // Get videos shared with the user directly
       const directShares = await prisma.videoShare.findMany({

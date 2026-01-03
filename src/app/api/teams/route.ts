@@ -29,6 +29,9 @@ export async function GET(request: NextRequest) {
               },
             },
           },
+          orderBy: {
+            createdAt: "asc",
+          },
         },
         _count: {
           select: {
@@ -47,7 +50,7 @@ export async function GET(request: NextRequest) {
       const membership = team.members.find((m) => m.userId === user.id);
       return {
         ...team,
-        userRole: membership?.role || "MEMBER",
+        userRole: membership?.role,
       };
     });
 
@@ -70,22 +73,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, slug } = body;
+    const { name } = body;
 
-    if (!name || !slug) {
+    if (!name) {
       return NextResponse.json(
-        { error: "Name and slug are required" },
+        { error: "Name is required" },
         { status: 400 }
       );
     }
 
-    // Validate slug format (alphanumeric and hyphens only)
-    if (!/^[a-z0-9-]+$/.test(slug)) {
-      return NextResponse.json(
-        { error: "Slug must contain only lowercase letters, numbers, and hyphens" },
-        { status: 400 }
-      );
-    }
+    // Generate slug from name
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
 
     // Check if slug is already taken
     const existingTeam = await prisma.team.findUnique({
@@ -94,12 +95,12 @@ export async function POST(request: NextRequest) {
 
     if (existingTeam) {
       return NextResponse.json(
-        { error: "Slug is already taken" },
-        { status: 409 }
+        { error: "A team with this name already exists" },
+        { status: 400 }
       );
     }
 
-    // Create team with creator as OWNER
+    // Create team with creator as owner
     const team = await prisma.team.create({
       data: {
         name,
@@ -122,10 +123,16 @@ export async function POST(request: NextRequest) {
             },
           },
         },
+        _count: {
+          select: {
+            videos: true,
+            groups: true,
+          },
+        },
       },
     });
 
-    return NextResponse.json(team, { status: 201 });
+    return NextResponse.json({ ...team, userRole: "OWNER" }, { status: 201 });
   } catch (error) {
     console.error("Error creating team:", error);
     return NextResponse.json(

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import DashboardNav from "@/components/DashboardNav";
 
 interface Group {
   id: string;
@@ -79,8 +80,7 @@ export default function GroupsPage() {
         throw new Error(data.error || "Failed to create group");
       }
 
-      const newGroup = await res.json();
-      setGroups([newGroup, ...groups]);
+      await loadGroups(); // Reload groups to get complete data including _count
       setShowCreateModal(false);
       setFormData({ name: "", description: "", members: "" });
     } catch (err: any) {
@@ -99,8 +99,9 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
+      <DashboardNav />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">

@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-01-02
+### Added - Teams Feature (Family Accounts)
+- **Teams System**: Share AWS and email credentials with family or team members
+  - Create teams with unique names (e.g., "Smith Family")
+  - Invite members by email address
+  - Role-based access control (OWNER, ADMIN, MEMBER)
+  - Team credentials shared across all members
+  - Members choose which team to upload to on each video
+- **Teams UI**: Complete web interface for team management
+  - `/dashboard/teams` - List all teams you're part of
+  - `/dashboard/teams/[id]` - Team details, members, and credentials
+  - Create team button with helpful info modal
+  - Role badges (OWNER: purple, ADMIN: blue, MEMBER: gray)
+  - Display AWS credentials (bucket name, region) if configured
+  - Display Email credentials (provider, from email) if configured
+  - Member list with email and role
+- **Member Management**: Full control over team membership
+  - Invite members by email with role selection (OWNER only can assign ADMIN/OWNER)
+  - Change member roles (OWNER only)
+  - Remove members with permission checks
+  - Leave team (all roles, OWNER must assign another owner first)
+  - Delete team (OWNER only, cascade deletes all related data)
+- **Video Upload Team Selection**: Choose account on each upload
+  - Dropdown shows "My Personal Account" and all teams
+  - Display role badge next to each team name
+  - Backend validates team membership
+  - Videos tagged with teamId and use team's AWS/Email credentials
+- **Teams API Endpoints**:
+  - POST `/api/teams` - Create team
+  - GET `/api/teams` - List user's teams
+  - GET `/api/teams/[id]` - Get team details
+  - PATCH `/api/teams/[id]` - Update team (OWNER/ADMIN only)
+  - DELETE `/api/teams/[id]` - Delete team (OWNER only)
+  - POST `/api/teams/[id]/members` - Invite member
+  - PATCH `/api/teams/[id]/members/[userId]` - Update member role (OWNER only)
+  - DELETE `/api/teams/[id]/members/[userId]` - Remove member
+  - DELETE `/api/teams/[id]/leave` - Leave team
+  - Grid and list views on the dashboard
+  - Group/Team selector on the dashboard
+
+### Changed
+- Updated video upload to support teamId parameter
+- Video upload now validates team membership before using team credentials
+- Added "Teams" and "Groups" navigation links to dashboard header
+- Removed email address display from dashboard header
+
+### Technical - Teams
+- Teams can have AWS credentials (shared bucket and region)
+- Teams can have Email credentials (shared provider and settings)
+- Videos have optional teamId field linking to team
+- Groups can be team-owned or personal
+- Cascade deletes maintain data integrity
+- Role hierarchy: OWNER > ADMIN > MEMBER
+
+### Use Cases
+- Family sharing one AWS account (parents + kids)
+- Small teams collaborating on video content
+- Anyone wanting to give others access without sharing credentials
+- Multiple users sharing storage costs
+
 ## [1.4.0] - 2026-01-02
 ### Added - Universal Deep Linking with LinkForty
 - **Deep Link Service**: Backend service for generating LinkForty universal links
