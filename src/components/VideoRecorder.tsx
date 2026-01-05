@@ -19,6 +19,11 @@ interface VideoRecorderProps {
   onComplete?: () => void;
 }
 
+interface Group {
+  id: string;
+  name: string;
+}
+
 export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
   const router = useRouter();
   const [recordingMode, setRecordingMode] = useState<RecordingMode | null>(null);
@@ -29,6 +34,8 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
   const [title, setTitle] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<ErrorType>(null);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const webcamPreviewRef = useRef<HTMLVideoElement>(null);
@@ -47,6 +54,33 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
       if (videoUrl) URL.revokeObjectURL(videoUrl);
     };
   }, [videoUrl]);
+
+  // Load groups when entering preview state
+  useEffect(() => {
+    if (recordingState === "preview") {
+      loadGroups();
+    }
+  }, [recordingState]);
+
+  const loadGroups = async () => {
+    try {
+      const res = await fetch("/api/groups");
+      if (res.ok) {
+        const data = await res.json();
+        setGroups(data);
+      }
+    } catch (err) {
+      console.error("Failed to load groups:", err);
+    }
+  };
+
+  const toggleGroup = (groupId: string) => {
+    setSelectedGroups((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((id) => id !== groupId)
+        : [...prev, groupId]
+    );
+  };
 
   const stopAllStreams = () => {
     if (streamRef.current) {
@@ -232,6 +266,7 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
     setRecordingMode(null);
     setRecordingState("idle");
     setTitle("");
+    setSelectedGroups([]);
   };
 
   const handleUpload = async () => {
@@ -243,11 +278,11 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
 
       const filename = `recording-${Date.now()}.webm`;
       const file = new File([videoBlob], filename, { type: "video/webm" });
-      formData.append("video", file);
+      formData.append("file", file);
 
-      if (title) {
-        formData.append("title", title);
-      }
+      // Use recording timestamp as title if no title provided
+      const videoTitle = title || `Recording ${new Date().toLocaleString()}`;
+      formData.append("title", videoTitle);
 
       const xhr = new XMLHttpRequest();
 
@@ -258,12 +293,39 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
         }
       });
 
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 200) {
-          if (onComplete) {
-            onComplete();
-          } else {
-            router.push("/dashboard");
+      xhr.addEventListener("load", async () => {
+        if (xhr.status === 200 || xhr.status === 201) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            const videoId = response.video?.id;
+
+            // Share with selected groups if any
+            if (videoId && selectedGroups.length > 0) {
+              for (const groupId of selectedGroups) {
+                try {
+                  await fetch(`/api/videos/${videoId}/share`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ groupId }),
+                  });
+                } catch (err) {
+                  console.error(`Failed to share with group ${groupId}:`, err);
+                }
+              }
+            }
+
+            if (onComplete) {
+              onComplete();
+            } else {
+              router.push("/dashboard");
+            }
+          } catch (err) {
+            // If we can't parse response or share fails, still redirect
+            if (onComplete) {
+              onComplete();
+            } else {
+              router.push("/dashboard");
+            }
           }
         } else {
           setError("Upload failed. Please try again.");
@@ -487,18 +549,19 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
 
       {/* Preview Screen */}
       {recordingState === "preview" && videoUrl && (
-        <div className="h-full flex flex-col">
-          <div className="flex-1 bg-black flex items-center justify-center">
-            <video
-              ref={videoPreviewRef}
-              src={videoUrl}
-              controls
-              className="max-w-full max-h-full"
-            />
-          </div>
+        <div className="h-full overflow-y-auto bg-gray-900">
+          <div className="max-w-4xl mx-auto p-6 space-y-6">
+            <div className="bg-black rounded-lg overflow-hidden">
+              <video
+                ref={videoPreviewRef}
+                src={videoUrl}
+                controls
+                className="w-full"
+                style={{ maxHeight: "60vh" }}
+              />
+            </div>
 
-          <div className="bg-gray-900 p-6">
-            <div className="max-w-2xl mx-auto space-y-4">
+            <div className="space-y-4">
               <input
                 type="text"
                 value={title}
@@ -506,6 +569,34 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
                 placeholder="Add a title (optional)"
                 className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none"
               />
+
+              {/* Group Selection */}
+              {groups.length > 0 && (
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                  <h3 className="text-white font-semibold mb-3">Share with Groups (optional)</h3>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {groups.map((group) => (
+                      <label
+                        key={group.id}
+                        className="flex items-center gap-3 text-gray-300 hover:text-white cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedGroups.includes(group.id)}
+                          onChange={() => toggleGroup(group.id)}
+                          className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500 focus:ring-offset-gray-900"
+                        />
+                        <span>{group.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {selectedGroups.length > 0 && (
+                    <p className="text-sm text-gray-400 mt-2">
+                      Will be shared with {selectedGroups.length} group{selectedGroups.length !== 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-4">
                 <button
@@ -528,7 +619,13 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
 
       {/* Uploading Screen */}
       {recordingState === "uploading" && (
-        <div className="h-full flex items-center justify-center">
+        <div className="h-full flex flex-col items-center justify-center bg-gray-900">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="absolute top-4 right-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors"
+          >
+            ← Back to Dashboard
+          </button>
           <div className="text-center">
             <div className="mb-4 text-6xl">⬆️</div>
             <h2 className="text-2xl font-bold text-white mb-4">Uploading...</h2>
@@ -539,6 +636,9 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
               />
             </div>
             <p className="text-gray-400 mt-2">{uploadProgress}%</p>
+            <p className="text-sm text-gray-500 mt-4">
+              You can navigate back to the dashboard. The upload will continue in the background.
+            </p>
           </div>
         </div>
       )}

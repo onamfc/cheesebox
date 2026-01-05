@@ -25,9 +25,40 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const credentials = await prisma.awsCredentials.findUnique({
-      where: { userId: session.user.id },
-    });
+    // Check for teamId query parameter
+    const { searchParams } = new URL(request.url);
+    const teamId = searchParams.get("teamId");
+
+    let credentials;
+
+    if (teamId) {
+      // Verify user is a member of the team (owner or admin)
+      const teamMember = await prisma.teamMember.findUnique({
+        where: {
+          teamId_userId: {
+            teamId,
+            userId: session.user.id,
+          },
+        },
+      });
+
+      if (!teamMember || (teamMember.role !== "OWNER" && teamMember.role !== "ADMIN")) {
+        return NextResponse.json(
+          { error: "Access denied. Only team owners and admins can manage team credentials." },
+          { status: 403 },
+        );
+      }
+
+      // Get team credentials
+      credentials = await prisma.awsCredentials.findUnique({
+        where: { teamId },
+      });
+    } else {
+      // Get user credentials
+      credentials = await prisma.awsCredentials.findUnique({
+        where: { userId: session.user.id },
+      });
+    }
 
     if (!credentials) {
       return NextResponse.json(
@@ -65,6 +96,26 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const teamId = body.teamId as string | undefined;
+
+    // If teamId is provided, verify user is team owner or admin
+    if (teamId) {
+      const teamMember = await prisma.teamMember.findUnique({
+        where: {
+          teamId_userId: {
+            teamId,
+            userId: session.user.id,
+          },
+        },
+      });
+
+      if (!teamMember || (teamMember.role !== "OWNER" && teamMember.role !== "ADMIN")) {
+        return NextResponse.json(
+          { error: "Access denied. Only team owners and admins can manage team credentials." },
+          { status: 403 },
+        );
+      }
+    }
 
     // Validate input
     const validationResult = awsCredentialsSchema.safeParse(body);
@@ -88,24 +139,48 @@ export async function POST(request: NextRequest) {
     const encryptedSecretAccessKey = encrypt(secretAccessKey);
 
     // Upsert credentials
-    const credentials = await prisma.awsCredentials.upsert({
-      where: { userId: session.user.id },
-      create: {
-        userId: session.user.id,
-        accessKeyId: encryptedAccessKeyId,
-        secretAccessKey: encryptedSecretAccessKey,
-        bucketName,
-        region,
-        mediaConvertRole: mediaConvertRole ?? null,
-      },
-      update: {
-        accessKeyId: encryptedAccessKeyId,
-        secretAccessKey: encryptedSecretAccessKey,
-        bucketName,
-        region,
-        mediaConvertRole: mediaConvertRole ?? null,
-      },
-    });
+    let credentials;
+    if (teamId) {
+      // Team credentials
+      credentials = await prisma.awsCredentials.upsert({
+        where: { teamId },
+        create: {
+          teamId,
+          accessKeyId: encryptedAccessKeyId,
+          secretAccessKey: encryptedSecretAccessKey,
+          bucketName,
+          region,
+          mediaConvertRole: mediaConvertRole ?? null,
+        },
+        update: {
+          accessKeyId: encryptedAccessKeyId,
+          secretAccessKey: encryptedSecretAccessKey,
+          bucketName,
+          region,
+          mediaConvertRole: mediaConvertRole ?? null,
+        },
+      });
+    } else {
+      // User credentials
+      credentials = await prisma.awsCredentials.upsert({
+        where: { userId: session.user.id },
+        create: {
+          userId: session.user.id,
+          accessKeyId: encryptedAccessKeyId,
+          secretAccessKey: encryptedSecretAccessKey,
+          bucketName,
+          region,
+          mediaConvertRole: mediaConvertRole ?? null,
+        },
+        update: {
+          accessKeyId: encryptedAccessKeyId,
+          secretAccessKey: encryptedSecretAccessKey,
+          bucketName,
+          region,
+          mediaConvertRole: mediaConvertRole ?? null,
+        },
+      });
+    }
 
     return NextResponse.json(
       { message: "AWS credentials saved successfully" },
