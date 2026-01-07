@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 export default function SettingsContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const teamId = searchParams.get("teamId");
+  const [teamName, setTeamName] = useState("");
   const [accessKeyId, setAccessKeyId] = useState("");
   const [secretAccessKey, setSecretAccessKey] = useState("");
   const [bucketName, setBucketName] = useState("");
@@ -17,6 +20,9 @@ export default function SettingsContent() {
   const [hasCredentials, setHasCredentials] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importSources, setImportSources] = useState<any[]>([]);
+  const [importingFrom, setImportingFrom] = useState("");
 
   // Email provider state
   const [emailProvider, setEmailProvider] = useState<
@@ -46,10 +52,34 @@ export default function SettingsContent() {
     }
   }, [status, router]);
 
+  // Fetch team name if teamId is present
+  useEffect(() => {
+    const fetchTeam = async () => {
+      if (teamId) {
+        try {
+          const response = await fetch(`/api/teams/${teamId}`);
+          if (response.ok) {
+            const data = await response.json();
+            setTeamName(data.name);
+          }
+        } catch (error) {
+          console.error("Error fetching team:", error);
+        }
+      }
+    };
+
+    if (status === "authenticated") {
+      fetchTeam();
+    }
+  }, [status, teamId]);
+
   useEffect(() => {
     const fetchCredentials = async () => {
       try {
-        const response = await fetch("/api/aws-credentials");
+        const url = teamId
+          ? `/api/aws-credentials?teamId=${teamId}`
+          : "/api/aws-credentials";
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setAccessKeyId(data.accessKeyId);
@@ -67,7 +97,28 @@ export default function SettingsContent() {
     if (status === "authenticated") {
       fetchCredentials();
     }
-  }, [status]);
+  }, [status, teamId]);
+
+  // Fetch available import sources
+  useEffect(() => {
+    const fetchImportSources = async () => {
+      if (!teamId) return; // Only for team settings
+
+      try {
+        const response = await fetch("/api/aws-credentials/sources");
+        if (response.ok) {
+          const data = await response.json();
+          setImportSources(data.sources);
+        }
+      } catch (error) {
+        console.error("Error fetching import sources:", error);
+      }
+    };
+
+    if (status === "authenticated" && teamId) {
+      fetchImportSources();
+    }
+  }, [status, teamId]);
 
   useEffect(() => {
     const fetchEmailCredentials = async () => {
@@ -99,6 +150,33 @@ export default function SettingsContent() {
     }
   }, [status]);
 
+  const handleImport = async (sourceId: string) => {
+    setImportingFrom(sourceId);
+    try {
+      const url = sourceId === "personal"
+        ? "/api/aws-credentials"
+        : `/api/aws-credentials?teamId=${sourceId}`;
+
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setAccessKeyId(data.accessKeyId);
+        setSecretAccessKey(data.secretAccessKey);
+        setBucketName(data.bucketName);
+        setRegion(data.region);
+        setMediaConvertRole(data.mediaConvertRole || "");
+        setShowImportModal(false);
+        setSuccess("Credentials imported successfully! Click 'Save Credentials' to apply them.");
+      } else {
+        setError("Failed to import credentials");
+      }
+    } catch (err) {
+      setError("Failed to import credentials");
+    } finally {
+      setImportingFrom("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -117,6 +195,7 @@ export default function SettingsContent() {
           bucketName,
           region,
           mediaConvertRole,
+          ...(teamId && { teamId }), // Include teamId if present
         }),
       });
 
@@ -128,7 +207,11 @@ export default function SettingsContent() {
         return;
       }
 
-      setSuccess("AWS credentials saved successfully!");
+      setSuccess(
+        teamId
+          ? "Team AWS credentials saved successfully!"
+          : "AWS credentials saved successfully!"
+      );
       setHasCredentials(true);
       setLoading(false);
     } catch (err) {
@@ -243,10 +326,10 @@ export default function SettingsContent() {
             </div>
             <div className="flex items-center space-x-4">
               <Link
-                href="/dashboard"
+                href={teamId ? `/dashboard/teams/${teamId}` : "/dashboard"}
                 className="text-sm text-blue-600 hover:text-blue-500"
               >
-                Back to Dashboard
+                {teamId ? "Back to Team" : "Back to Dashboard"}
               </Link>
             </div>
           </div>
@@ -256,8 +339,32 @@ export default function SettingsContent() {
       <div className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">
-            AWS Settings
+            {teamId ? `Team AWS Settings - ${teamName}` : "AWS Settings"}
           </h1>
+
+          {teamId && (
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-blue-800 mb-1">
+                    Configuring Team Credentials
+                  </h3>
+                  <p className="text-sm text-blue-700">
+                    You are configuring AWS credentials for the team &quot;{teamName}&quot;. All team members will be able to use these credentials to upload videos.
+                  </p>
+                </div>
+                {importSources.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowImportModal(true)}
+                    className="ml-4 px-4 py-2 bg-white border border-blue-500 text-blue-600 rounded-md hover:bg-blue-50 text-sm font-medium whitespace-nowrap"
+                  >
+                    Import from...
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Setup Guide Link */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-5 mb-6 shadow-sm">
@@ -469,7 +576,7 @@ export default function SettingsContent() {
 
               <div className="flex justify-end space-x-3 pt-4">
                 <Link
-                  href="/dashboard"
+                  href={teamId ? `/dashboard/teams/${teamId}` : "/dashboard"}
                   className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
@@ -595,7 +702,7 @@ export default function SettingsContent() {
                   </div>
                 </div>
 
-                {/* Rest of the email form - keeping it the same as original */}
+                {/* Common Fields */}
                 <div>
                   <label
                     htmlFor="fromEmail"
@@ -636,7 +743,7 @@ export default function SettingsContent() {
                   />
                 </div>
 
-                {/* Provider-specific fields */}
+                {/* Resend Fields */}
                 {emailProvider === "RESEND" && (
                   <div>
                     <label
@@ -872,6 +979,59 @@ export default function SettingsContent() {
           </div>
         </div>
       </div>
+
+      {/* Import Credentials Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-lg w-full p-6">
+            <h2 className="text-2xl font-bold mb-4 text-gray-900">
+              Import AWS Credentials
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Select a source to copy AWS credentials from:
+            </p>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {importSources.map((source) => (
+                <button
+                  key={source.id}
+                  onClick={() => handleImport(source.id)}
+                  disabled={importingFrom !== ""}
+                  className="w-full p-4 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-left transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {source.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {source.type === "personal"
+                          ? "Your personal AWS account"
+                          : `Team: ${source.name}`}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Bucket: {source.bucketName} ({source.region})
+                      </p>
+                    </div>
+                    {importingFrom === source.id && (
+                      <div className="text-blue-600">Importing...</div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowImportModal(false)}
+                disabled={importingFrom !== ""}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
