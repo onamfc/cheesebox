@@ -17,6 +17,13 @@ export async function GET(request: NextRequest) {
     const where: any = {
       OR: [
         { userId: user.id }, // Groups owned by user
+        {
+          members: {
+            some: {
+              email: user.email, // Groups where user is a member
+            },
+          },
+        },
       ],
     };
 

@@ -85,6 +85,13 @@ export async function POST(request: NextRequest) {
           },
         });
 
+        console.log("Team membership check:", {
+          hasTeamMembership: !!teamMembership,
+          teamId: teamMembership?.teamId,
+          teamName: teamMembership?.team?.name,
+          hasTeamCredentials: !!teamMembership?.team?.awsCredentials,
+        });
+
         awsCredentials = teamMembership?.team?.awsCredentials ?? null;
         selectedTeamId = teamMembership?.teamId ?? null;
       }
@@ -93,7 +100,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error:
-              "AWS credentials not configured. Please add your AWS credentials first or join a team with credentials.",
+              "AWS credentials not configured. Please configure AWS credentials in your personal settings, or ask your team admin to add AWS credentials to the team settings.",
           },
           { status: 400 },
         );

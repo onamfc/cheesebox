@@ -1,0 +1,312 @@
+# Cheesebox - Private Video Sharing Platform
+
+> A secure video sharing platform with team collaboration, built on Next.js 14
+
+## Project Overview
+
+Cheesebox is a private video sharing platform that allows users to record, upload, and share videos with individuals or groups. The platform supports team collaboration with shared AWS resources and flexible email providers.
+
+## Tech Stack
+
+- **Frontend**: Next.js 14 (App Router), React, TypeScript, TailwindCSS
+- **Backend**: Next.js API Routes, NextAuth.js
+- **Database**: PostgreSQL with Prisma ORM
+- **Video Storage**: AWS S3
+- **Video Processing**: AWS MediaConvert (HLS transcoding)
+- **Email**: Pluggable providers (Resend, AWS SES, SMTP)
+- **Push Notifications**: Expo Push Notifications
+- **Mobile**: React Native with Expo (separate repo)
+
+## Core Features
+
+1. **Video Management**
+   - Record videos (screen + camera)
+   - Upload videos (MP4, MOV, AVI, WebM, MKV, max 5GB)
+   - Automatic HLS transcoding
+   - Public/Private visibility
+
+2. **Sharing & Collaboration**
+   - Share videos with individuals via email
+   - Share groups for distribution lists
+   - Team-based collaboration
+   - Deep linking to videos
+
+3. **Teams**
+   - Multi-user teams with role-based access (Owner, Admin, Member)
+   - Shared AWS credentials
+   - Shared email credentials
+   - Team-wide video access
+
+4. **Share Groups**
+   - Create groups of email addresses
+   - Share videos with entire groups at once
+   - Collaborative groups (members can share back)
+   - Group membership across teams
+
+5. **Security**
+   - Encrypted credential storage (AWS, email)
+   - User authentication via NextAuth
+   - Role-based access control
+   - Private video access control
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/                    # API Routes
+│   │   ├── auth/              # NextAuth configuration
+│   │   ├── videos/            # Video upload, sharing, transcoding
+│   │   ├── teams/             # Team management
+│   │   ├── groups/            # Share group management
+│   │   ├── aws-credentials/   # AWS credential management
+│   │   └── email-credentials/ # Email provider configuration
+│   ├── dashboard/             # Main dashboard UI
+│   ├── settings/              # User/team settings
+│   ├── watch/                 # Video player page
+│   └── embed/                 # Public video embeds
+├── components/                # React components
+│   ├── VideoRecorder.tsx     # Recording interface
+│   ├── VideoPlayer.tsx       # HLS video player
+│   └── ...
+├── lib/
+│   ├── auth.ts               # NextAuth configuration
+│   ├── prisma.ts             # Database client
+│   ├── encryption.ts         # Credential encryption
+│   ├── aws-services.ts       # S3 & MediaConvert
+│   ├── email/                # Email provider factory
+│   ├── push-notifications.ts # Expo push
+│   └── deep-link.ts          # Deep linking service
+└── prisma/
+    └── schema.prisma          # Database schema
+```
+
+## Key Files
+
+### Database Schema
+`prisma/schema.prisma` - Defines all database models including:
+- User, Team, TeamMember
+- Video, VideoShare, VideoGroupShare
+- ShareGroup, ShareGroupMember
+- AwsCredentials, EmailCredentials
+
+### API Routes
+
+**Video Management:**
+- `api/videos/upload/route.ts` - Uploads video to S3, creates DB record, initiates transcoding
+- `api/videos/[id]/route.ts` - Get, update, delete videos
+- `api/videos/[id]/share/route.ts` - Share videos with individuals or groups
+- `api/videos/[id]/transcoding-status/route.ts` - Check MediaConvert job status
+
+**Team Management:**
+- `api/teams/route.ts` - Create and list teams
+- `api/teams/[id]/route.ts` - Get, update, delete team
+- `api/teams/[id]/members/route.ts` - Add members to team
+- `api/teams/[id]/members/[userId]/route.ts` - Update member role, remove member
+
+**Share Groups:**
+- `api/groups/route.ts` - Create and list groups
+- `api/groups/[id]/route.ts` - Get, update, delete group
+- `api/groups/[id]/members/route.ts` - Add/remove group members
+
+**Credentials:**
+- `api/aws-credentials/route.ts` - Save/retrieve AWS credentials (user or team)
+- `api/aws-credentials/sources/route.ts` - List available credential sources for import
+- `api/email-credentials/route.ts` - Save/retrieve email provider config
+
+### Core Libraries
+
+**AWS Services** (`lib/aws-services.ts`):
+- `createS3Client()` - Creates authenticated S3 client
+- `uploadToS3()` - Uploads file to S3
+- `createMediaConvertClient()` - Creates MediaConvert client
+- `createHLSTranscodeJob()` - Starts HLS transcoding job
+
+**Email Factory** (`lib/email/factory.ts`):
+- `createEmailProvider()` - Factory for Resend, AWS SES, or SMTP providers
+- All providers implement common `EmailProvider` interface
+
+**Encryption** (`lib/encryption.ts`):
+- `encrypt()` - Encrypts sensitive credentials before DB storage
+- `decrypt()` - Decrypts credentials for use
+- Uses AES-256-GCM with ENCRYPTION_KEY env var
+
+**Deep Linking** (`lib/deep-link.ts`):
+- `generateVideoShareLink()` - Creates universal links for video sharing
+- PUBLIC videos → `/embed/[videoId]` (no auth required)
+- PRIVATE videos → `/watch/[videoId]` (auth required)
+
+## Data Flow
+
+### Video Upload Flow
+1. User records/selects video
+2. `VideoRecorder.tsx` sends FormData to `/api/videos/upload`
+3. API retrieves AWS credentials (user's or team's)
+4. Video uploaded to S3 as `videos/{userId}/{timestamp}-original.{ext}`
+5. Video record created in DB with `transcodingStatus: PENDING`
+6. MediaConvert job started for HLS transcoding
+7. Output saved to `videos/{userId}/{timestamp}-hls/`
+8. DB updated with `hlsManifestKey` and `transcodingStatus: PROCESSING`
+
+### Video Sharing Flow
+1. User selects video to share
+2. POST to `/api/videos/[id]/share` with email or groupId
+3. For groups: creates `VideoGroupShare` record
+4. For individuals: creates `VideoShare` record
+5. Email sent via configured provider with deep link
+6. Push notification sent if recipient has push token
+7. Recipient clicks link → redirected to video player
+
+### Team Upload Flow
+1. Team member without personal AWS credentials uploads video
+2. Upload API checks for user credentials → not found
+3. Falls back to team credentials (via TeamMember relation)
+4. Video uploaded using team's AWS account
+5. Video associated with team via `teamId` field
+
+## Environment Variables
+
+Required:
+```env
+DATABASE_URL=postgresql://...
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key
+ENCRYPTION_KEY=32-byte-hex-string
+```
+
+## Key Concepts
+
+### Bring Your Own AWS
+- Users provide their own AWS credentials (Access Key, Secret, Bucket, Region)
+- Teams can share AWS credentials across members
+- Credentials encrypted before storage
+- MediaConvert IAM role required for transcoding
+
+### Bring Your Own Email
+- Users configure email provider (Resend, AWS SES, SMTP)
+- Teams can share email configuration
+- Credentials encrypted before storage
+- Used for video share notifications
+
+### Collaborative Groups
+- Groups work like group messages
+- Any member can share videos to the group
+- Groups can be personal or team-based
+- Members receive email + push notifications
+
+### Team Resource Sharing
+- Teams can have shared AWS credentials
+- Teams can have shared email configuration
+- Members without personal credentials automatically use team resources
+- Import feature allows copying credentials between teams
+
+## Common Patterns
+
+### Authentication Check
+```typescript
+const user = await getAuthUser(request);
+if (!user) {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
+```
+
+### Team Access Check
+```typescript
+const teamMember = await prisma.teamMember.findUnique({
+  where: {
+    teamId_userId: { teamId, userId: user.id }
+  }
+});
+
+if (!teamMember || (teamMember.role !== "OWNER" && teamMember.role !== "ADMIN")) {
+  return NextResponse.json({ error: "Access denied" }, { status: 403 });
+}
+```
+
+### Credential Fallback (User → Team)
+```typescript
+let awsCredentials = await prisma.awsCredentials.findUnique({
+  where: { userId: user.id }
+});
+
+if (!awsCredentials) {
+  const teamMembership = await prisma.teamMember.findFirst({
+    where: { userId: user.id },
+    include: { team: { include: { awsCredentials: true } } }
+  });
+  awsCredentials = teamMembership?.team?.awsCredentials ?? null;
+}
+```
+
+### Encrypted Credential Storage
+```typescript
+// Saving
+const encrypted = encrypt(sensitiveValue);
+await prisma.awsCredentials.create({
+  data: { accessKeyId: encrypted, ... }
+});
+
+// Retrieving
+const record = await prisma.awsCredentials.findUnique(...);
+const decrypted = decrypt(record.accessKeyId);
+```
+
+## Mobile App Integration
+
+- Separate React Native app in `/cheesebox-mobile`
+- Uses Expo for development and builds
+- Push notifications via Expo Push Service
+- Deep linking handles video share URLs
+- Users register push tokens on login
+
+## Video Processing
+
+1. **Upload**: Original video stored in S3
+2. **Transcoding**: MediaConvert creates HLS adaptive bitrate stream
+3. **Output**: `.m3u8` manifest + `.ts` segments
+4. **Playback**: HLS.js player for web, native HLS for mobile
+5. **Status**: Webhook or polling updates transcoding status
+
+## Access Control
+
+- **Public Videos**: Anyone with link can view via `/embed/[videoId]`
+- **Private Videos**:
+  - Owner can always view
+  - Explicitly shared users can view (via `VideoShare`)
+  - Group members can view (via `VideoGroupShare`)
+  - Team members can view team videos
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run database migrations
+npx prisma migrate dev
+
+# Start development server
+npm run dev
+
+# Generate Prisma client
+npx prisma generate
+```
+
+## API Conventions
+
+- All API routes use Next.js App Router pattern
+- Authentication via NextAuth session
+- Error responses: `{ error: string }`
+- Success responses: `{ message: string, data: object }`
+- File uploads use `FormData`
+- Credentials always decrypted before use, never stored in plaintext
+
+## Security Considerations
+
+- All sensitive credentials encrypted at rest
+- AWS credentials scoped to S3 + MediaConvert only
+- Email credentials validated before storage
+- Video access controlled via database relations
+- CORS configured for embed support
+- File upload size limits enforced
+- File type validation on uploads

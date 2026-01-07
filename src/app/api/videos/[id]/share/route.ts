@@ -109,11 +109,12 @@ export async function POST(
         return NextResponse.json({ error: "Group not found" }, { status: 404 });
       }
 
-      // Check if user owns the group or is a member of the group's team
+      // Check if user owns the group, is a member of the group, or is a team member
       const isOwner = group.userId === user.id;
+      const isGroupMember = group.members.some((m) => m.email === user.email);
       const isTeamMember = (group.team?.members?.length ?? 0) > 0;
 
-      if (!isOwner && !isTeamMember) {
+      if (!isOwner && !isGroupMember && !isTeamMember) {
         return NextResponse.json(
           { error: "Access denied to this group" },
           { status: 403 },
@@ -197,6 +198,7 @@ export async function POST(
               const videoLink = deepLinkService.generateVideoShareLink({
                 videoId: id,
                 recipientEmail: member.email,
+                visibility: video.visibility,
               });
 
               await emailProvider.sendEmail({
@@ -207,9 +209,9 @@ export async function POST(
                   <p><strong>${user.email}</strong> has shared a video titled "<strong>${video.title}</strong>" with the group <strong>${group.name}</strong>.</p>
                   ${video.description ? `<p>Description: ${video.description}</p>` : ""}
                   <p><a href="${videoLink}" style="display: inline-block; padding: 12px 24px; background-color: #3B82F6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Watch Video</a></p>
-                  <p style="color: #6B7280; font-size: 14px;">This link will open the video in the Cheesebox app if you have it installed, or in your browser if not. You may need to log in or create an account to watch the video.</p>
+                  <p style="color: #6B7280; font-size: 14px;">${video.visibility === 'PUBLIC' ? 'Click the link above to watch this public video.' : 'Click the link above to watch this private video. You may need to log in to your Cheesebox account.'}</p>
                 `,
-                text: `${user.email} has shared a video titled "${video.title}" with the group ${group.name}. Click this link to watch: ${videoLink}`,
+                text: `${user.email} has shared a video titled "${video.title}" with the group ${group.name}. Click this link to watch: ${videoLink}${video.visibility === 'PRIVATE' ? ' (login required)' : ''}`,
               });
             } catch (emailError) {
               console.error(
@@ -364,6 +366,7 @@ export async function POST(
       const videoLink = deepLinkService.generateVideoShareLink({
         videoId: id,
         recipientEmail: email,
+        visibility: video.visibility,
       });
 
       // Send email with universal deep link
@@ -375,9 +378,9 @@ export async function POST(
           <p><strong>${user.email}</strong> has shared a video titled "<strong>${video.title}</strong>" with you.</p>
           ${video.description ? `<p>Description: ${video.description}</p>` : ""}
           <p><a href="${videoLink}" style="display: inline-block; padding: 12px 24px; background-color: #3B82F6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Watch Video</a></p>
-          <p style="color: #6B7280; font-size: 14px;">This link will open the video in the Cheesebox app if you have it installed, or in your browser if not. You may need to log in or create an account to watch the video.</p>
+          <p style="color: #6B7280; font-size: 14px;">${video.visibility === 'PUBLIC' ? 'Click the link above to watch this public video.' : 'Click the link above to watch this private video. You may need to log in to your Cheesebox account.'}</p>
         `,
-        text: `${user.email} has shared a video titled "${video.title}" with you. Click this link to watch: ${videoLink}`,
+        text: `${user.email} has shared a video titled "${video.title}" with you. Click this link to watch: ${videoLink}${video.visibility === 'PRIVATE' ? ' (login required)' : ''}`,
       });
     } catch (emailError) {
       console.error("Email sending error:", emailError);

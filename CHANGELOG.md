@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.3] - 2026-01-07
+- change sharing link for public and private videos
+- allow invited users to submit videos to the group
+- add settings import feature
+- llms for ai index
+
 ## [1.5.0] - 2026-01-02
 ### Added - Teams Feature (Family Accounts)
 - **Teams System**: Share AWS and email credentials with family or team members

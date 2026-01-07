@@ -9,6 +9,7 @@
 interface DeepLinkOptions {
   videoId: string;
   recipientEmail?: string;
+  visibility?: 'PUBLIC' | 'PRIVATE';
 }
 
 export class DeepLinkService {
@@ -29,9 +30,15 @@ export class DeepLinkService {
    * TODO: Switch back to universal deep links when mobile app launches
    */
   generateVideoShareLink(options: DeepLinkOptions): string {
-    const { videoId } = options;
+    const { videoId, visibility = 'PUBLIC' } = options;
 
-    // Return direct web portal URL
+    // Public videos can be viewed via /embed (no authentication required)
+    if (visibility === 'PUBLIC') {
+      return `${this.webAppUrl}/embed/${videoId}`;
+    }
+
+    // Private videos require authentication - direct to watch page
+    // The watch page will check access and display the video if authorized
     return `${this.webAppUrl}/watch/${videoId}`;
   }
 
