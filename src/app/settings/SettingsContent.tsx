@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Button, LinkButton } from "@/components/ui/Button";
 
 export default function SettingsContent() {
   const { data: session, status } = useSession();
@@ -327,7 +328,7 @@ export default function SettingsContent() {
             <div className="flex items-center space-x-4">
               <Link
                 href={teamId ? `/dashboard/teams/${teamId}` : "/dashboard"}
-                className="text-sm text-blue-600 hover:text-blue-500"
+                className="text-sm text-black-600"
               >
                 {teamId ? "Back to Team" : "Back to Dashboard"}
               </Link>
@@ -354,13 +355,14 @@ export default function SettingsContent() {
                   </p>
                 </div>
                 {importSources.length > 0 && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => setShowImportModal(true)}
-                    className="ml-4 px-4 py-2 bg-white border border-blue-500 text-blue-600 rounded-md hover:bg-blue-50 text-sm font-medium whitespace-nowrap"
+                    className="ml-4 whitespace-nowrap"
                   >
                     Import from...
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -371,7 +373,7 @@ export default function SettingsContent() {
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
                 <svg
-                  className="w-8 h-8 text-blue-600"
+                  className="w-8 h-8 text-purple-700"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -393,9 +395,10 @@ export default function SettingsContent() {
                   step-by-step guide to create your S3 bucket, IAM user, and
                   MediaConvert role.
                 </p>
-                <Link
+                <LinkButton
                   href="/help/aws-setup"
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md transition-colors shadow-sm"
+                  variant="primary"
+                  className="inline-flex items-center gap-2 shadow-sm"
                 >
                   <svg
                     className="w-5 h-5"
@@ -411,7 +414,7 @@ export default function SettingsContent() {
                     />
                   </svg>
                   View AWS Setup Guide
-                </Link>
+                </LinkButton>
               </div>
             </div>
           </div>
@@ -467,7 +470,7 @@ export default function SettingsContent() {
                   value={accessKeyId}
                   onChange={(e) => setAccessKeyId(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                   placeholder="AKIAIOSFODNN7EXAMPLE"
                   required
                 />
@@ -486,7 +489,7 @@ export default function SettingsContent() {
                   value={secretAccessKey}
                   onChange={(e) => setSecretAccessKey(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                   placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
                   required
                 />
@@ -508,7 +511,7 @@ export default function SettingsContent() {
                   value={bucketName}
                   onChange={(e) => setBucketName(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                   placeholder="my-private-videos-bucket"
                   required
                 />
@@ -526,7 +529,7 @@ export default function SettingsContent() {
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                   required
                 >
                   <option value="us-east-1">US East (N. Virginia)</option>
@@ -557,7 +560,7 @@ export default function SettingsContent() {
                   value={mediaConvertRole}
                   onChange={(e) => setMediaConvertRole(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                   placeholder="arn:aws:iam::123456789012:role/MediaConvertRole"
                 />
                 <p className="mt-1 text-xs text-gray-500">
@@ -567,7 +570,7 @@ export default function SettingsContent() {
                     href="https://docs.aws.amazon.com/mediaconvert/latest/ug/iam-role.html"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-500 underline"
+                    className="text-purple-700 hover:text-purple-500 underline"
                   >
                     How to create this role
                   </a>
@@ -575,23 +578,24 @@ export default function SettingsContent() {
               </div>
 
               <div className="flex justify-end space-x-3 pt-4">
-                <Link
+                <LinkButton
                   href={teamId ? `/dashboard/teams/${teamId}` : "/dashboard"}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  variant="secondary"
+                  size="sm"
                 >
                   Cancel
-                </Link>
-                <button
+                </LinkButton>
+                <Button
+                  variant="primary"
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+                  loading={loading}
+                  size="sm"
                 >
-                  {loading
-                    ? "Saving..."
-                    : hasCredentials
-                      ? "Update Credentials"
-                      : "Save Credentials"}
-                </button>
+                  {hasCredentials
+                    ? "Update Credentials"
+                    : "Save Credentials"}
+                </Button>
               </div>
             </form>
           </div>
@@ -614,9 +618,10 @@ export default function SettingsContent() {
               <p className="text-sm text-blue-700 mb-3">
                 Need help setting up? Follow our step-by-step guide for your email provider.
               </p>
-              <Link
+              <LinkButton
                 href="/help/email-setup"
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md transition-colors shadow-sm"
+                variant="primary"
+                className="inline-flex items-center gap-2 shadow-sm"
               >
                 <svg
                   className="w-5 h-5"
@@ -632,7 +637,7 @@ export default function SettingsContent() {
                   />
                 </svg>
                 View Email Setup Guide
-              </Link>
+              </LinkButton>
             </div>
 
             <div className="bg-white shadow rounded-lg p-6">
@@ -655,50 +660,53 @@ export default function SettingsContent() {
                     Email Provider
                   </label>
                   <div className="grid grid-cols-3 gap-3">
-                    <button
+                    <Button
+                      variant="secondary"
                       type="button"
                       onClick={() => setEmailProvider("RESEND")}
-                      className={`p-3 border rounded-md ${
+                      className={`p-3 h-auto flex-col items-start ${
                         emailProvider === "RESEND"
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-300"
+                          ? "!border-info !bg-info-light"
+                          : ""
                       }`}
                     >
                       <div className="font-medium text-black">Resend</div>
                       <div className="text-xs text-gray-600">
                         Simple API
                       </div>
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
+                      variant="secondary"
                       type="button"
                       onClick={() => setEmailProvider("AWS_SES")}
-                      className={`p-3 border rounded-md ${
+                      className={`p-3 h-auto flex-col items-start ${
                         emailProvider === "AWS_SES"
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-300"
+                          ? "!border-info !bg-info-light"
+                          : ""
                       }`}
                     >
                       <div className="font-medium text-black">AWS SES</div>
                       <div className="text-xs text-gray-600">
                         Low cost
                       </div>
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
+                      variant="secondary"
                       type="button"
                       onClick={() => setEmailProvider("SMTP")}
-                      className={`p-3 border rounded-md ${
+                      className={`p-3 h-auto flex-col items-start ${
                         emailProvider === "SMTP"
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-300"
+                          ? "!border-info !bg-info-light"
+                          : ""
                       }`}
                     >
                       <div className="font-medium text-black">SMTP</div>
                       <div className="text-xs text-gray-600">
                         Universal
                       </div>
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -716,7 +724,7 @@ export default function SettingsContent() {
                     value={fromEmail}
                     onChange={(e) => setFromEmail(e.target.value)}
                     disabled={emailLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                     placeholder="noreply@yourdomain.com"
                     required
                   />
@@ -738,7 +746,7 @@ export default function SettingsContent() {
                     value={fromName}
                     onChange={(e) => setFromName(e.target.value)}
                     disabled={emailLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                     placeholder="Cheesebox"
                   />
                 </div>
@@ -758,7 +766,7 @@ export default function SettingsContent() {
                       value={emailApiKey}
                       onChange={(e) => setEmailApiKey(e.target.value)}
                       disabled={emailLoading}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                       placeholder="re_xxxxxxxxxxxxx"
                       required
                     />
@@ -768,7 +776,7 @@ export default function SettingsContent() {
                         href="https://resend.com/api-keys"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
+                        className="text-purple-700 hover:underline"
                       >
                         resend.com/api-keys
                       </a>
@@ -794,7 +802,7 @@ export default function SettingsContent() {
                           setAwsEmailAccessKeyId(e.target.value)
                         }
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                         required
                       />
                     </div>
@@ -812,7 +820,7 @@ export default function SettingsContent() {
                         value={awsEmailSecretKey}
                         onChange={(e) => setAwsEmailSecretKey(e.target.value)}
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                         required
                       />
                     </div>
@@ -829,7 +837,7 @@ export default function SettingsContent() {
                         value={awsEmailRegion}
                         onChange={(e) => setAwsEmailRegion(e.target.value)}
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                       >
                         <option value="us-east-1">US East (N. Virginia)</option>
                         <option value="us-west-2">US West (Oregon)</option>
@@ -870,7 +878,7 @@ export default function SettingsContent() {
                           value={smtpHost}
                           onChange={(e) => setSmtpHost(e.target.value)}
                           disabled={emailLoading}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                           placeholder="smtp.gmail.com"
                           required
                         />
@@ -891,7 +899,7 @@ export default function SettingsContent() {
                             setSmtpPort(parseInt(e.target.value))
                           }
                           disabled={emailLoading}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                           placeholder="587"
                           required
                         />
@@ -911,7 +919,7 @@ export default function SettingsContent() {
                         value={smtpUsername}
                         onChange={(e) => setSmtpUsername(e.target.value)}
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                         required
                       />
                     </div>
@@ -929,7 +937,7 @@ export default function SettingsContent() {
                         value={smtpPassword}
                         onChange={(e) => setSmtpPassword(e.target.value)}
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
                         required
                       />
                     </div>
@@ -953,26 +961,28 @@ export default function SettingsContent() {
 
                 <div className="flex justify-end space-x-3 pt-4">
                   {hasEmailCredentials && (
-                    <button
+                    <Button
+                      variant="secondary"
                       type="button"
                       onClick={handleTestEmail}
                       disabled={testEmailLoading || emailLoading}
-                      className="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300"
+                      loading={testEmailLoading}
+                      size="sm"
                     >
-                      {testEmailLoading ? "Sending..." : "Send Test Email"}
-                    </button>
+                      Send Test Email
+                    </Button>
                   )}
-                  <button
+                  <Button
+                    variant="primary"
                     type="submit"
                     disabled={emailLoading || testEmailLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+                    loading={emailLoading}
+                    size="sm"
                   >
-                    {emailLoading
-                      ? "Saving..."
-                      : hasEmailCredentials
-                        ? "Update Email Settings"
-                        : "Save Email Settings"}
-                  </button>
+                    {hasEmailCredentials
+                      ? "Update Email Settings"
+                      : "Save Email Settings"}
+                  </Button>
                 </div>
               </form>
             </div>
@@ -992,13 +1002,14 @@ export default function SettingsContent() {
             </p>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {importSources.map((source) => (
-                <button
+                <Button
                   key={source.id}
+                  variant="secondary"
                   onClick={() => handleImport(source.id)}
                   disabled={importingFrom !== ""}
-                  className="w-full p-4 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-left transition"
+                  className="w-full p-4 h-auto items-start justify-start text-left"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between w-full">
                     <div>
                       <h3 className="font-semibold text-gray-900">
                         {source.name}
@@ -1013,21 +1024,21 @@ export default function SettingsContent() {
                       </p>
                     </div>
                     {importingFrom === source.id && (
-                      <div className="text-blue-600">Importing...</div>
+                      <div className="text-brand-primary">Importing...</div>
                     )}
                   </div>
-                </button>
+                </Button>
               ))}
             </div>
             <div className="flex justify-end space-x-3 mt-6">
-              <button
+              <Button
+                variant="secondary"
                 type="button"
                 onClick={() => setShowImportModal(false)}
                 disabled={importingFrom !== ""}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         </div>

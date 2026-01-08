@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import DashboardNav from "@/components/DashboardNav";
 import VideoList from "@/components/VideoList";
 
 interface TeamMember {
@@ -232,9 +231,9 @@ export default function TeamDetailsPage() {
   const getRoleBadgeClasses = (role: string) => {
     switch (role) {
       case "OWNER":
-        return "bg-purple-100 text-purple-800";
+        return "bg-brand-secondary text-brand-dark";
       case "ADMIN":
-        return "bg-blue-100 text-blue-800";
+        return "bg-brand-accent text-brand-dark";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -271,13 +270,12 @@ export default function TeamDetailsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardNav />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/dashboard/teams"
-            className="text-blue-600 hover:text-blue-700 mb-4 inline-flex items-center"
+            className="text-black-600 mb-4 inline-flex items-center"
           >
             <svg
               className="w-4 h-4 mr-1"
@@ -350,7 +348,7 @@ export default function TeamDetailsPage() {
               {canInviteMembers && (
                 <button
                   onClick={() => setShowInviteModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+                  className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-hover transition text-sm"
                 >
                   Invite Member
                 </button>
@@ -373,9 +371,9 @@ export default function TeamDetailsPage() {
                     className="p-6 flex items-center justify-between"
                   >
                     <div className="flex items-center">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                      <div className="w-8 h-8 bg-brand-secondary rounded-full flex items-center justify-center mr-3">
                         <svg
-                          className="w-4 h-4 text-blue-600"
+                          className="w-4 h-4 text-brand-primary"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -425,7 +423,7 @@ export default function TeamDetailsPage() {
                           onClick={() =>
                             handleRemoveMember(member.user.id, member.user.email)
                           }
-                          className="text-red-600 hover:text-red-700 text-sm"
+                          className="text-red-700 text-sm hover:underline transition cursor-pointer"
                         >
                           Remove
                         </button>
@@ -450,7 +448,7 @@ export default function TeamDetailsPage() {
             <div className="p-6">
               <Link
                 href={`/settings?teamId=${teamId}`}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                className="inline-flex items-center px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover transition text-sm font-medium"
               >
                 <svg
                   className="w-4 h-4 mr-2"
@@ -527,7 +525,7 @@ export default function TeamDetailsPage() {
                   </div>
                   <button
                     onClick={handleDeleteTeam}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
+                    className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium cursor-pointer"
                   >
                     Delete Team
                   </button>
@@ -553,7 +551,7 @@ export default function TeamDetailsPage() {
                       required
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
                       placeholder="colleague@example.com"
                     />
                   </div>
@@ -568,7 +566,7 @@ export default function TeamDetailsPage() {
                         onChange={(e) =>
                           setInviteRole(e.target.value as "OWNER" | "ADMIN" | "MEMBER")
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
                       >
                         <option value="MEMBER">Member</option>
                         <option value="ADMIN">Admin</option>
@@ -602,7 +600,7 @@ export default function TeamDetailsPage() {
                     <button
                       type="submit"
                       disabled={inviting}
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                      className="flex-1 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover transition disabled:opacity-50"
                     >
                       {inviting ? "Inviting..." : "Invite"}
                     </button>
@@ -638,7 +636,7 @@ export default function TeamDetailsPage() {
                       onChange={(e) =>
                         setNewRole(e.target.value as "OWNER" | "ADMIN" | "MEMBER")
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
                     >
                       <option value="MEMBER">Member</option>
                       <option value="ADMIN">Admin</option>
@@ -670,7 +668,7 @@ export default function TeamDetailsPage() {
                     <button
                       type="submit"
                       disabled={updating}
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                      className="flex-1 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover transition disabled:opacity-50"
                     >
                       {updating ? "Updating..." : "Update Role"}
                     </button>

@@ -5,6 +5,7 @@ import VideoPlayer from "./VideoPlayer";
 import ShareVideoModal from "./ShareVideoModal";
 import EmbedCodeModal from "./EmbedCodeModal";
 import VisibilityToggle from "./VisibilityToggle";
+import { Button } from "./ui/Button";
 
 interface Video {
   id: string;
@@ -51,6 +52,8 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
   };
 
   useEffect(() => {
+    setLoading(true);
+    setVideos([]);
     fetchVideos();
   }, [type, teamId, groupId]);
 
@@ -113,81 +116,68 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
         {videos.map((video) => (
           <div
             key={video.id}
-            className={`bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow ${
+            className={`bg-white shadow rounded-lg hover:shadow-lg transition-shadow ${
               viewMode === "list" ? "flex items-center" : ""
             }`}
           >
-            <div className={`p-5 ${viewMode === "list" ? "flex-1 flex items-center gap-6" : ""}`}>
+            <div className={`p-5 ${viewMode === "list" ? "flex gap-6 w-full" : ""}`}>
               {/* Video Info Section */}
-              <div className={viewMode === "list" ? "flex-1" : ""}>
-                <div className={`flex items-center ${viewMode === "list" ? "gap-4 mb-2" : "justify-between mb-3"}`}>
-                  <h3 className={`font-medium text-gray-900 ${viewMode === "list" ? "text-xl" : "text-lg truncate"}`}>
-                    {video.title}
-                  </h3>
-                  {viewMode === "grid" && (
-                    <div className="flex gap-2">
-                      <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          video.transcodingStatus === "COMPLETED"
-                            ? "bg-green-100 text-green-800"
-                            : video.transcodingStatus === "PROCESSING"
+              <div className={viewMode === "list" ? "flex-1 min-w-0 flex flex-col justify-center" : ""}>
+                <div className={`${viewMode === "list" ? "mb-1" : "mb-3"}`}>
+                  <div className={`flex items-center ${viewMode === "list" ? "gap-4 mb-2" : "justify-between mb-3"}`}>
+                    <h3 className={`font-medium text-gray-900 ${viewMode === "list" ? "text-xl" : "text-lg truncate"}`}>
+                      {video.title}
+                    </h3>
+                    {viewMode === "grid" && video.transcodingStatus !== "COMPLETED" && (
+                      <div className="flex gap-2">
+                        <span
+                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            video.transcodingStatus === "PROCESSING"
                               ? "bg-yellow-100 text-yellow-800"
                               : video.transcodingStatus === "FAILED"
                                 ? "bg-red-100 text-red-800"
                                 : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {video.transcodingStatus}
-                      </span>
-                      {type === "owned" && video.transcodingStatus === "COMPLETED" && (
-                        <span
-                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                            video.visibility === "PUBLIC"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-gray-100 text-gray-800"
                           }`}
                         >
-                          {video.visibility === "PUBLIC" ? "Public" : "Private"}
+                          {video.transcodingStatus}
                         </span>
-                      )}
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    )}
+                  </div>
 
-                {viewMode === "list" && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        video.transcodingStatus === "COMPLETED"
-                          ? "bg-green-100 text-green-800"
-                          : video.transcodingStatus === "PROCESSING"
+                  {viewMode === "list" && video.transcodingStatus !== "COMPLETED" && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          video.transcodingStatus === "PROCESSING"
                             ? "bg-yellow-100 text-yellow-800"
                             : video.transcodingStatus === "FAILED"
                               ? "bg-red-100 text-red-800"
                               : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {video.transcodingStatus}
-                    </span>
-                    {type === "owned" && video.transcodingStatus === "COMPLETED" && (
-                      <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          video.visibility === "PUBLIC"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {video.visibility === "PUBLIC" ? "Public" : "Private"}
+                        {video.transcodingStatus}
                       </span>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {video.description && (
+                  {/* Visibility Toggle - List View */}
+                  {viewMode === "list" && type === "owned" && video.transcodingStatus === "COMPLETED" && (
+                    <div className="mb-2 flex justify-start">
+                      <VisibilityToggle
+                        videoId={video.id}
+                        currentVisibility={video.visibility}
+                        onUpdate={fetchVideos}
+                      />
+                    </div>
+                  )}
+                </div>
+
+
                   <p className={`text-sm text-gray-500 mb-3 ${viewMode === "list" ? "line-clamp-1" : "line-clamp-2"}`}>
-                    {video.description}
+                    {video.description || "No description provided."}
                   </p>
-                )}
+
 
                 {type === "shared" && video.sharedBy && (
                   <p className="text-xs text-gray-500 mb-3">
@@ -204,7 +194,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                     )}
                 </div>
 
-                {/* Visibility Toggle for Grid View */}
+                {/* Visibility Toggle - Grid View */}
                 {viewMode === "grid" && type === "owned" && video.transcodingStatus === "COMPLETED" && (
                   <div className="mb-3">
                     <VisibilityToggle
@@ -216,50 +206,120 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                 )}
               </div>
 
-              {/* Action Buttons */}
-              <div className={viewMode === "list" ? "flex items-center gap-2" : "flex flex-wrap gap-2"}>
-                {viewMode === "list" && type === "owned" && video.transcodingStatus === "COMPLETED" && (
-                  <VisibilityToggle
-                    videoId={video.id}
-                    currentVisibility={video.visibility}
-                    onUpdate={fetchVideos}
-                  />
-                )}
+              {/* Action Buttons - Grid View */}
+              {viewMode === "grid" && (
+                <div className="flex justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    {video.transcodingStatus === "COMPLETED" && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setSelectedVideo(video.id)}
+                        className="p-2.5"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </Button>
+                    )}
+                    {type === "owned" && (
+                      <>
+                        {video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setEmbedVideoId(video.id)}
+                            className="p-2"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                          </Button>
+                        )}
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setShareVideoId(video.id)}
+                          className="p-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                          </svg>
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  {type === "owned" && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleDelete(video.id)}
+                      className="p-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons - List View */}
+            {viewMode === "list" && (
+              <div className="flex flex-col gap-2 flex-shrink-0">
                 {video.transcodingStatus === "COMPLETED" && (
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => setSelectedVideo(video.id)}
-                    className={`px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 ${viewMode === "grid" ? "flex-1" : ""}`}
+                    className="p-2.5"
                   >
-                    Watch
-                  </button>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </Button>
                 )}
                 {type === "owned" && (
                   <>
                     {video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (
-                      <button
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={() => setEmbedVideoId(video.id)}
-                        className="px-3 py-2 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700"
-                        title="Get embed code"
+                        className="p-2"
                       >
-                        Embed
-                      </button>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                      </Button>
                     )}
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => setShareVideoId(video.id)}
-                      className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300"
+                      className="p-2"
                     >
-                      Share
-                    </button>
-                    <button
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => handleDelete(video.id)}
-                      className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                      className="p-2"
                     >
-                      Delete
-                    </button>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </Button>
                   </>
                 )}
               </div>
-            </div>
+            )}
           </div>
         ))}
       </div>

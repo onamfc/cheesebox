@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import DashboardNav from "@/components/DashboardNav";
 import VideoList from "@/components/VideoList";
 
 interface GroupMember {
@@ -191,13 +190,12 @@ export default function GroupDetailsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardNav />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/dashboard/groups"
-            className="text-blue-600 hover:text-blue-700 mb-4 inline-flex items-center"
+            className="text-brand-primary hover:text-brand-primary-hover mb-4 inline-flex items-center"
           >
             <svg
               className="w-4 h-4 mr-1"
@@ -246,7 +244,7 @@ export default function GroupDetailsPage() {
               )}
               {group.team && (
                 <div className="mt-2">
-                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-brand-accent text-brand-dark rounded">
                     Team: {group.team.name}
                   </span>
                 </div>
@@ -284,7 +282,7 @@ export default function GroupDetailsPage() {
               <h2 className="text-xl font-semibold text-gray-900">Members</h2>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+                className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-hover transition text-sm"
               >
                 Add Members
               </button>
@@ -302,9 +300,9 @@ export default function GroupDetailsPage() {
                   className="p-6 flex items-center justify-between"
                 >
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                    <div className="w-8 h-8 bg-brand-secondary rounded-full flex items-center justify-center mr-3">
                       <svg
-                        className="w-4 h-4 text-blue-600"
+                        className="w-4 h-4 text-brand-primary"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -332,11 +330,11 @@ export default function GroupDetailsPage() {
         </div>
 
         {/* How to Use */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-2">
+        <div className="mt-8 bg-brand-secondary border border-brand-secondary rounded-lg p-6">
+          <h3 className="font-semibold text-brand-dark mb-2">
             How to share videos with this group
           </h3>
-          <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
+          <ol className="list-decimal list-inside space-y-1 text-sm text-brand-dark">
             <li>Go to your video in the dashboard</li>
             <li>Click the share button</li>
             <li>Select "Share with Group" tab</li>
@@ -376,7 +374,7 @@ export default function GroupDetailsPage() {
                       value={newEmails}
                       onChange={(e) => setNewEmails(e.target.value)}
                       rows={6}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary font-mono text-sm"
                       placeholder="user1@example.com&#10;user2@example.com&#10;user3@example.com"
                     />
                     <p className="text-xs text-gray-500 mt-1">
@@ -405,7 +403,7 @@ export default function GroupDetailsPage() {
                     <button
                       type="submit"
                       disabled={adding}
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                      className="flex-1 px-4 py-2 bg-purple-950 text-white rounded-lg hover:bg-purple-900 transition disabled:opacity-50"
                     >
                       {adding ? "Adding..." : "Add Members"}
                     </button>
@@ -432,7 +430,7 @@ export default function GroupDetailsPage() {
                       required
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary"
                       placeholder="Enter new group name"
                       autoFocus
                     />
@@ -459,7 +457,7 @@ export default function GroupDetailsPage() {
                     <button
                       type="submit"
                       disabled={renaming}
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                      className="flex-1 px-4 py-2 bg-purple-950 text-white rounded-lg hover:bg-purple-900 transition disabled:opacity-50"
                     >
                       {renaming ? "Renaming..." : "Rename Group"}
                     </button>

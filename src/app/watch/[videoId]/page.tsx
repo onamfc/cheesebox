@@ -38,7 +38,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
           </p>
           <a
             href="/dashboard"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-purple-950 text-white rounded-md hover:bg-purple-900"
           >
             Go to Dashboard
           </a>
@@ -90,7 +90,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
           </p>
           <a
             href="/dashboard"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-purple-950 text-white rounded-md hover:bg-purple-900"
           >
             Go to Dashboard
           </a>

@@ -141,7 +141,7 @@ export default function WatchPageClient({
             <p className="text-red-400 mb-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-purple-950 text-white rounded-md hover:bg-purple-900"
             >
               Retry
             </button>

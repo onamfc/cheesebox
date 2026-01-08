@@ -99,7 +99,7 @@ export default function EmailSetupGuide() {
         <div className="mb-8 text-center">
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4"
+            className="inline-flex items-center gap-2 text-purple-700 hover:text-blue-700 mb-4"
           >
             <svg
               className="w-5 h-5"
@@ -128,7 +128,7 @@ export default function EmailSetupGuide() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
           <div className="flex items-start gap-3">
             <svg
-              className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5"
+              className="w-6 h-6 text-purple-700 flex-shrink-0 mt-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -247,7 +247,7 @@ export default function EmailSetupGuide() {
               }`}
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                <div className="flex-shrink-0 w-12 h-12 bg-purple-950 rounded-full flex items-center justify-center">
                   <svg
                     className="w-7 h-7 text-white"
                     fill="none"
@@ -293,7 +293,7 @@ export default function EmailSetupGuide() {
                         href="https://resend.com"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline font-medium"
+                        className="text-purple-700 hover:underline font-medium"
                       >
                         resend.com
                       </a>
@@ -408,7 +408,7 @@ export default function EmailSetupGuide() {
                         href="https://console.aws.amazon.com/ses"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline font-medium"
+                        className="text-purple-700 hover:underline font-medium"
                       >
                         Amazon SES Console
                       </a>
@@ -475,7 +475,7 @@ export default function EmailSetupGuide() {
                         href="https://console.aws.amazon.com/iam/home#/users"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline font-medium"
+                        className="text-purple-700 hover:underline font-medium"
                       >
                         IAM → Users
                       </a>
@@ -565,7 +565,7 @@ export default function EmailSetupGuide() {
                         href="https://myaccount.google.com"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline font-medium"
+                        className="text-purple-700 hover:underline font-medium"
                       >
                         myaccount.google.com
                       </a>
@@ -584,7 +584,7 @@ export default function EmailSetupGuide() {
                         href="https://myaccount.google.com/apppasswords"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline font-medium"
+                        className="text-purple-700 hover:underline font-medium"
                       >
                         myaccount.google.com/apppasswords
                       </a>

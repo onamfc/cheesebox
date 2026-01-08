@@ -148,7 +148,7 @@ export default function AWSSetupGuide() {
         <div className="mb-8 text-center">
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4"
+            className="inline-flex items-center gap-2 text-purple-700 hover:text-blue-700 mb-4"
           >
             <svg
               className="w-5 h-5"
@@ -177,7 +177,7 @@ export default function AWSSetupGuide() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
           <div className="flex items-start gap-3">
             <svg
-              className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5"
+              className="w-6 h-6 text-purple-700 flex-shrink-0 mt-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -200,7 +200,7 @@ export default function AWSSetupGuide() {
                 href="https://aws.amazon.com/free"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                className="inline-flex items-center gap-2 text-purple-700 hover:text-blue-700 font-medium"
               >
                 Create a free AWS account
                 <svg
@@ -313,7 +313,7 @@ export default function AWSSetupGuide() {
             {/* Manual Setup Option */}
             <div className="bg-white border-2 border-gray-300 rounded-lg p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                <div className="flex-shrink-0 w-12 h-12 bg-purple-950 rounded-full flex items-center justify-center">
                   <svg
                     className="w-7 h-7 text-white"
                     fill="none"
@@ -344,7 +344,7 @@ export default function AWSSetupGuide() {
               <ul className="space-y-2 mb-6">
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <svg
-                    className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                    className="w-5 h-5 text-purple-700 flex-shrink-0 mt-0.5"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -358,7 +358,7 @@ export default function AWSSetupGuide() {
                 </li>
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <svg
-                    className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                    className="w-5 h-5 text-purple-700 flex-shrink-0 mt-0.5"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -372,7 +372,7 @@ export default function AWSSetupGuide() {
                 </li>
                 <li className="flex items-start gap-2 text-sm text-gray-700">
                   <svg
-                    className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                    className="w-5 h-5 text-purple-700 flex-shrink-0 mt-0.5"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -387,7 +387,7 @@ export default function AWSSetupGuide() {
               </ul>
               <a
                 href="#manual-setup"
-                className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors text-center"
+                className="block w-full bg-purple-950 hover:bg-purple-900 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors text-center"
               >
                 Use Manual Setup →
               </a>
@@ -563,7 +563,7 @@ export default function AWSSetupGuide() {
           <div className="bg-white border-2 border-blue-300 rounded-lg p-6 mb-8 shadow-lg">
             <div className="flex items-center gap-3 mb-4">
               <svg
-                className="w-10 h-10 text-blue-600"
+                className="w-10 h-10 text-purple-700"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -607,7 +607,7 @@ export default function AWSSetupGuide() {
                       href="https://console.aws.amazon.com/s3"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-purple-700 hover:underline font-medium"
                     >
                       AWS Console → S3
                     </a>
@@ -693,7 +693,7 @@ export default function AWSSetupGuide() {
                       href="https://console.aws.amazon.com/iam/home#/users"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-purple-700 hover:underline font-medium"
                     >
                       AWS Console → IAM → Users
                     </a>
@@ -838,7 +838,7 @@ export default function AWSSetupGuide() {
                       href="https://console.aws.amazon.com/iam/home#/roles"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-purple-700 hover:underline font-medium"
                     >
                       AWS Console → IAM → Roles
                     </a>
@@ -1080,7 +1080,7 @@ export default function AWSSetupGuide() {
             <ul className="space-y-2 text-gray-700">
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                  className="w-5 h-5 text-purple-700 flex-shrink-0 mt-0.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1098,7 +1098,7 @@ export default function AWSSetupGuide() {
                     href="https://github.com/onamfc/cheesebox/blob/main/TROUBLESHOOTING.md"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-purple-700 hover:underline"
                   >
                     Troubleshooting Guide
                   </a>
@@ -1106,7 +1106,7 @@ export default function AWSSetupGuide() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                  className="w-5 h-5 text-purple-700 flex-shrink-0 mt-0.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1124,7 +1124,7 @@ export default function AWSSetupGuide() {
                     href="https://github.com/onamfc/cheesebox/issues"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-purple-700 hover:underline"
                   >
                     GitHub Issues
                   </a>{" "}
@@ -1133,7 +1133,7 @@ export default function AWSSetupGuide() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                  className="w-5 h-5 text-purple-700 flex-shrink-0 mt-0.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1151,7 +1151,7 @@ export default function AWSSetupGuide() {
                     href="https://github.com/onamfc/cheesebox/blob/main/README.md"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-purple-700 hover:underline"
                   >
                     full README
                   </a>

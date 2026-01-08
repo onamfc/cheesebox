@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import DashboardNav from "@/components/DashboardNav";
+import { Button } from "@/components/ui/Button";
 
 interface Group {
   id: string;
@@ -23,6 +23,8 @@ interface Group {
   };
 }
 
+type ViewMode = "grid" | "list";
+
 export default function GroupsPage() {
   const router = useRouter();
   const [groups, setGroups] = useState<Group[]>([]);
@@ -35,10 +37,23 @@ export default function GroupsPage() {
     members: "",
   });
   const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("groupsViewMode");
+      return (saved as ViewMode) || "grid";
+    }
+    return "grid";
+  });
 
   useEffect(() => {
     loadGroups();
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("groupsViewMode", viewMode);
+    }
+  }, [viewMode]);
 
   const loadGroups = async () => {
     try {
@@ -99,24 +114,43 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardNav />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Share Groups</h1>
               <p className="mt-2 text-gray-600">
                 Create groups to share videos with multiple people at once
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              Create Group
-            </button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 ${viewMode === "grid" ? "bg-blue-100 text-black-200" : "text-gray-600 hover:bg-gray-100"}`}
+                  title="Grid view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 ${viewMode === "list" ? "bg-blue-100 text-black-200" : "text-gray-600 hover:bg-gray-100"}`}
+                  title="List view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
+              <Button
+                variant="primary"
+                onClick={() => setShowCreateModal(true)}
+              >
+                Create Group
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -142,72 +176,78 @@ export default function GroupsPage() {
             <p className="text-gray-500 mb-4">
               Create your first group to easily share videos with multiple people
             </p>
-            <button
+            <Button
+              variant="primary"
               onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
             >
               Create Group
-            </button>
+            </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
             {groups.map((group) => (
               <Link
                 key={group.id}
                 href={`/dashboard/groups/${group.id}`}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 border border-gray-200"
+                className={`bg-white rounded-lg shadow hover:shadow-lg transition border border-gray-200 ${
+                  viewMode === "list" ? "flex items-center p-6" : "p-6"
+                }`}
               >
-                <div className="mb-4">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                    {group.name}
-                  </h3>
-                  {group.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {group.description}
-                    </p>
-                  )}
-                  {group.team && (
-                    <div className="mt-2">
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
-                        Team: {group.team.name}
-                      </span>
+                <div className={viewMode === "list" ? "flex items-center gap-6 w-full" : "mb-4"}>
+                  <div className={viewMode === "list" ? "flex-1 min-w-0" : ""}>
+                    <div className={viewMode === "list" ? "mb-2" : ""}>
+                      <h3 className={`font-semibold text-gray-900 ${viewMode === "list" ? "text-xl mb-1" : "text-xl mb-1"}`}>
+                        {group.name}
+                      </h3>
+                      {group.description && (
+                        <p className={`text-sm text-gray-600 ${viewMode === "list" ? "line-clamp-1" : "line-clamp-2"}`}>
+                          {group.description}
+                        </p>
+                      )}
+                      {group.team && (
+                        <div className="mt-2">
+                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-brand-accent text-brand-dark rounded">
+                            Team: {group.team.name}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
 
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                      />
-                    </svg>
-                    {group.members.length} member{group.members.length !== 1 ? "s" : ""}
-                  </div>
-                  <div className="flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                      />
-                    </svg>
-                    {group._count.videoShares} shared video
-                    {group._count.videoShares !== 1 ? "s" : ""}
+                    <div className={`text-sm text-gray-600 ${viewMode === "list" ? "flex items-center gap-6" : "space-y-2"}`}>
+                      <div className="flex items-center">
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                          />
+                        </svg>
+                        {group.members.length} member{group.members.length !== 1 ? "s" : ""}
+                      </div>
+                      <div className="flex items-center">
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        {group._count.videoShares} shared video
+                        {group._count.videoShares !== 1 ? "s" : ""}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -233,7 +273,7 @@ export default function GroupsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-900 focus:border-transparent"
                       placeholder="Marketing Team"
                     />
                   </div>
@@ -248,7 +288,7 @@ export default function GroupsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, description: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-900 focus:border-transparent"
                       placeholder="All marketing department members"
                     />
                   </div>
@@ -264,7 +304,7 @@ export default function GroupsPage() {
                         setFormData({ ...formData, members: e.target.value })
                       }
                       rows={6}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-900 focus:border-transparent font-mono text-sm"
                       placeholder="user1@example.com&#10;user2@example.com&#10;user3@example.com"
                     />
                     <p className="text-xs text-gray-500 mt-1">
@@ -279,24 +319,27 @@ export default function GroupsPage() {
                   )}
 
                   <div className="flex space-x-3 pt-4">
-                    <button
+                    <Button
+                      variant="secondary"
                       type="button"
                       onClick={() => {
                         setShowCreateModal(false);
                         setFormData({ name: "", description: "", members: "" });
                         setError("");
                       }}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                      className="flex-1"
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="primary"
                       type="submit"
                       disabled={creating}
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                      className="flex-1"
+                      loading={creating}
                     >
-                      {creating ? "Creating..." : "Create Group"}
-                    </button>
+                      Create Group
+                    </Button>
                   </div>
                 </div>
               </form>
@@ -304,6 +347,5 @@ export default function GroupsPage() {
           </div>
         )}
       </div>
-    </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import DashboardNav from "@/components/DashboardNav";
+import { Button } from "@/components/ui/Button";
 
 interface Team {
   id: string;
@@ -25,6 +25,8 @@ interface Team {
   };
 }
 
+type ViewMode = "grid" | "list";
+
 export default function TeamsPage() {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
@@ -35,10 +37,23 @@ export default function TeamsPage() {
     name: "",
   });
   const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("teamsViewMode");
+      return (saved as ViewMode) || "grid";
+    }
+    return "grid";
+  });
 
   useEffect(() => {
     loadTeams();
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("teamsViewMode", viewMode);
+    }
+  }, [viewMode]);
 
   const loadTeams = async () => {
     try {
@@ -84,9 +99,9 @@ export default function TeamsPage() {
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "OWNER":
-        return "bg-purple-100 text-purple-800";
+        return "bg-brand-primary text-white";
       case "ADMIN":
-        return "bg-blue-100 text-blue-800";
+        return "bg-brand-accent text-brand-dark";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -101,24 +116,43 @@ export default function TeamsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardNav />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Teams</h1>
               <p className="mt-2 text-gray-600">
-                Share AWS and email settings with family or team members
+                Create a team to share your AWS and email settings with someone you trust
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              Create Team
-            </button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 ${viewMode === "grid" ? "bg-blue-100 text-black-200" : "text-gray-600 hover:bg-gray-100"}`}
+                  title="Grid view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 ${viewMode === "list" ? "bg-blue-100 text-black-200" : "text-gray-600 hover:bg-gray-100"}`}
+                  title="List view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
+              <Button
+                variant="primary"
+                onClick={() => setShowCreateModal(true)}
+              >
+                Create Team
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -144,84 +178,88 @@ export default function TeamsPage() {
             <p className="text-gray-500 mb-4">
               Create a team to share your AWS and email settings with family or colleagues
             </p>
-            <button
+            <Button
+              variant="primary"
               onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
             >
               Create Team
-            </button>
+            </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
             {teams.map((team) => (
               <Link
                 key={team.id}
                 href={`/dashboard/teams/${team.id}`}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 border border-gray-200"
+                className={`bg-white rounded-lg shadow hover:shadow-lg transition border border-gray-200 ${
+                  viewMode === "list" ? "flex items-center p-6" : "p-6"
+                }`}
               >
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-semibold text-gray-900">
-                      {team.name}
-                    </h3>
-                    <span
-                      className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded ${getRoleBadgeColor(
-                        team.userRole
-                      )}`}
-                    >
-                      {team.userRole}
-                    </span>
-                  </div>
-                </div>
+                <div className={viewMode === "list" ? "flex items-center gap-6 w-full" : "mb-4"}>
+                  <div className={viewMode === "list" ? "flex-1 min-w-0" : ""}>
+                    <div className={`flex items-center ${viewMode === "list" ? "gap-4 mb-2" : "justify-between mb-2"}`}>
+                      <h3 className={`font-semibold text-gray-900 ${viewMode === "list" ? "text-xl" : "text-xl"}`}>
+                        {team.name}
+                      </h3>
+                      <span
+                        className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded ${getRoleBadgeColor(
+                          team.userRole
+                        )}`}
+                      >
+                        {team.userRole}
+                      </span>
+                    </div>
 
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
-                    {team.members.length} member{team.members.length !== 1 ? "s" : ""}
-                  </div>
-                  <div className="flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                      />
-                    </svg>
-                    {team._count.videos} video{team._count.videos !== 1 ? "s" : ""}
-                  </div>
-                  <div className="flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                    {team._count.groups} group{team._count.groups !== 1 ? "s" : ""}
+                    <div className={`text-sm text-gray-600 ${viewMode === "list" ? "flex items-center gap-6" : "space-y-2"}`}>
+                      <div className="flex items-center">
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                          />
+                        </svg>
+                        {team.members.length} member{team.members.length !== 1 ? "s" : ""}
+                      </div>
+                      <div className="flex items-center">
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        {team._count.videos} video{team._count.videos !== 1 ? "s" : ""}
+                      </div>
+                      <div className="flex items-center">
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                          />
+                        </svg>
+                        {team._count.groups} group{team._count.groups !== 1 ? "s" : ""}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -247,7 +285,7 @@ export default function TeamsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-900 focus:border-transparent"
                       placeholder="Smith Family"
                     />
                     <p className="text-xs text-gray-500 mt-1">
@@ -272,24 +310,27 @@ export default function TeamsPage() {
                   )}
 
                   <div className="flex space-x-3 pt-4">
-                    <button
+                    <Button
+                      variant="secondary"
                       type="button"
                       onClick={() => {
                         setShowCreateModal(false);
                         setFormData({ name: "" });
                         setError("");
                       }}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                      className="flex-1"
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="primary"
                       type="submit"
                       disabled={creating}
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                      className="flex-1"
+                      loading={creating}
                     >
-                      {creating ? "Creating..." : "Create Team"}
-                    </button>
+                      Create Team
+                    </Button>
                   </div>
                 </div>
               </form>
@@ -297,6 +338,5 @@ export default function TeamsPage() {
           </div>
         )}
       </div>
-    </div>
   );
 }

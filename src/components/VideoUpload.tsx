@@ -164,7 +164,7 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               disabled={uploading}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary text-black"
               placeholder="Enter video title"
               required
             />
@@ -183,7 +183,7 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
               onChange={(e) => setDescription(e.target.value)}
               disabled={uploading}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary text-black"
               placeholder="Enter video description (optional)"
             />
           </div>
@@ -201,7 +201,7 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
                 value={selectedTeam}
                 onChange={(e) => setSelectedTeam(e.target.value)}
                 disabled={uploading}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary text-black"
               >
                 <option value="">My Personal Account</option>
                 {teams.map((team) => (
@@ -229,7 +229,7 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
               accept="video/*"
               onChange={handleFileChange}
               disabled={uploading}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary"
               required
             />
             {file && (
@@ -252,7 +252,7 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-brand-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -271,7 +271,7 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
             <button
               type="submit"
               disabled={uploading}
-              className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-brand-primary border border-transparent rounded-md text-sm font-medium text-white hover:bg-brand-primary-hover disabled:bg-gray-400"
             >
               {uploading ? "Uploading..." : "Upload"}
             </button>

@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { theme } from '@/config/theme';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -13,9 +14,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const baseStyles = 'block w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed';
 
+    // Centralized theme configuration - edit src/config/theme.ts to change colors
     const stateStyles = error
-      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-      : 'border-gray-300 focus:border-purple-500 focus:ring-purple-500';
+      ? theme.input.errorBorder
+      : theme.input.border;
 
     return (
       <div className={containerClassName}>

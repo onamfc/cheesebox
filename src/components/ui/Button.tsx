@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
+import { theme } from '@/config/theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success' | 'warning' | 'info';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
@@ -19,11 +20,15 @@ interface LinkButtonProps extends Omit<ButtonProps, 'onClick' | 'type' | 'loadin
   href: string;
 }
 
+// Centralized theme configuration - edit src/config/theme.ts to change colors
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-purple-600 hover:bg-purple-700 text-white',
-  secondary: 'bg-white border-2 border-purple-300 text-purple-900 hover:bg-purple-50',
-  ghost: 'bg-transparent border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white',
-  danger: 'bg-red-600 hover:bg-red-700 text-white',
+  primary: theme.button.primary,
+  secondary: theme.button.secondary,
+  ghost: theme.button.ghost,
+  danger: theme.button.danger,
+  success: theme.button.success,
+  warning: theme.button.warning,
+  info: theme.button.info,
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -32,7 +37,7 @@ const sizeStyles: Record<ButtonSize, string> = {
   lg: 'px-6 py-3 text-lg',
 };
 
-const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+const baseStyles = `inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer`;
 
 export function Button({
   variant = 'primary',

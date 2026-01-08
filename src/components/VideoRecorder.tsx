@@ -2,6 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "./ui/Button";
+import Input from "./ui/Input";
+import { theme } from "@/config/theme";
 
 type RecordingMode = "webcam" | "screen" | "screen-webcam";
 type RecordingState = "idle" | "recording" | "preview" | "uploading";
@@ -433,12 +436,13 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
       {/* Mode Selection Screen */}
       {recordingState === "idle" && !recordingMode && (
         <div className="h-full flex flex-col items-center justify-center p-8">
-          <button
+          <Button
             onClick={() => router.back()}
-            className="absolute top-4 left-4 text-white hover:text-gray-300"
+            variant="ghost"
+            className="absolute top-4 left-4 !border-0 !text-white hover:!text-gray-300 !bg-transparent hover:!bg-transparent"
           >
             ✕ Close
-          </button>
+          </Button>
 
           <h1 className="text-3xl font-bold text-white mb-8">Record Video</h1>
 
@@ -449,12 +453,13 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold mb-3">{getErrorMessage().title}</h3>
                   <div className="text-gray-200">{getErrorMessage().message}</div>
-                  <button
+                  <Button
                     onClick={() => setError(null)}
-                    className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors"
+                    variant="danger"
+                    className="mt-4"
                   >
                     Try Again
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -463,29 +468,29 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
           <div className="grid gap-6 max-w-2xl w-full">
             <button
               onClick={() => handleModeSelect("webcam")}
-              className="p-8 bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-xl text-white transition-all transform hover:scale-105"
+              className={`p-8 bg-gradient-to-br ${theme.gradients.primary} rounded-xl text-white transition-all transform hover:scale-105 shadow-lg`}
             >
               <div className="text-4xl mb-4">📹</div>
               <h2 className="text-2xl font-bold mb-2">Webcam</h2>
-              <p className="text-purple-100">Record using your camera and microphone</p>
+              <p className={theme.gradients.primaryText}>Record using your camera and microphone</p>
             </button>
 
             <button
               onClick={() => handleModeSelect("screen")}
-              className="p-8 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-xl text-white transition-all transform hover:scale-105"
+              className={`p-8 bg-gradient-to-br ${theme.gradients.primary} rounded-xl text-white transition-all transform hover:scale-105 shadow-lg`}
             >
               <div className="text-4xl mb-4">🖥️</div>
               <h2 className="text-2xl font-bold mb-2">Screen Recording</h2>
-              <p className="text-blue-100">Record your screen with audio</p>
+              <p className={theme.gradients.primaryText}>Record your screen with audio</p>
             </button>
 
             <button
               onClick={() => handleModeSelect("screen-webcam")}
-              className="p-8 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 rounded-xl text-white transition-all transform hover:scale-105"
+              className={`p-8 bg-gradient-to-br ${theme.gradients.primary} rounded-xl text-white transition-all transform hover:scale-105 shadow-lg`}
             >
               <div className="text-4xl mb-4">🎥</div>
               <h2 className="text-2xl font-bold mb-2">Screen + Webcam</h2>
-              <p className="text-green-100">Record screen with webcam overlay</p>
+              <p className={theme.gradients.primaryText}>Record screen with webcam overlay</p>
             </button>
           </div>
         </div>
@@ -537,12 +542,14 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
 
           {/* Recording Controls */}
           <div className="bg-gray-900 p-6 flex justify-center">
-            <button
+            <Button
               onClick={stopRecording}
-              className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-semibold text-lg transition-colors"
+              variant="danger"
+              size="lg"
+              className="!rounded-full px-8"
             >
               ⏹ Stop Recording
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -562,12 +569,12 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
             </div>
 
             <div className="space-y-4">
-              <input
+              <Input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Add a title (optional)"
-                className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none"
+                className="bg-gray-800 text-white border-gray-700 focus:border-purple-500 placeholder-gray-400"
               />
 
               {/* Group Selection */}
@@ -599,18 +606,20 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
               )}
 
               <div className="flex gap-4">
-                <button
+                <Button
                   onClick={handleRetake}
-                  className="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors"
+                  variant="secondary"
+                  className="flex-1"
                 >
                   🔄 Retake
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleUpload}
-                  className="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+                  variant="primary"
+                  className="flex-1"
                 >
                   ⬆️ Upload
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -620,12 +629,13 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
       {/* Uploading Screen */}
       {recordingState === "uploading" && (
         <div className="h-full flex flex-col items-center justify-center bg-gray-900">
-          <button
+          <Button
             onClick={() => router.push("/dashboard")}
-            className="absolute top-4 right-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors"
+            variant="secondary"
+            className="absolute top-4 right-4"
           >
             ← Back to Dashboard
-          </button>
+          </Button>
           <div className="text-center">
             <div className="mb-4 text-6xl">⬆️</div>
             <h2 className="text-2xl font-bold text-white mb-4">Uploading...</h2>

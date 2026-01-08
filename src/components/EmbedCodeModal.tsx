@@ -148,7 +148,7 @@ export default function EmbedCodeModal({
                   onClick={() => setEmbedSize("responsive")}
                   className={`px-3 py-1 text-xs rounded-md ${
                     embedSize === "responsive"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-purple-950 text-white"
                       : "bg-gray-200 text-gray-700"
                   }`}
                 >
@@ -158,7 +158,7 @@ export default function EmbedCodeModal({
                   onClick={() => setEmbedSize("fixed")}
                   className={`px-3 py-1 text-xs rounded-md ${
                     embedSize === "fixed"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-purple-950 text-white"
                       : "bg-gray-200 text-gray-700"
                   }`}
                 >
