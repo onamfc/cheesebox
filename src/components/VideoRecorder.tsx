@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "./ui/Button";
 import Input from "./ui/Input";
 import { theme } from "@/config/theme";
+import { fetchCsrfToken } from "@/lib/csrf-client";
 
 type RecordingMode = "webcam" | "screen";
 type RecordingState = "idle" | "countdown" | "recording" | "preview" | "uploading";
@@ -363,6 +364,10 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
 
     try {
       setRecordingState("uploading");
+
+      // Fetch CSRF token for authentication
+      const csrfToken = await fetchCsrfToken();
+
       const formData = new FormData();
 
       const filename = `recording-${Date.now()}.webm`;
@@ -428,6 +433,8 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
       });
 
       xhr.open("POST", "/api/videos/upload");
+      // Add CSRF token header for authentication
+      xhr.setRequestHeader("x-csrf-token", csrfToken);
       xhr.send(formData);
     } catch (err) {
       console.error("Upload error:", err);
