@@ -6,6 +6,171 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.6.1] - 2026-01-09
+### Changed
+- **BREAKING**: Migrated from `middleware.ts` to `proxy.ts` per Next.js 16 convention
+  - Renamed file: `src/middleware.ts` → `src/proxy.ts`
+  - Renamed export: `middleware()` → `proxy()`
+  - Updated all documentation references
+  - Eliminates deprecation warning in Next.js 16
+- **CSRF Cookie Name**: Conditional cookie naming for development vs production
+  - Production: `__Host-csrf-token` (requires HTTPS, most secure)
+  - Development: `csrf-token` (works with HTTP localhost)
+  - Ensures CSRF protection works in both environments
+
+### Fixed
+- **CSRF Edge Runtime Compatibility**: Converted to Web Crypto API
+  - Replaced Node.js `crypto` module with Web Crypto API
+  - `generateCsrfToken()`: Now uses `crypto.getRandomValues()`
+  - `hashToken()`: Now uses `crypto.subtle.digest()` (async)
+  - Made `validateCsrfToken()` async to support Web Crypto
+  - Updated middleware and all callers to handle async validation
+  - Fixes "edge runtime does not support Node.js 'crypto' module" error
+  - Fully compatible with Next.js Edge Runtime
+
+### Documentation
+- **README.md**: Comprehensive security documentation update
+  - Updated Next.js badge from 14 to 16
+  - Added "Security-Hardened" badge
+  - Added prominent security notice for v1.6.0
+  - Reorganized features into "Core" and "Security" sections
+  - Expanded tech stack with security tools
+  - Added comprehensive security section with subsections:
+    - Authentication & Authorization
+    - Attack Prevention
+    - Data Protection
+    - Security Testing (70+ tests)
+  - Added security-related troubleshooting
+  - Updated installation guide with all required secrets
+  - Reorganized documentation links by category
+  - Updated roadmap with completed security items
+- **CSRF Documentation**: Updated all proxy/middleware references
+  - Updated `docs/CSRF_PROTECTION.md`
+  - Updated `TESTING_CSRF.md`
+  - Updated `SECURITY_COMPLETE.md`
+  - Updated test file `src/__tests__/security/csrf-protection.test.ts`
+
+### Testing
+- **CSRF Tests**: Updated to verify Web Crypto API usage
+  - Changed test to check for `crypto.subtle.digest` instead of `createHash`
+  - Updated test paths from `middleware.ts` to `proxy.ts`
+  - All 70 security tests passing
+
+
+## [1.6.0] - 2026-01-08
+### Security
+- **CRITICAL FIX**: Eliminated hardcoded JWT secret fallback values (CWE-798)
+  - Application now fails fast if `JWT_SECRET` environment variable not set
+  - Prevents complete authentication bypass vulnerability
+  - Centralized JWT secret management in `src/lib/jwt.ts`
+  - Added strong secret generation to `.env.example`
+- **CRITICAL FIX**: Fixed incomplete access control on streaming token endpoint
+  - Added team membership verification
+  - Added group sharing verification
+  - Ensures consistent authorization across all video access methods
+- **HIGH FIX**: Eliminated path traversal vulnerability in streaming endpoints (CWE-22)
+  - Created comprehensive path validation library (`src/lib/path-validation.ts`)
+  - Blocks directory traversal attempts (`..`, null bytes, backslashes)
+  - Validates file extensions (only `.m3u8` and `.ts` allowed)
+  - Normalizes and bounds-checks all S3 key construction
+  - Applied to both authenticated and public streaming endpoints
+- **HIGH FIX**: Implemented rate limiting on authentication endpoints (CWE-307)
+  - Login: 5 attempts per 15 minutes per email
+  - Registration: 3 attempts per hour per IP address
+  - Progressive exponential backoff delays (2^n seconds, max 60s)
+  - Uses Upstash Redis for distributed rate limiting
+  - Includes `Retry-After` headers on 429 responses
+  - Graceful degradation when Redis not configured (with warnings)
+  - Failed login tracking with automatic cleanup on success
+- **HIGH FIX**: Eliminated AWS credentials exposure in API responses (CWE-200)
+  - GET endpoint now returns configuration status instead of credentials
+  - Shows last 4 characters of access key only (e.g., `***ABCD`)
+  - Never includes `secretAccessKey` in any form
+  - Prevents credential theft via XSS or session hijacking
+- **MEDIUM FIX**: Prevented user enumeration via error messages
+  - Registration endpoint uses generic "Unable to complete registration" message
+  - Login endpoint uses consistent "Invalid email or password" message
+  - Prevents attackers from discovering valid email addresses
+- **HIGH FIX**: Implemented CSRF protection proxy (CWE-352)
+  - Double Submit Cookie pattern with server-side validation
+  - Protects all state-changing API requests (POST, PUT, PATCH, DELETE)
+  - Automatic token generation and validation via Edge proxy
+  - Web Crypto API for Edge Runtime compatibility
+  - Timing-safe token comparison to prevent timing attacks
+  - HttpOnly, Secure, SameSite cookies with __Host- prefix (production) or regular prefix (development)
+  - Mobile JWT endpoints automatically exempted
+  - Client-side utilities for easy integration (`fetchWithCsrf`, `getCsrfHeaders`)
+  - Comprehensive documentation in `docs/CSRF_PROTECTION.md`
+
+### Added
+- **Security Testing Infrastructure**: Created comprehensive test suites to prevent regressions
+  - `src/__tests__/security/jwt-secret.test.ts` - Verifies no hardcoded secrets (7 tests)
+  - `src/__tests__/security/path-traversal.test.ts` - Validates path security (13 tests)
+  - `src/__tests__/security/credential-exposure.test.ts` - Ensures no credential leaks (5 tests)
+  - `src/__tests__/security/rate-limiting.test.ts` - Verifies brute force protection (8 tests)
+  - `src/__tests__/security/authentication.test.ts` - Comprehensive auth security (10 tests)
+  - 43+ total security tests covering critical vulnerabilities
+  - Jest testing framework with TypeScript support
+  - Security test documentation in `src/__tests__/security/README.md`
+- **Security Documentation**: Comprehensive security fix documentation
+  - `SECURITY_FIXES.md` - Detailed report of all vulnerabilities and fixes
+  - Before/after code examples for each fix
+  - Proof of concept examples for blocked attacks
+  - Configuration and deployment checklists
+  - Ongoing maintenance recommendations
+- **Rate Limiting Library**: `src/lib/rate-limit.ts`
+  - Multiple rate limiters for different use cases (login, register, upload, API, embed)
+  - Helper functions for checking limits and tracking failures
+  - Progressive delay calculation
+  - Client IP extraction utility
+- **Path Validation Library**: `src/lib/path-validation.ts`
+  - Comprehensive path segment validation
+  - S3 key bounds checking
+  - File extension whitelisting
+  - Character set validation
+- **CSRF Protection System**: Complete CSRF protection implementation
+  - `src/proxy.ts` - Edge proxy for automatic CSRF validation
+  - `src/lib/csrf.ts` - Server-side CSRF token generation and validation
+  - `src/lib/csrf-client.ts` - Client-side utilities (`fetchWithCsrf`, `getCsrfHeaders`)
+  - `src/app/api/csrf-token/route.ts` - Token endpoint for client requests
+  - `docs/CSRF_PROTECTION.md` - Complete usage guide and migration instructions
+  - `src/__tests__/security/csrf-protection.test.ts` - 20+ security tests
+
+### Changed
+- Updated `src/app/api/auth/mobile/login/route.ts` with rate limiting and progressive delays
+- Updated `src/app/api/auth/register/route.ts` with rate limiting and generic error messages
+- Updated `src/app/api/videos/[id]/stream/[...path]/route.ts` with path validation
+- Updated `src/app/api/embed/[videoId]/stream/[...path]/route.ts` with path validation
+- Updated `src/app/api/videos/[id]/streaming-token/route.ts` with complete access control
+- Updated `src/app/api/aws-credentials/route.ts` to return status only, never credentials
+
+### Dependencies
+- Added `@upstash/ratelimit@^2.0.7` - Distributed rate limiting
+- Added `@upstash/redis@^1.36.1` - Redis client for rate limiting
+- Added `csrf@^3.1.0` - CSRF token generation and validation
+- Added `jest@latest` - Testing framework
+- Added `@jest/globals@latest` - Jest globals
+- Added `@types/jest@latest` - Jest type definitions
+- Added `ts-jest@latest` - TypeScript support for Jest
+- Added `ts-node@latest` - TypeScript execution for tests
+
+### Configuration
+- Added `JWT_SECRET` to `.env` (generated strong secret)
+- Added `JWT_SECRET` to `.env.example` with generation instructions
+- Added `CSRF_SECRET` to `.env` (generated strong secret)
+- Added `CSRF_SECRET` to `.env.example` with generation instructions
+- Added `UPSTASH_REDIS_REST_URL` to `.env.example` (optional)
+- Added `UPSTASH_REDIS_REST_TOKEN` to `.env.example` (optional)
+- Created `jest.config.js` for test configuration
+- Created `src/proxy.ts` for Edge proxy
+- Added test scripts to `package.json`:
+  - `npm test` - Run all tests
+  - `npm run test:security` - Run security tests only
+  - `npm run test:watch` - Watch mode for development
+  - `npm run test:coverage` - Generate coverage report
+  - `npm run security-check` - Security tests + type check
+
+
 ## [1.5.4] - 2026-01-08
 ### Added
 - loading screen while video loads

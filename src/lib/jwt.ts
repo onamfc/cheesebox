@@ -1,6 +1,14 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+// Fail fast if JWT_SECRET is not configured - prevents authentication bypass
+if (!process.env.JWT_SECRET) {
+  throw new Error(
+    'CRITICAL SECURITY ERROR: JWT_SECRET environment variable must be set. ' +
+    'Generate a secure secret with: openssl rand -base64 64'
+  );
+}
+
+export const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = '30d'; // 30 days
 
 export interface JwtPayload {

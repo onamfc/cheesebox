@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { createS3Client } from "@/lib/aws-services";
 import { decrypt } from "@/lib/encryption";
+import { validateStreamingPath, validateS3Key } from "@/lib/path-validation";
 
 interface RouteParams {
   params: Promise<{
@@ -21,6 +22,15 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { videoId, path } = await params;
+
+    // Validate path for security (prevent path traversal attacks)
+    const pathValidation = validateStreamingPath(path);
+    if (!pathValidation.isValid) {
+      return NextResponse.json(
+        { error: "Invalid file path" },
+        { status: 400 }
+      );
+    }
 
     // Fetch video - must be PUBLIC and COMPLETED
     const video = await prisma.video.findUnique({
@@ -67,10 +77,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // We need to construct paths like: "videos/userId/videoId/output/segment_001.ts"
     const manifestDir = video.hlsManifestKey.substring(
       0,
-      video.hlsManifestKey.lastIndexOf("/")
+      video.hlsManifestKey.lastIndexOf("/") + 1
     );
     const requestedPath = path.join("/");
-    const s3Key = `${manifestDir}/${requestedPath}`;
+
+    // Validate S3 key to prevent path traversal
+    const s3Key = validateS3Key(manifestDir, requestedPath);
+    if (!s3Key) {
+      return NextResponse.json(
+        { error: "Access denied" },
+        { status: 403 }
+      );
+    }
 
     // Create S3 client
     const s3Client = createS3Client({

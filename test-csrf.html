@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSRF Protection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSRF Protection Manual Test</h1>
+
+    <div class="test-section">
+        <h2>1. Get CSRF Token</h2>
+        <button class="btn-success" onclick="getToken()">Get Token</button>
+        <pre id="token-result">Click button to fetch token...</pre>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Valid Request (with token)</h2>
+        <button class="btn-success" onclick="testValidRequest()">Send Valid Request</button>
+        <pre id="valid-result">Click button to test...</pre>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Invalid Request (without token)</h2>
+        <button class="btn-danger" onclick="testInvalidRequest()">Send Invalid Request</button>
+        <pre id="invalid-result">Click button to test...</pre>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Using fetchWithCsrf()</h2>
+        <button class="btn-success" onclick="testFetchWithCsrf()">Test fetchWithCsrf</button>
+        <pre id="fetch-csrf-result">Click button to test...</pre>
+    </div>
+
+    <script type="module">
+        let csrfToken = null;
+
+        // Make functions global
+        window.getToken = async function() {
+            try {
+                const response = await fetch('/api/csrf-token');
+                const data = await response.json();
+                csrfToken = data.csrfToken;
+
+                document.getElementById('token-result').textContent =
+                    `✅ Success!\n\nToken: ${csrfToken}\n\nCookie should be set: __Host-csrf-token`;
+                document.getElementById('token-result').parentElement.classList.add('success');
+            } catch (error) {
+                document.getElementById('token-result').textContent =
+                    `❌ Error: ${error.message}`;
+                document.getElementById('token-result').parentElement.classList.add('error');
+            }
+        };
+
+        window.testValidRequest = async function() {
+            if (!csrfToken) {
+                document.getElementById('valid-result').textContent =
+                    '❌ Please get token first (click "Get Token" button above)';
+                return;
+            }
+
+            try {
+                // Make a POST request to a test endpoint with CSRF token
+                const response = await fetch('/api/csrf-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': csrfToken
+                    },
+                    body: JSON.stringify({ test: 'data' })
+                });
+
+                const statusText = response.ok ? '✅ Success' : '❌ Failed';
+                const data = await response.json().catch(() => ({}));
+
+                document.getElementById('valid-result').textContent =
+                    `${statusText}\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+
+                if (response.ok || response.status === 405) { // 405 is OK - just means POST not implemented on that endpoint
+                    document.getElementById('valid-result').parentElement.classList.add('success');
+                } else {
+                    document.getElementById('valid-result').parentElement.classList.add('error');
+                }
+            } catch (error) {
+                document.getElementById('valid-result').textContent =
+                    `❌ Error: ${error.message}`;
+                document.getElementById('valid-result').parentElement.classList.add('error');
+            }
+        };
+
+        window.testInvalidRequest = async function() {
+            try {
+                // Make a POST request WITHOUT CSRF token - should fail
+                const response = await fetch('/api/csrf-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ test: 'data' })
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (response.status === 403) {
+                    document.getElementById('invalid-result').textContent =
+                        `✅ Correctly rejected!\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                    document.getElementById('invalid-result').parentElement.classList.add('success');
+                } else {
+                    document.getElementById('invalid-result').textContent =
+                        `❌ Should have been rejected!\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                    document.getElementById('invalid-result').parentElement.classList.add('error');
+                }
+            } catch (error) {
+                document.getElementById('invalid-result').textContent =
+                    `❌ Error: ${error.message}`;
+                document.getElementById('invalid-result').parentElement.classList.add('error');
+            }
+        };
+
+        window.testFetchWithCsrf = async function() {
+            try {
+                // Dynamically import the client library
+                const { fetchWithCsrf } = await import('/src/lib/csrf-client.ts');
+
+                const response = await fetchWithCsrf('/api/csrf-token', {
+                    method: 'POST',
+                    body: JSON.stringify({ test: 'data' })
+                });
+
+                const statusText = response.ok ? '✅ Success' : '❌ Failed';
+                const data = await response.json().catch(() => ({}));
+
+                document.getElementById('fetch-csrf-result').textContent =
+                    `${statusText}\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}\n\nfetchWithCsrf automatically included the CSRF token!`;
+
+                if (response.ok || response.status === 405) {
+                    document.getElementById('fetch-csrf-result').parentElement.classList.add('success');
+                } else {
+                    document.getElementById('fetch-csrf-result').parentElement.classList.add('error');
+                }
+            } catch (error) {
+                document.getElementById('fetch-csrf-result').textContent =
+                    `Note: fetchWithCsrf requires proper module setup.\n\nFor manual testing, use the buttons above.\n\nError: ${error.message}`;
+            }
+        };
+    </script>
+</body>
+</html>

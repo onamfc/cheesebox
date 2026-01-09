@@ -5,8 +5,8 @@ import { decrypt } from "@/lib/encryption";
 import { createS3Client, generatePresignedUrl } from "@/lib/aws-services";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { verify } from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this-in-production";
+import { JWT_SECRET } from "@/lib/jwt";
+import { validateStreamingPath, validateS3Key } from "@/lib/path-validation";
 
 export async function GET(
   request: NextRequest,
@@ -15,8 +15,9 @@ export async function GET(
   try {
     const { id, path } = await params;
 
-    // Validate path
-    if (!path || path.length === 0 || path[0] === 'undefined' || path[0] === '') {
+    // Validate path for security (prevent path traversal attacks)
+    const pathValidation = validateStreamingPath(path);
+    if (!pathValidation.isValid) {
       return NextResponse.json(
         { error: "Invalid file path" },
         { status: 400 }
@@ -167,7 +168,15 @@ export async function GET(
       0,
       video.hlsManifestKey!.lastIndexOf("/") + 1,
     );
-    const s3Key = manifestDir + filePath;
+
+    // Validate S3 key to prevent path traversal
+    const s3Key = validateS3Key(manifestDir, filePath);
+    if (!s3Key) {
+      return NextResponse.json(
+        { error: "Access denied" },
+        { status: 403 }
+      );
+    }
 
     // Get the file from S3
     const s3Client = createS3Client(credentials);

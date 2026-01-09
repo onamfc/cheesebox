@@ -62,21 +62,29 @@ export async function GET(request: NextRequest) {
 
     if (!credentials) {
       return NextResponse.json(
-        { error: "AWS credentials not found" },
-        { status: 404 },
+        {
+          configured: false,
+          message: "AWS credentials not configured"
+        },
+        { status: 200 },
       );
     }
 
-    // Decrypt credentials before sending
-    const decryptedCredentials = {
-      accessKeyId: decrypt(credentials.accessKeyId),
-      secretAccessKey: decrypt(credentials.secretAccessKey),
+    // SECURITY: Never return decrypted credentials in API responses
+    // Return configuration status only with masked values
+    const accessKeyId = decrypt(credentials.accessKeyId);
+    const configurationStatus = {
+      configured: true,
+      // Only show last 4 characters of access key for verification
+      accessKeyId: `***${accessKeyId.slice(-4)}`,
       bucketName: credentials.bucketName,
       region: credentials.region,
-      mediaConvertRole: credentials.mediaConvertRole || "",
+      hasMediaConvertRole: !!credentials.mediaConvertRole,
+      lastUpdated: credentials.updatedAt,
+      // NEVER include secretAccessKey in any form
     };
 
-    return NextResponse.json(decryptedCredentials);
+    return NextResponse.json(configurationStatus);
   } catch (error) {
     console.error("Error retrieving AWS credentials:", error);
     return NextResponse.json(

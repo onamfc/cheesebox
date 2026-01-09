@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { sign } from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this-in-production";
+import { JWT_SECRET } from "@/lib/jwt";
 
 /**
  * GET /api/videos/[id]/streaming-token
@@ -23,11 +22,25 @@ export async function GET(
 
     const { id } = await params;
 
-    // Get the video and check access
+    // Get the video and check access - include team and group relationships
     const video = await prisma.video.findUnique({
       where: { id },
       include: {
         shares: true,
+        team: {
+          include: {
+            members: true,
+          },
+        },
+        groupShares: {
+          include: {
+            group: {
+              include: {
+                members: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -46,13 +59,19 @@ export async function GET(
       );
     }
 
-    // Check if user has access (either owner or shared with)
+    // Check if user has access (owner, shared with, team member, or group member)
     const isOwner = video.userId === user.id;
     const isSharedWith = video.shares.some(
       (share) => share.sharedWithEmail === user.email
     );
+    const isTeamMember = video.team?.members.some(
+      (member) => member.userId === user.id
+    ) || false;
+    const isGroupMember = video.groupShares.some((groupShare) =>
+      groupShare.group.members.some((member) => member.email === user.email)
+    );
 
-    if (!isOwner && !isSharedWith) {
+    if (!isOwner && !isSharedWith && !isTeamMember && !isGroupMember) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
