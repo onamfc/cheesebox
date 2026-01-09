@@ -331,7 +331,7 @@ UPSTASH_REDIS_REST_TOKEN="your-token"
 - ⚠️ Vulnerable to credential stuffing and brute force
 - ⚠️ Warning logged in production mode
 
-**Cost**: FREE for typical usage (10k requests/day), ~$0.20 per 100k beyond that.
+**Cost**: FREE for typical usage (500k requests/month), ~$0.20 per 100k beyond that.
 
 #### Email Configuration
 
