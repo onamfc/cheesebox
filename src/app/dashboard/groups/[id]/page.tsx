@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import VideoList from "@/components/VideoList";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 
 interface GroupMember {
   id: string;
@@ -82,7 +83,7 @@ export default function GroupDetailsPage() {
         throw new Error("Please enter at least one email address");
       }
 
-      const res = await fetch(`/api/groups/${groupId}/members`, {
+      const res = await fetchWithCsrf(`/api/groups/${groupId}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ emails: emailList }),
@@ -107,7 +108,7 @@ export default function GroupDetailsPage() {
     if (!confirm(`Remove ${email} from the group?`)) return;
 
     try {
-      const res = await fetch(
+      const res = await fetchWithCsrf(
         `/api/groups/${groupId}/members/${encodeURIComponent(email)}`,
         { method: "DELETE" }
       );
@@ -133,7 +134,7 @@ export default function GroupDetailsPage() {
         throw new Error("Group name cannot be empty");
       }
 
-      const res = await fetch(`/api/groups/${groupId}`, {
+      const res = await fetchWithCsrf(`/api/groups/${groupId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName.trim() }),
@@ -158,7 +159,7 @@ export default function GroupDetailsPage() {
     if (!confirm(`Delete "${group?.name}"? This cannot be undone.`)) return;
 
     try {
-      const res = await fetch(`/api/groups/${groupId}`, {
+      const res = await fetchWithCsrf(`/api/groups/${groupId}`, {
         method: "DELETE",
       });
 

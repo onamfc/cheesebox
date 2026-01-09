@@ -44,10 +44,13 @@ jobs:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db
           NEXTAUTH_SECRET: test-secret-key-for-ci-build-only
           NEXTAUTH_URL: http://localhost:3000
+          JWT_SECRET: test-jwt-secret-for-ci-build-only-do-not-use-in-production
+          CSRF_SECRET: test-csrf-secret-for-ci-build-only-do-not-use-in-production
           ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           RESEND_API_KEY: re_test
           FROM_EMAIL: noreply@example.com
           NEXT_PUBLIC_APP_URL: http://localhost:3000
+          LINKFORTY_BASE_URL: https://go.cheesebox.io
 
   security-audit:
     runs-on: ubuntu-latest

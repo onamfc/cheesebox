@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import VideoList from "@/components/VideoList";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 
 interface TeamMember {
   id: string;
@@ -93,7 +94,7 @@ export default function TeamDetailsPage() {
     setInviting(true);
 
     try {
-      const res = await fetch(`/api/teams/${teamId}/members`, {
+      const res = await fetchWithCsrf(`/api/teams/${teamId}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
@@ -130,7 +131,7 @@ export default function TeamDetailsPage() {
     setUpdating(true);
 
     try {
-      const res = await fetch(
+      const res = await fetchWithCsrf(
         `/api/teams/${teamId}/members/${editingMember.user.id}`,
         {
           method: "PATCH",
@@ -158,7 +159,7 @@ export default function TeamDetailsPage() {
     if (!confirm(`Remove ${email} from the team?`)) return;
 
     try {
-      const res = await fetch(`/api/teams/${teamId}/members/${userId}`, {
+      const res = await fetchWithCsrf(`/api/teams/${teamId}/members/${userId}`, {
         method: "DELETE",
       });
 
@@ -182,7 +183,7 @@ export default function TeamDetailsPage() {
       return;
 
     try {
-      const res = await fetch(`/api/teams/${teamId}/leave`, {
+      const res = await fetchWithCsrf(`/api/teams/${teamId}/leave`, {
         method: "DELETE",
       });
 
@@ -206,7 +207,7 @@ export default function TeamDetailsPage() {
       return;
 
     try {
-      const res = await fetch(`/api/teams/${teamId}`, {
+      const res = await fetchWithCsrf(`/api/teams/${teamId}`, {
         method: "DELETE",
       });
 

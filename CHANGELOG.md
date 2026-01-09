@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.6.3] - 2026-01-09
+### Fixed
+- **CI Build**: Fixed GitHub Actions workflow missing required environment variables
+  - Added `JWT_SECRET` to CI build environment
+  - Added `CSRF_SECRET` to CI build environment
+  - Added `LINKFORTY_BASE_URL` to CI build environment
+  - Resolves "CRITICAL SECURITY ERROR: JWT_SECRET environment variable must be set" in CI
+- **Comprehensive CSRF Protection**: Fixed missing CSRF tokens across all state-changing operations
+  - **Video Operations**:
+    - Video deletion in VideoList component (`src/components/VideoList.tsx`)
+    - Video upload from webcam in VideoRecorder component (`src/components/VideoRecorder.tsx`)
+    - Video visibility toggle in VisibilityToggle component (`src/components/VisibilityToggle.tsx`)
+    - Video sharing (individual and group) in ShareVideoModal component (`src/components/ShareVideoModal.tsx`)
+  - **Team Management** (`src/app/dashboard/teams/`):
+    - Team creation (page.tsx)
+    - Member invitation (line 97)
+    - Member role updates (line 134)
+    - Member removal (line 162)
+    - Leave team (line 186)
+    - Delete team (line 210)
+  - **Group Management** (`src/app/dashboard/groups/`):
+    - Group creation (page.tsx)
+    - Add members to group ([id]/page.tsx line 86)
+    - Remove member from group ([id]/page.tsx line 112)
+    - Rename group ([id]/page.tsx line 137)
+    - Delete group ([id]/page.tsx line 162)
+  - **Settings** (`src/app/settings/SettingsContent.tsx`):
+    - AWS credentials configuration (line 189)
+    - Email credentials configuration (line 283)
+    - Test email sending (line 232)
+  - All components now import and use `fetchWithCsrf` from `@/lib/csrf-client`
+  - Resolves all "CSRF token validation failed" errors throughout the application
+
+## [1.6.2] - 2026-01-09
+### Fixed
+- **Video Upload CSRF Protection**: Fixed missing CSRF token in webcam video uploads
+    - Added CSRF token to XMLHttpRequest headers in VideoRecorder component
+    - Import `fetchCsrfToken` from `@/lib/csrf-client`
+    - Fetch token before upload and include in `x-csrf-token` header
+    - Resolves "CSRF token validation failed" error on video upload
+    - Maintains progress tracking functionality while properly authenticating requests
+
 ## [1.6.1] - 2026-01-09
 ### Changed
 - **BREAKING**: Migrated from `middleware.ts` to `proxy.ts` per Next.js 16 convention

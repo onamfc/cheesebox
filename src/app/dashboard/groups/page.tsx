@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 
 interface Group {
   id: string;
@@ -80,7 +81,7 @@ export default function GroupsPage() {
         .map((e) => e.trim())
         .filter((e) => e.length > 0);
 
-      const res = await fetch("/api/groups", {
+      const res = await fetchWithCsrf("/api/groups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 
 interface Team {
   id: string;
@@ -74,7 +75,7 @@ export default function TeamsPage() {
     setCreating(true);
 
     try {
-      const res = await fetch("/api/teams", {
+      const res = await fetchWithCsrf("/api/teams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 
 interface ShareVideoModalProps {
   videoId: string;
@@ -145,7 +146,7 @@ export default function ShareVideoModal({
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/videos/${videoId}/share`, {
+      const response = await fetchWithCsrf(`/api/videos/${videoId}/share`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,7 +177,7 @@ export default function ShareVideoModal({
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/videos/${videoId}/share`, {
+      const response = await fetchWithCsrf(`/api/videos/${videoId}/share`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -207,7 +208,7 @@ export default function ShareVideoModal({
     }
 
     try {
-      const response = await fetch(
+      const response = await fetchWithCsrf(
         `/api/videos/${videoId}/share?email=${encodeURIComponent(sharedWithEmail)}`,
         { method: "DELETE" },
       );
@@ -229,7 +230,7 @@ export default function ShareVideoModal({
     }
 
     try {
-      const response = await fetch(
+      const response = await fetchWithCsrf(
         `/api/videos/${videoId}/group-shares/${groupId}`,
         { method: "DELETE" }
       );

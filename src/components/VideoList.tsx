@@ -6,6 +6,7 @@ import ShareVideoModal from "./ShareVideoModal";
 import EmbedCodeModal from "./EmbedCodeModal";
 import VisibilityToggle from "./VisibilityToggle";
 import { Button } from "./ui/Button";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 
 interface Video {
   id: string;
@@ -66,7 +67,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
     }
 
     try {
-      const response = await fetch(`/api/videos/${videoId}`, {
+      const response = await fetchWithCsrf(`/api/videos/${videoId}`, {
         method: "DELETE",
       });
 

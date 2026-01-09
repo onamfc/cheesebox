@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 
 interface VisibilityToggleProps {
   videoId: string;
@@ -29,7 +30,7 @@ export default function VisibilityToggle({
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/videos/${videoId}/visibility`, {
+      const response = await fetchWithCsrf(`/api/videos/${videoId}/visibility`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ visibility: newVisibility }),

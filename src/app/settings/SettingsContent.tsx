@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, LinkButton } from "@/components/ui/Button";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 
 export default function SettingsContent() {
   const { data: session, status } = useSession();
@@ -185,7 +186,7 @@ export default function SettingsContent() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/aws-credentials", {
+      const response = await fetchWithCsrf("/api/aws-credentials", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -228,7 +229,7 @@ export default function SettingsContent() {
     setEmailSuccess("");
 
     try {
-      const response = await fetch("/api/email-credentials/test", {
+      const response = await fetchWithCsrf("/api/email-credentials/test", {
         method: "POST",
       });
 
@@ -279,7 +280,7 @@ export default function SettingsContent() {
         payload.smtpSecure = smtpSecure;
       }
 
-      const response = await fetch("/api/email-credentials", {
+      const response = await fetchWithCsrf("/api/email-credentials", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
