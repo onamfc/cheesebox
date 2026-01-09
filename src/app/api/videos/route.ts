@@ -17,11 +17,101 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type") || "owned"; // 'owned' or 'shared'
+    const type = searchParams.get("type") || "owned"; // 'owned', 'shared', 'team', or 'group'
     const teamId = searchParams.get("teamId"); // Optional filter by team
     const groupId = searchParams.get("groupId"); // Optional filter by group
 
-    if (type === "owned") {
+    if (type === "team" && teamId) {
+      // Get all videos for a team (uploaded by any team member)
+      // First verify user is a member of the team
+      const teamMember = await prisma.teamMember.findFirst({
+        where: {
+          teamId,
+          userId: user.id,
+        },
+      });
+
+      if (!teamMember) {
+        return NextResponse.json(
+          { error: "You don't have access to this team" },
+          { status: 403 }
+        );
+      }
+
+      // Get all videos for this team
+      const videos = await prisma.video.findMany({
+        where: { teamId },
+        orderBy: { createdAt: "desc" },
+        include: {
+          owner: {
+            select: {
+              email: true,
+            },
+          },
+          shares: {
+            select: {
+              sharedWithEmail: true,
+              createdAt: true,
+            },
+          },
+          groupShares: {
+            select: {
+              id: true,
+              createdAt: true,
+              group: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Check MediaConvert status for processing videos
+      await updateProcessingVideos(videos, user.id);
+
+      // Refetch videos to get updated status
+      const updatedVideos = await prisma.video.findMany({
+        where: { teamId },
+        orderBy: { createdAt: "desc" },
+        include: {
+          owner: {
+            select: {
+              email: true,
+            },
+          },
+          shares: {
+            select: {
+              sharedWithEmail: true,
+              createdAt: true,
+            },
+          },
+          groupShares: {
+            select: {
+              id: true,
+              createdAt: true,
+              group: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Add isOwner flag to each video
+      const videosWithOwnership = updatedVideos.map((video) => ({
+        ...video,
+        isOwner: video.userId === user.id,
+        ownerEmail: video.owner.email,
+      }));
+
+      return NextResponse.json(videosWithOwnership);
+    } else if (type === "owned") {
       // Build where clause with optional team filter
       const whereClause: any = { userId: user.id };
 

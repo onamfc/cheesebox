@@ -86,6 +86,7 @@
   /* Brand text colors */
   .text-brand-primary { color: var(--brand-primary); }
   .text-brand-secondary { color: var(--brand-secondary); }
+  .text-brand-accent { color: var(--brand-accent); }
   .text-brand-dark { color: var(--brand-dark); }
 
   /* Status text colors */
@@ -110,6 +111,7 @@
 
   /* Focus ring */
   .ring-brand-primary { --tw-ring-color: var(--brand-primary); }
+  .ring-brand-accent { --tw-ring-color: var(--brand-accent); }
   .ring-success { --tw-ring-color: var(--success); }
   .ring-warning { --tw-ring-color: var(--warning); }
   .ring-danger { --tw-ring-color: var(--danger); }
@@ -132,7 +134,7 @@ html {
 
 body {
   /* These colors are defined in src/config/theme.ts (theme.colors.body) */
-  background: var(--brand-light); /* Light background */
+  background: var(--color-gray-50); /* Light background */
   color: #181717; /* Dark text */
   font-family: Arial, Helvetica, sans-serif;
   min-height: 100%;

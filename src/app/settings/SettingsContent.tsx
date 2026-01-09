@@ -373,7 +373,7 @@ export default function SettingsContent() {
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
                 <svg
-                  className="w-8 h-8 text-purple-700"
+                  className="w-8 h-8 text-info"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -470,7 +470,7 @@ export default function SettingsContent() {
                   value={accessKeyId}
                   onChange={(e) => setAccessKeyId(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                   placeholder="AKIAIOSFODNN7EXAMPLE"
                   required
                 />
@@ -489,7 +489,7 @@ export default function SettingsContent() {
                   value={secretAccessKey}
                   onChange={(e) => setSecretAccessKey(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                   placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
                   required
                 />
@@ -511,7 +511,7 @@ export default function SettingsContent() {
                   value={bucketName}
                   onChange={(e) => setBucketName(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                   placeholder="my-private-videos-bucket"
                   required
                 />
@@ -529,7 +529,7 @@ export default function SettingsContent() {
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                   required
                 >
                   <option value="us-east-1">US East (N. Virginia)</option>
@@ -560,7 +560,7 @@ export default function SettingsContent() {
                   value={mediaConvertRole}
                   onChange={(e) => setMediaConvertRole(e.target.value)}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                   placeholder="arn:aws:iam::123456789012:role/MediaConvertRole"
                 />
                 <p className="mt-1 text-xs text-gray-500">
@@ -724,7 +724,7 @@ export default function SettingsContent() {
                     value={fromEmail}
                     onChange={(e) => setFromEmail(e.target.value)}
                     disabled={emailLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                     placeholder="noreply@yourdomain.com"
                     required
                   />
@@ -746,7 +746,7 @@ export default function SettingsContent() {
                     value={fromName}
                     onChange={(e) => setFromName(e.target.value)}
                     disabled={emailLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                     placeholder="Cheesebox"
                   />
                 </div>
@@ -766,7 +766,7 @@ export default function SettingsContent() {
                       value={emailApiKey}
                       onChange={(e) => setEmailApiKey(e.target.value)}
                       disabled={emailLoading}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                       placeholder="re_xxxxxxxxxxxxx"
                       required
                     />
@@ -802,7 +802,7 @@ export default function SettingsContent() {
                           setAwsEmailAccessKeyId(e.target.value)
                         }
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                         required
                       />
                     </div>
@@ -820,7 +820,7 @@ export default function SettingsContent() {
                         value={awsEmailSecretKey}
                         onChange={(e) => setAwsEmailSecretKey(e.target.value)}
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                         required
                       />
                     </div>
@@ -837,7 +837,7 @@ export default function SettingsContent() {
                         value={awsEmailRegion}
                         onChange={(e) => setAwsEmailRegion(e.target.value)}
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                       >
                         <option value="us-east-1">US East (N. Virginia)</option>
                         <option value="us-west-2">US West (Oregon)</option>
@@ -878,7 +878,7 @@ export default function SettingsContent() {
                           value={smtpHost}
                           onChange={(e) => setSmtpHost(e.target.value)}
                           disabled={emailLoading}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                           placeholder="smtp.gmail.com"
                           required
                         />
@@ -899,7 +899,7 @@ export default function SettingsContent() {
                             setSmtpPort(parseInt(e.target.value))
                           }
                           disabled={emailLoading}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                           placeholder="587"
                           required
                         />
@@ -919,7 +919,7 @@ export default function SettingsContent() {
                         value={smtpUsername}
                         onChange={(e) => setSmtpUsername(e.target.value)}
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                         required
                       />
                     </div>
@@ -937,7 +937,7 @@ export default function SettingsContent() {
                         value={smtpPassword}
                         onChange={(e) => setSmtpPassword(e.target.value)}
                         disabled={emailLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-900 focus:border-purple-900 text-black"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-primary focus:border-brand-primary text-black"
                         required
                       />
                     </div>

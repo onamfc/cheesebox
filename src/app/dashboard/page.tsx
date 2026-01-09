@@ -6,10 +6,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import VideoUpload from "@/components/VideoUpload";
 import VideoList from "@/components/VideoList";
+import FloatingActionMenu from "@/components/FloatingActionMenu";
+import VideoRecorder from "@/components/VideoRecorder";
 import { LinkButton, Button } from "@/components/ui/Button";
 
 type Tab = "my-videos" | "shared";
 type ViewMode = "grid" | "list";
+type RecordingMode = "webcam" | "screen";
 
 interface Team {
   id: string;
@@ -22,6 +25,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("my-videos");
   const [showUpload, setShowUpload] = useState(false);
+  const [showRecorder, setShowRecorder] = useState(false);
+  const [recordingMode, setRecordingMode] = useState<RecordingMode | null>(null);
   const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>("all");
@@ -159,7 +164,7 @@ export default function DashboardPage() {
                     id="team-filter"
                     value={selectedTeamFilter}
                     onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                    className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-900 focus:border-transparent"
+                    className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                   >
                     <option value="all">All Videos</option>
                     <option value="personal">Personal Account</option>
@@ -224,6 +229,30 @@ export default function DashboardPage() {
         </div>
 
         {showUpload && <VideoUpload onClose={() => setShowUpload(false)} />}
+
+        {/* Video Recorder */}
+        {showRecorder && recordingMode && (
+          <VideoRecorder
+            key={recordingMode}
+            initialMode={recordingMode}
+            onComplete={() => {
+              setShowRecorder(false);
+              setRecordingMode(null);
+              window.location.reload();
+            }}
+          />
+        )}
+
+        {/* Floating Action Menu */}
+        {activeTab === "my-videos" && hasCredentials && !showRecorder && (
+          <FloatingActionMenu
+            onUpload={() => setShowUpload(true)}
+            onRecord={(mode) => {
+              setRecordingMode(mode);
+              setShowRecorder(true);
+            }}
+          />
+        )}
       </div>
   );
 }

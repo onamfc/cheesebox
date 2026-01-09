@@ -52,12 +52,11 @@ export default function DashboardNav() {
             <div className="hidden md:flex space-x-4 relative">
               {/* Animated pill background */}
               <div
-                className="absolute bg-brand-secondary rounded-md transition-all duration-300 ease-in-out"
+                className="absolute bg-brand-secondary rounded-md transition-all duration-300 ease-in-out top-1/2 -translate-y-1/2"
                 style={{
                   left: `${pillStyle.left}px`,
                   width: `${pillStyle.width}px`,
                   height: '38px',
-                  top: '1px',
                 }}
               />
 

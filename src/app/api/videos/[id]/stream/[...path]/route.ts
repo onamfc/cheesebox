@@ -74,6 +74,20 @@ export async function GET(
           },
         },
         shares: true,
+        team: {
+          include: {
+            members: true,
+          },
+        },
+        groupShares: {
+          include: {
+            group: {
+              include: {
+                members: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -81,13 +95,19 @@ export async function GET(
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
     }
 
-    // Check if user has access (either owner or shared with)
+    // Check if user has access
     const isOwner = video.userId === user.id;
     const isSharedWith = video.shares.some(
       (share) => share.sharedWithEmail === user.email,
     );
+    const isTeamMember = video.team?.members.some(
+      (member) => member.userId === user.id,
+    ) || false;
+    const isGroupMember = video.groupShares.some((groupShare) =>
+      groupShare.group.members.some((member) => member.email === user.email),
+    );
 
-    if (!isOwner && !isSharedWith) {
+    if (!isOwner && !isSharedWith && !isTeamMember && !isGroupMember) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -110,8 +130,20 @@ export async function GET(
       );
     }
 
-    // Get owner's AWS credentials
-    const awsCredentials = video.owner.awsCredentials;
+    // Get AWS credentials (from team if video belongs to team, otherwise from owner)
+    let awsCredentials = null;
+
+    if (video.teamId && video.team) {
+      // Get team's AWS credentials
+      const teamWithCredentials = await prisma.team.findUnique({
+        where: { id: video.teamId },
+        include: { awsCredentials: true },
+      });
+      awsCredentials = teamWithCredentials?.awsCredentials;
+    } else {
+      // Get owner's personal AWS credentials
+      awsCredentials = video.owner.awsCredentials;
+    }
 
     if (!awsCredentials) {
       return NextResponse.json(

@@ -17,16 +17,19 @@ interface Video {
   shares?: Array<{ sharedWithEmail: string; createdAt: string }>;
   sharedBy?: string;
   sharedAt?: string;
+  isOwner?: boolean;
+  ownerEmail?: string;
 }
 
 interface VideoListProps {
-  type: "owned" | "shared" | "group";
+  type: "owned" | "shared" | "group" | "team";
   teamId?: string | null;
   groupId?: string | null;
   viewMode?: "grid" | "list";
+  compact?: boolean;
 }
 
-export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: VideoListProps) {
+export default function VideoList({ type, teamId, groupId, viewMode = "grid", compact = false }: VideoListProps) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
@@ -99,10 +102,12 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
           />
         </svg>
         <h3 className="mt-2 text-sm font-medium text-gray-900">
-          {type === "owned" ? "No videos" : "No shared videos"}
+          {type === "team" ? "No team videos" : type === "owned" ? "No videos" : "No shared videos"}
         </h3>
         <p className="mt-1 text-sm text-gray-500">
-          {type === "owned"
+          {type === "team"
+            ? "Team members haven't uploaded any videos yet."
+            : type === "owned"
             ? "Get started by uploading a video."
             : "Videos shared with you will appear here."}
         </p>
@@ -120,12 +125,12 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
               viewMode === "list" ? "flex items-center" : ""
             }`}
           >
-            <div className={`p-5 ${viewMode === "list" ? "flex gap-6 w-full" : ""}`}>
+            <div className={`${viewMode === "list" ? `flex gap-${compact ? "4" : "6"} w-full ${compact ? "p-3" : "p-5"}` : "p-5"}`}>
               {/* Video Info Section */}
               <div className={viewMode === "list" ? "flex-1 min-w-0 flex flex-col justify-center" : ""}>
                 <div className={`${viewMode === "list" ? "mb-1" : "mb-3"}`}>
-                  <div className={`flex items-center ${viewMode === "list" ? "gap-4 mb-2" : "justify-between mb-3"}`}>
-                    <h3 className={`font-medium text-gray-900 ${viewMode === "list" ? "text-xl" : "text-lg truncate"}`}>
+                  <div className={`flex items-center ${viewMode === "list" ? `gap-${compact ? "2" : "4"} mb-${compact ? "1" : "2"}` : "justify-between mb-3"}`}>
+                    <h3 className={`font-medium text-gray-900 ${viewMode === "list" ? (compact ? "text-base" : "text-xl") : "text-lg truncate"}`}>
                       {video.title}
                     </h3>
                     {viewMode === "grid" && video.transcodingStatus !== "COMPLETED" && (
@@ -162,7 +167,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                   )}
 
                   {/* Visibility Toggle - List View */}
-                  {viewMode === "list" && type === "owned" && video.transcodingStatus === "COMPLETED" && (
+                  {viewMode === "list" && (type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                     <div className="mb-2 flex justify-start">
                       <VisibilityToggle
                         videoId={video.id}
@@ -185,9 +190,15 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                   </p>
                 )}
 
+                {type === "team" && video.ownerEmail && (
+                  <p className="text-xs text-gray-500 mb-3">
+                    Uploaded by: {video.ownerEmail}
+                  </p>
+                )}
+
                 <div className={`flex items-center text-xs text-gray-500 ${viewMode === "list" ? "gap-4" : "justify-between mb-4"}`}>
                   <span>{new Date(video.createdAt).toLocaleDateString()}</span>
-                  {type === "owned" &&
+                  {(type === "owned" || (type === "team" && video.isOwner)) &&
                     video.shares &&
                     video.shares.length > 0 && (
                       <span>{video.shares.length} shares</span>
@@ -195,7 +206,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                 </div>
 
                 {/* Visibility Toggle - Grid View */}
-                {viewMode === "grid" && type === "owned" && video.transcodingStatus === "COMPLETED" && (
+                {viewMode === "grid" && (type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                   <div className="mb-3">
                     <VisibilityToggle
                       videoId={video.id}
@@ -215,7 +226,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                         variant="secondary"
                         size="sm"
                         onClick={() => setSelectedVideo(video.id)}
-                        className="p-2.5"
+                        className="p-2.5 bg-brand-accent hover:bg-brand-accent/80 text-brand-primary border-brand-accent"
                       >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -223,7 +234,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                         </svg>
                       </Button>
                     )}
-                    {type === "owned" && (
+                    {(type === "owned" || (type === "team" && video.isOwner)) && (
                       <>
                         {video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (
                           <Button
@@ -250,7 +261,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                       </>
                     )}
                   </div>
-                  {type === "owned" && (
+                  {(type === "owned" || (type === "team" && video.isOwner)) && (
                     <Button
                       variant="secondary"
                       size="sm"
@@ -268,30 +279,30 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
 
             {/* Action Buttons - List View */}
             {viewMode === "list" && (
-              <div className="flex flex-col gap-2 flex-shrink-0">
+              <div className={`flex flex-col ${compact ? "gap-1 pr-3" : "gap-2 pr-4"} flex-shrink-0`}>
                 {video.transcodingStatus === "COMPLETED" && (
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => setSelectedVideo(video.id)}
-                    className="p-2.5"
+                    className={`${compact ? "p-1.5" : "p-2.5"} bg-brand-accent hover:bg-brand-accent/80 text-brand-primary border-brand-accent`}
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={compact ? "w-5 h-5" : "w-6 h-6"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </Button>
                 )}
-                {type === "owned" && (
+                {(type === "owned" || (type === "team" && video.isOwner)) && (
                   <>
                     {video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (
                       <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => setEmbedVideoId(video.id)}
-                        className="p-2"
+                        className={compact ? "p-1.5" : "p-2"}
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                         </svg>
                       </Button>
@@ -300,9 +311,9 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                       variant="secondary"
                       size="sm"
                       onClick={() => setShareVideoId(video.id)}
-                      className="p-2"
+                      className={compact ? "p-1.5" : "p-2"}
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                       </svg>
                     </Button>
@@ -310,9 +321,9 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid" }: 
                       variant="secondary"
                       size="sm"
                       onClick={() => handleDelete(video.id)}
-                      className="p-2"
+                      className={compact ? "p-1.5" : "p-2"}
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </Button>

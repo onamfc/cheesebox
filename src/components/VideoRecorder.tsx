@@ -6,8 +6,8 @@ import { Button } from "./ui/Button";
 import Input from "./ui/Input";
 import { theme } from "@/config/theme";
 
-type RecordingMode = "webcam" | "screen" | "screen-webcam";
-type RecordingState = "idle" | "recording" | "preview" | "uploading";
+type RecordingMode = "webcam" | "screen";
+type RecordingState = "idle" | "countdown" | "recording" | "preview" | "uploading";
 type ErrorType =
   | "screen-permission-denied"
   | "webcam-permission-denied"
@@ -20,6 +20,7 @@ type ErrorType =
 
 interface VideoRecorderProps {
   onComplete?: () => void;
+  initialMode?: RecordingMode;
 }
 
 interface Group {
@@ -27,10 +28,11 @@ interface Group {
   name: string;
 }
 
-export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
+export default function VideoRecorder({ onComplete, initialMode }: VideoRecorderProps) {
   const router = useRouter();
   const [recordingMode, setRecordingMode] = useState<RecordingMode | null>(null);
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
+  const [countdown, setCountdown] = useState<number>(3);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -48,12 +50,18 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
   const streamRef = useRef<MediaStream | null>(null);
   const webcamStreamRef = useRef<MediaStream | null>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasStartedRecordingRef = useRef<boolean>(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   // Cleanup streams on unmount
   useEffect(() => {
     return () => {
       stopAllStreams();
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (videoUrl) URL.revokeObjectURL(videoUrl);
     };
   }, [videoUrl]);
@@ -64,6 +72,24 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
       loadGroups();
     }
   }, [recordingState]);
+
+  // Auto-start recording if initialMode is provided
+  useEffect(() => {
+    if (initialMode && recordingState === "idle" && !hasStartedRecordingRef.current) {
+      hasStartedRecordingRef.current = true;
+      handleModeSelect(initialMode);
+    }
+  }, [initialMode, recordingState]);
+
+  // Attach streams to video elements when they mount
+  useEffect(() => {
+    if (streamRef.current && webcamPreviewRef.current && recordingMode === "webcam") {
+      webcamPreviewRef.current.srcObject = streamRef.current;
+    }
+    if (streamRef.current && screenPreviewRef.current && recordingMode === "screen") {
+      screenPreviewRef.current.srcObject = streamRef.current;
+    }
+  }, [recordingState, recordingMode]);
 
   const loadGroups = async () => {
     try {
@@ -94,6 +120,72 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
       webcamStreamRef.current.getTracks().forEach((track) => track.stop());
       webcamStreamRef.current = null;
     }
+  };
+
+  const startCountdown = (onComplete: () => void) => {
+    setCountdown(3);
+    setRecordingState("countdown");
+
+    countdownIntervalRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+          }
+          onComplete();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const compositeStreamsToCanvas = (
+    screenVideo: HTMLVideoElement,
+    webcamVideo: HTMLVideoElement
+  ): MediaStream | null => {
+    // Create canvas if it doesn't exist
+    if (!canvasRef.current) {
+      canvasRef.current = document.createElement("canvas");
+    }
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    // Set canvas size to match screen video
+    canvas.width = 1920;
+    canvas.height = 1080;
+
+    // Define webcam overlay size and position (bottom-right corner)
+    const webcamWidth = 320;
+    const webcamHeight = 240;
+    const webcamX = canvas.width - webcamWidth - 20;
+    const webcamY = canvas.height - webcamHeight - 20;
+
+    const drawFrame = () => {
+      // Draw screen video (full canvas)
+      ctx.drawImage(screenVideo, 0, 0, canvas.width, canvas.height);
+
+      // Draw webcam video (overlay in bottom-right)
+      ctx.save();
+      // Add a border
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(webcamX - 2, webcamY - 2, webcamWidth + 4, webcamHeight + 4);
+      // Draw webcam
+      ctx.drawImage(webcamVideo, webcamX, webcamY, webcamWidth, webcamHeight);
+      ctx.restore();
+
+      // Continue animation
+      animationFrameRef.current = requestAnimationFrame(drawFrame);
+    };
+
+    // Start drawing
+    drawFrame();
+
+    // Return canvas stream
+    return canvas.captureStream(30); // 30 FPS
   };
 
   const startWebcamRecording = async () => {
@@ -131,9 +223,14 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
         stopAllStreams();
       };
 
-      mediaRecorder.start();
-      setRecordingState("recording");
-      startTimer();
+      // Start countdown before recording
+      startCountdown(() => {
+        if (mediaRecorder.state !== "recording") {
+          mediaRecorder.start();
+          setRecordingState("recording");
+          startTimer();
+        }
+      });
     } catch (err: any) {
       console.error("Error starting webcam recording:", err);
 
@@ -148,7 +245,7 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
     }
   };
 
-  const startScreenRecording = async (includeWebcam: boolean) => {
+  const startScreenRecording = async () => {
     try {
       setError(null);
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
@@ -161,26 +258,7 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
         screenPreviewRef.current.srcObject = screenStream;
       }
 
-      let combinedStream = screenStream;
-
-      // If including webcam, create a combined stream
-      if (includeWebcam) {
-        const webcamStream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 320, height: 240 },
-          audio: false,
-        });
-
-        webcamStreamRef.current = webcamStream;
-        if (webcamPreviewRef.current) {
-          webcamPreviewRef.current.srcObject = webcamStream;
-        }
-
-        // For screen+webcam, we'll record both separately and let the user see both
-        // In a more advanced version, you could composite them using Canvas
-        combinedStream = screenStream;
-      }
-
-      const mediaRecorder = new MediaRecorder(combinedStream, {
+      const mediaRecorder = new MediaRecorder(screenStream, {
         mimeType: "video/webm;codecs=vp9",
       });
 
@@ -209,9 +287,14 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
         }
       });
 
-      mediaRecorder.start();
-      setRecordingState("recording");
-      startTimer();
+      // Start countdown before recording
+      startCountdown(() => {
+        if (mediaRecorder.state !== "recording") {
+          mediaRecorder.start();
+          setRecordingState("recording");
+          startTimer();
+        }
+      });
     } catch (err: any) {
       console.error("Error starting screen recording:", err);
 
@@ -246,6 +329,11 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
+    // Stop canvas animation if running
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
   };
 
   const handleModeSelect = async (mode: RecordingMode) => {
@@ -253,9 +341,7 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
     if (mode === "webcam") {
       await startWebcamRecording();
     } else if (mode === "screen") {
-      await startScreenRecording(false);
-    } else if (mode === "screen-webcam") {
-      await startScreenRecording(true);
+      await startScreenRecording();
     }
   };
 
@@ -432,9 +518,9 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black z-50">
-      {/* Mode Selection Screen */}
-      {recordingState === "idle" && !recordingMode && (
+    <div className="fixed inset-0 bg-black z-[100]">
+      {/* Mode Selection Screen or Loading */}
+      {recordingState === "idle" && (
         <div className="h-full flex flex-col items-center justify-center p-8">
           <Button
             onClick={() => router.back()}
@@ -444,28 +530,45 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
             ✕ Close
           </Button>
 
-          <h1 className="text-3xl font-bold text-white mb-8">Record Video</h1>
-
-          {error && (
-            <div className="mb-6 p-6 bg-red-500/10 border-2 border-red-500 rounded-xl text-white max-w-2xl">
-              <div className="flex items-start gap-4">
-                <div className="text-4xl">⚠️</div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-3">{getErrorMessage().title}</h3>
-                  <div className="text-gray-200">{getErrorMessage().message}</div>
-                  <Button
-                    onClick={() => setError(null)}
-                    variant="danger"
-                    className="mt-4"
-                  >
-                    Try Again
-                  </Button>
-                </div>
-              </div>
+          {/* Hidden video elements for stream loading */}
+          {recordingMode && (
+            <div className="hidden">
+              <video ref={screenPreviewRef} autoPlay muted playsInline />
+              <video ref={webcamPreviewRef} autoPlay muted playsInline />
             </div>
           )}
 
-          <div className="grid gap-6 max-w-2xl w-full">
+          {recordingMode ? (
+            // Loading state while waiting for recording to start
+            <>
+              <h1 className="text-3xl font-bold text-white mb-8">Starting Recording...</h1>
+              <div className="text-white text-lg">Please allow camera/screen access when prompted</div>
+            </>
+          ) : (
+            // Mode selection
+            <>
+              <h1 className="text-3xl font-bold text-white mb-8">Record Video</h1>
+
+              {error && (
+                <div className="mb-6 p-6 bg-red-500/10 border-2 border-red-500 rounded-xl text-white max-w-2xl">
+                  <div className="flex items-start gap-4">
+                    <div className="text-4xl">⚠️</div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold mb-3">{getErrorMessage().title}</h3>
+                      <div className="text-gray-200">{getErrorMessage().message}</div>
+                      <Button
+                        onClick={() => setError(null)}
+                        variant="danger"
+                        className="mt-4"
+                      >
+                        Try Again
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-6 max-w-2xl w-full">
             <button
               onClick={() => handleModeSelect("webcam")}
               className={`p-8 bg-gradient-to-br ${theme.gradients.primary} rounded-xl text-white transition-all transform hover:scale-105 shadow-lg`}
@@ -484,14 +587,43 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
               <p className={theme.gradients.primaryText}>Record your screen with audio</p>
             </button>
 
-            <button
-              onClick={() => handleModeSelect("screen-webcam")}
-              className={`p-8 bg-gradient-to-br ${theme.gradients.primary} rounded-xl text-white transition-all transform hover:scale-105 shadow-lg`}
-            >
-              <div className="text-4xl mb-4">🎥</div>
-              <h2 className="text-2xl font-bold mb-2">Screen + Webcam</h2>
-              <p className={theme.gradients.primaryText}>Record screen with webcam overlay</p>
-            </button>
+          </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Countdown Screen */}
+      {recordingState === "countdown" && (
+        <div className="h-full flex flex-col relative">
+          <div className="flex-1 relative bg-black">
+            {/* Show preview behind countdown */}
+            {recordingMode === "webcam" && (
+              <video
+                ref={webcamPreviewRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-contain opacity-50 scale-x-[-1]"
+              />
+            )}
+
+            {recordingMode === "screen" && (
+              <video
+                ref={screenPreviewRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-contain opacity-50"
+              />
+            )}
+
+            {/* Large countdown number */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-white font-bold text-[250px] animate-pulse">
+                {countdown}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -499,38 +631,25 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
       {/* Recording Screen */}
       {recordingState === "recording" && (
         <div className="h-full flex flex-col">
-          <div className="flex-1 relative bg-black">
+          <div className="flex-1 relative bg-black max-h-[calc(100vh-100px)]">
             {recordingMode === "webcam" && (
               <video
                 ref={webcamPreviewRef}
                 autoPlay
                 muted
                 playsInline
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain scale-x-[-1]"
               />
             )}
 
-            {(recordingMode === "screen" || recordingMode === "screen-webcam") && (
-              <>
-                <video
-                  ref={screenPreviewRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  className="w-full h-full object-contain"
-                />
-                {recordingMode === "screen-webcam" && (
-                  <div className="absolute bottom-4 right-4 w-64 h-48 border-2 border-white rounded-lg overflow-hidden shadow-2xl">
-                    <video
-                      ref={webcamPreviewRef}
-                      autoPlay
-                      muted
-                      playsInline
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-              </>
+            {recordingMode === "screen" && (
+              <video
+                ref={screenPreviewRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-contain"
+              />
             )}
 
             {/* Recording Indicator */}
@@ -541,7 +660,7 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
           </div>
 
           {/* Recording Controls */}
-          <div className="bg-gray-900 p-6 flex justify-center">
+          <div className="bg-gray-900 p-6 flex justify-center relative z-50">
             <Button
               onClick={stopRecording}
               variant="danger"
@@ -591,7 +710,7 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
                           type="checkbox"
                           checked={selectedGroups.includes(group.id)}
                           onChange={() => toggleGroup(group.id)}
-                          className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500 focus:ring-offset-gray-900"
+                          className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-brand-accent focus:ring-brand-accent focus:ring-offset-gray-900"
                         />
                         <span>{group.name}</span>
                       </label>
@@ -611,14 +730,14 @@ export default function VideoRecorder({ onComplete }: VideoRecorderProps) {
                   variant="secondary"
                   className="flex-1"
                 >
-                  🔄 Retake
+                  Retake
                 </Button>
                 <Button
                   onClick={handleUpload}
-                  variant="primary"
+                  variant="secondary"
                   className="flex-1"
                 >
-                  ⬆️ Upload
+                  Upload
                 </Button>
               </div>
             </div>

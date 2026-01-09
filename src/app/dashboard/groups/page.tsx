@@ -273,7 +273,7 @@ export default function GroupsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-900 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                       placeholder="Marketing Team"
                     />
                   </div>
@@ -288,7 +288,7 @@ export default function GroupsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, description: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-900 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                       placeholder="All marketing department members"
                     />
                   </div>
@@ -304,7 +304,7 @@ export default function GroupsPage() {
                         setFormData({ ...formData, members: e.target.value })
                       }
                       rows={6}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-900 focus:border-transparent font-mono text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent font-mono text-sm"
                       placeholder="user1@example.com&#10;user2@example.com&#10;user3@example.com"
                     />
                     <p className="text-xs text-gray-500 mt-1">

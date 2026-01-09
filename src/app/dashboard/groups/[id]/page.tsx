@@ -33,6 +33,7 @@ export default function GroupDetailsPage() {
 
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showAddModal, setShowAddModal] = useState(false);
   const [newEmails, setNewEmails] = useState("");
   const [adding, setAdding] = useState(false);
@@ -330,7 +331,7 @@ export default function GroupDetailsPage() {
         </div>
 
         {/* How to Use */}
-        <div className="mt-8 bg-brand-secondary border border-brand-secondary rounded-lg p-6">
+        <div className="mt-8 mb-4 bg-brand-secondary border border-brand-secondary rounded-lg p-6">
           <h3 className="font-semibold text-brand-dark mb-2">
             How to share videos with this group
           </h3>
@@ -346,15 +347,47 @@ export default function GroupDetailsPage() {
         {/* Shared Videos Section */}
         <div className="bg-white rounded-lg shadow mb-8">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Videos Shared with This Group
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              All videos that have been shared with "{group.name}"
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Videos Shared with This Group
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  All videos that have been shared with "{group.name}"
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded-lg transition ${
+                    viewMode === "grid"
+                      ? "bg-brand-primary text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  title="Grid view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-lg transition ${
+                    viewMode === "list"
+                      ? "bg-brand-primary text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  title="List view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
           <div className="p-6">
-            <VideoList type="group" groupId={groupId} />
+            <VideoList type="group" groupId={groupId} viewMode={viewMode} compact={true} />
           </div>
         </div>
 
