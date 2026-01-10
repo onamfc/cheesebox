@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { fetchWithCsrf } from "@/lib/csrf-client";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 export default function SettingsContent() {
   const { data: session, status } = useSession();
@@ -84,10 +85,10 @@ export default function SettingsContent() {
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
-          setAccessKeyId(data.accessKeyId);
-          setSecretAccessKey(data.secretAccessKey);
-          setBucketName(data.bucketName);
-          setRegion(data.region);
+          setAccessKeyId(data.accessKeyId || "");
+          setSecretAccessKey(data.secretAccessKey || "");
+          setBucketName(data.bucketName || "");
+          setRegion(data.region || "us-east-1");
           setMediaConvertRole(data.mediaConvertRole || "");
           setHasCredentials(true);
         }
@@ -128,8 +129,8 @@ export default function SettingsContent() {
         const response = await fetch("/api/email-credentials");
         if (response.ok) {
           const data = await response.json();
-          setEmailProvider(data.provider);
-          setFromEmail(data.fromEmail);
+          setEmailProvider(data.provider || "RESEND");
+          setFromEmail(data.fromEmail || "");
           setFromName(data.fromName || "");
           setEmailApiKey(data.apiKey || "");
           setAwsEmailAccessKeyId(data.awsAccessKeyId || "");
@@ -162,10 +163,10 @@ export default function SettingsContent() {
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setAccessKeyId(data.accessKeyId);
-        setSecretAccessKey(data.secretAccessKey);
-        setBucketName(data.bucketName);
-        setRegion(data.region);
+        setAccessKeyId(data.accessKeyId || "");
+        setSecretAccessKey(data.secretAccessKey || "");
+        setBucketName(data.bucketName || "");
+        setRegion(data.region || "us-east-1");
         setMediaConvertRole(data.mediaConvertRole || "");
         setShowImportModal(false);
         setSuccess("Credentials imported successfully! Click 'Save Credentials' to apply them.");
@@ -988,6 +989,23 @@ export default function SettingsContent() {
               </form>
             </div>
           </div>
+
+          {/* Theme Settings Section - Only show for personal settings, not team */}
+          {!teamId && (
+            <div className="mt-8">
+              <h1 className="text-2xl font-bold text-gray-900 mb-6">
+                Theme Settings
+              </h1>
+              <div className="bg-white shadow rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <p className="text-sm text-gray-600 mb-6">
+                    Customize the appearance of your workspace by selecting a theme. Changes apply instantly across all your devices.
+                  </p>
+                  <ThemeSwitcher />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

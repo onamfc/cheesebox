@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/Button";
 import Input from "./ui/Input";
-import { theme } from "@/config/theme";
+import { useTheme } from "@/contexts/ThemeContext";
+import { theme as defaultTheme } from "@/themes/asiago/theme";
 import { fetchCsrfToken } from "@/lib/csrf-client";
 
 type RecordingMode = "webcam" | "screen";
@@ -31,6 +32,10 @@ interface Group {
 
 export default function VideoRecorder({ onComplete, initialMode }: VideoRecorderProps) {
   const router = useRouter();
+  const { themeConfig } = useTheme();
+  // Use themeConfig if available, otherwise fallback to default theme
+  const gradients = themeConfig?.gradients || defaultTheme.gradients;
+  const components = themeConfig?.components || defaultTheme.components;
   const [recordingMode, setRecordingMode] = useState<RecordingMode | null>(null);
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
   const [countdown, setCountdown] = useState<number>(3);
@@ -532,6 +537,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
           <Button
             onClick={() => router.back()}
             variant="ghost"
+            size={components.buttonSize}
             className="absolute top-4 left-4 !border-0 !text-white hover:!text-gray-300 !bg-transparent hover:!bg-transparent"
           >
             ✕ Close
@@ -566,6 +572,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
                       <Button
                         onClick={() => setError(null)}
                         variant="danger"
+                        size={components.buttonSize}
                         className="mt-4"
                       >
                         Try Again
@@ -578,20 +585,20 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
               <div className="grid gap-6 max-w-2xl w-full">
             <button
               onClick={() => handleModeSelect("webcam")}
-              className={`p-8 bg-gradient-to-br ${theme.gradients.primary} rounded-xl text-white transition-all transform hover:scale-105 shadow-lg`}
+              className={`p-8 bg-gradient-to-br ${gradients.primary} rounded-xl text-white transition-all transform hover:scale-105 shadow-lg`}
             >
               <div className="text-4xl mb-4">📹</div>
               <h2 className="text-2xl font-bold mb-2">Webcam</h2>
-              <p className={theme.gradients.primaryText}>Record using your camera and microphone</p>
+              <p className={gradients.primaryText}>Record using your camera and microphone</p>
             </button>
 
             <button
               onClick={() => handleModeSelect("screen")}
-              className={`p-8 bg-gradient-to-br ${theme.gradients.primary} rounded-xl text-white transition-all transform hover:scale-105 shadow-lg`}
+              className={`p-8 bg-gradient-to-br ${gradients.primary} rounded-xl text-white transition-all transform hover:scale-105 shadow-lg`}
             >
               <div className="text-4xl mb-4">🖥️</div>
               <h2 className="text-2xl font-bold mb-2">Screen Recording</h2>
-              <p className={theme.gradients.primaryText}>Record your screen with audio</p>
+              <p className={gradients.primaryText}>Record your screen with audio</p>
             </button>
 
           </div>
@@ -735,6 +742,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
                 <Button
                   onClick={handleRetake}
                   variant="secondary"
+                  size={components.buttonSize}
                   className="flex-1"
                 >
                   Retake
@@ -742,6 +750,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
                 <Button
                   onClick={handleUpload}
                   variant="secondary"
+                  size={components.buttonSize}
                   className="flex-1"
                 >
                   Upload
@@ -758,6 +767,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
           <Button
             onClick={() => router.push("/dashboard")}
             variant="secondary"
+            size={components.buttonSize}
             className="absolute top-4 right-4"
           >
             ← Back to Dashboard
