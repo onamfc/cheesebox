@@ -1,0 +1,20 @@
+{
+  "name": "brie",
+  "version": "1.0.0",
+  "displayName": "Brie",
+  "description": "A clean, minimal light theme with soft blues and whites. Perfect for focused, distraction-free work.",
+  "author": "Cheesebox Team",
+  "category": "light",
+  "tags": ["clean", "minimal", "light", "focused"],
+  "preview": "./preview.png",
+  "main": "./theme.ts",
+  "styles": "./styles.css",
+  "colors": {
+    "primary": "#3B82F6",
+    "secondary": "#1E40AF",
+    "accent": "#60A5FA",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "danger": "#EF4444"
+  }
+}

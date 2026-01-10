@@ -1,0 +1,59 @@
+{
+  "$schema": "./registry-schema.json",
+  "version": "1.0.0",
+  "themes": [
+    {
+      "id": "asiago",
+      "name": "Asiago Dark",
+      "description": "A sophisticated dark theme with cream and gold accents. The original Cheesebox theme.",
+      "version": "1.0.1",
+      "author": "Cheesebox Team",
+      "category": "dark",
+      "tags": ["professional", "elegant", "dark", "original"],
+      "path": "./asiago",
+      "preview": "./asiago/preview.png",
+      "main": "./asiago/theme.ts",
+      "styles": "./asiago/styles.css",
+      "default": true
+    },
+    {
+      "id": "cheddar",
+      "name": "Cheddar Bright",
+      "description": "A warm and energetic theme with orange and yellow tones. Perfect for a vibrant, creative workspace.",
+      "version": "1.0.0",
+      "author": "Cheesebox Team",
+      "category": "light",
+      "tags": ["bright", "warm", "energetic", "creative"],
+      "path": "./cheddar",
+      "preview": "./cheddar/preview.png",
+      "main": "./cheddar/theme.ts",
+      "styles": "./cheddar/styles.css"
+    },
+    {
+      "id": "brie",
+      "name": "Brie Light",
+      "description": "A clean, minimal light theme with soft blues and whites. Perfect for focused, distraction-free work.",
+      "version": "1.0.0",
+      "author": "Cheesebox Team",
+      "category": "light",
+      "tags": ["clean", "minimal", "light", "focused"],
+      "path": "./brie",
+      "preview": "./brie/preview.png",
+      "main": "./brie/theme.ts",
+      "styles": "./brie/styles.css"
+    },
+    {
+      "id": "danablu",
+      "name": "Danablu Neutral",
+      "description": "A professional neutral theme with balanced grays. Perfect for business and corporate environments.",
+      "version": "1.0.0",
+      "author": "Cheesebox Team",
+      "category": "light",
+      "tags": ["professional", "neutral", "business", "corporate"],
+      "path": "./danablu",
+      "preview": "./danablu/preview.png",
+      "main": "./danablu/theme.ts",
+      "styles": "./danablu/styles.css"
+    }
+  ]
+}

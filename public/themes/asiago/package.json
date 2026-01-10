@@ -1,0 +1,20 @@
+{
+  "name": "asiago",
+  "version": "1.0.1",
+  "displayName": "Asiago",
+  "description": "A sophisticated dark theme with cream and gold accents. The original Cheesebox theme featuring deep blacks and warm tones.",
+  "author": "Cheesebox Team",
+  "category": "dark",
+  "tags": ["professional", "elegant", "dark", "original"],
+  "preview": "./preview.png",
+  "main": "./theme.ts",
+  "styles": "./styles.css",
+  "colors": {
+    "primary": "#181717",
+    "secondary": "#FAEACB",
+    "accent": "#F5BE4B",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "danger": "#EF4444"
+  }
+}

@@ -1,0 +1,104 @@
+/**
+ * CHEDDAR THEME STYLES
+ * =====================
+ *
+ * A warm and energetic theme with orange and yellow tones.
+ */
+
+[data-theme="cheddar"] {
+  /* Brand colors - warm orange/yellow palette */
+  --brand-primary: #F59E0B;        /* Amber-500 */
+  --brand-primary-hover: #D97706;  /* Amber-600 */
+  --brand-secondary: #FCD34D;      /* Amber-300 */
+  --brand-accent: #FBBF24;         /* Amber-400 */
+  --brand-light: #FEF3C7;          /* Amber-100 */
+  --brand-dark: #78350F;           /* Amber-900 */
+  --brand-border-light: #FDE68A;   /* Amber-200 */
+  --nav-active-text: #78350F;      /* Dark text for active nav on light amber pill */
+
+  /* Status colors */
+  --success: #10B981;           /* Green-500 */
+  --success-hover: #059669;     /* Green-600 */
+  --success-light: #D1FAE5;     /* Green-100 */
+
+  --warning: #F59E0B;           /* Amber-500 */
+  --warning-hover: #D97706;     /* Amber-600 */
+  --warning-light: #FEF3C7;     /* Amber-100 */
+
+  --danger: #EF4444;            /* Red-500 */
+  --danger-hover: #DC2626;      /* Red-600 */
+  --danger-light: #FEE2E2;      /* Red-100 */
+
+  --info: #3B82F6;              /* Blue-500 */
+  --info-hover: #2563EB;        /* Blue-600 */
+  --info-light: #DBEAFE;        /* Blue-100 */
+}
+
+@layer utilities {
+  /* Brand background colors */
+  [data-theme="cheddar"] .bg-brand-primary { background-color: var(--brand-primary); }
+  [data-theme="cheddar"] .bg-brand-primary-hover { background-color: var(--brand-primary-hover); }
+  [data-theme="cheddar"] .bg-brand-secondary { background-color: var(--brand-secondary); }
+  [data-theme="cheddar"] .bg-brand-accent { background-color: var(--brand-accent); }
+  [data-theme="cheddar"] .bg-brand-light { background-color: var(--brand-light); }
+
+  /* Status background colors */
+  [data-theme="cheddar"] .bg-success { background-color: var(--success); }
+  [data-theme="cheddar"] .bg-success-light { background-color: var(--success-light); }
+  [data-theme="cheddar"] .bg-warning { background-color: var(--warning); }
+  [data-theme="cheddar"] .bg-warning-light { background-color: var(--warning-light); }
+  [data-theme="cheddar"] .bg-danger { background-color: var(--danger); }
+  [data-theme="cheddar"] .bg-danger-light { background-color: var(--danger-light); }
+  [data-theme="cheddar"] .bg-info { background-color: var(--info); }
+  [data-theme="cheddar"] .bg-info-light { background-color: var(--info-light); }
+
+  /* Hover background colors */
+  [data-theme="cheddar"] .hover\:bg-brand-primary-hover:hover { background-color: var(--brand-primary-hover); }
+  [data-theme="cheddar"] .hover\:bg-brand-primary:hover { background-color: var(--brand-primary); }
+  [data-theme="cheddar"] .hover\:bg-success-hover:hover { background-color: var(--success-hover); }
+  [data-theme="cheddar"] .hover\:bg-warning-hover:hover { background-color: var(--warning-hover); }
+  [data-theme="cheddar"] .hover\:bg-danger-hover:hover { background-color: var(--danger-hover); }
+  [data-theme="cheddar"] .hover\:bg-info-hover:hover { background-color: var(--info-hover); }
+
+  /* Brand text colors */
+  [data-theme="cheddar"] .text-brand-primary { color: var(--brand-primary); }
+  [data-theme="cheddar"] .text-brand-secondary { color: var(--brand-secondary); }
+  [data-theme="cheddar"] .text-brand-accent { color: var(--brand-accent); }
+  [data-theme="cheddar"] .text-brand-dark { color: var(--brand-dark); }
+  [data-theme="cheddar"] .text-nav-active { color: var(--nav-active-text); }
+
+  /* Status text colors */
+  [data-theme="cheddar"] .text-success { color: var(--success); }
+  [data-theme="cheddar"] .text-warning { color: var(--warning); }
+  [data-theme="cheddar"] .text-danger { color: var(--danger); }
+  [data-theme="cheddar"] .text-info { color: var(--info); }
+
+  /* Hover text colors */
+  [data-theme="cheddar"] .hover\:text-white:hover { color: #ffffff; }
+
+  /* Brand border colors */
+  [data-theme="cheddar"] .border-brand-primary { border-color: var(--brand-primary); }
+  [data-theme="cheddar"] .border-brand-secondary { border-color: var(--brand-secondary); }
+  [data-theme="cheddar"] .border-brand-light { border-color: var(--brand-border-light); }
+
+  /* Status border colors */
+  [data-theme="cheddar"] .border-success { border-color: var(--success); }
+  [data-theme="cheddar"] .border-warning { border-color: var(--warning); }
+  [data-theme="cheddar"] .border-danger { border-color: var(--danger); }
+  [data-theme="cheddar"] .border-info { border-color: var(--info); }
+
+  /* Focus ring */
+  [data-theme="cheddar"] .ring-brand-primary { --tw-ring-color: var(--brand-primary); }
+  [data-theme="cheddar"] .ring-brand-accent { --tw-ring-color: var(--brand-accent); }
+  [data-theme="cheddar"] .ring-success { --tw-ring-color: var(--success); }
+  [data-theme="cheddar"] .ring-warning { --tw-ring-color: var(--warning); }
+  [data-theme="cheddar"] .ring-danger { --tw-ring-color: var(--danger); }
+  [data-theme="cheddar"] .ring-info { --tw-ring-color: var(--info); }
+
+  /* Gradients */
+  [data-theme="cheddar"] .from-brand-primary { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
+  [data-theme="cheddar"] .to-brand-primary-dark { --tw-gradient-to: var(--brand-primary-hover) var(--tw-gradient-to-position); }
+  [data-theme="cheddar"] .to-brand-secondary { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
+  [data-theme="cheddar"] .hover\:from-brand-primary:hover { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
+  [data-theme="cheddar"] .hover\:to-brand-secondary:hover { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
+}

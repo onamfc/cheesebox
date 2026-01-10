@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Theme Registry",
+  "description": "Registry of all available themes for Cheesebox",
+  "type": "object",
+  "required": ["version", "themes"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Registry schema version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "themes": {
+      "type": "array",
+      "description": "List of available themes",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "version", "author", "category", "path", "main", "styles"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique theme identifier (lowercase, no spaces)",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the theme"
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief description of the theme"
+          },
+          "version": {
+            "type": "string",
+            "description": "Theme version (semantic versioning)",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          },
+          "author": {
+            "type": "string",
+            "description": "Theme author or team name"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["light", "dark", "high-contrast", "custom"],
+            "description": "Theme category"
+          },
+          "tags": {
+            "type": "array",
+            "description": "Searchable tags for the theme",
+            "items": {
+              "type": "string"
+            }
+          },
+          "path": {
+            "type": "string",
+            "description": "Relative path to theme directory"
+          },
+          "preview": {
+            "type": "string",
+            "description": "Path to preview image"
+          },
+          "main": {
+            "type": "string",
+            "description": "Path to theme configuration file"
+          },
+          "styles": {
+            "type": "string",
+            "description": "Path to theme CSS file"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Whether this is the default theme",
+            "default": false
+          }
+        }
+      }
+    }
+  }
+}

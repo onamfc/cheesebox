@@ -1,0 +1,20 @@
+{
+  "name": "danablu",
+  "version": "1.0.0",
+  "displayName": "Danablu",
+  "description": "A professional neutral theme with balanced grays. Perfect for business and corporate environments.",
+  "author": "Cheesebox Team",
+  "category": "light",
+  "tags": ["professional", "neutral", "business", "corporate"],
+  "preview": "./preview.png",
+  "main": "./theme.ts",
+  "styles": "./styles.css",
+  "colors": {
+    "primary": "#374151",
+    "secondary": "#6B7280",
+    "accent": "#9CA3AF",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "danger": "#EF4444"
+  }
+}
