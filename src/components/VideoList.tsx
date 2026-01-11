@@ -42,7 +42,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
 
   // Get theme layout settings
   const layout = themeConfig?.layout?.videoList || defaultTheme.layout.videoList;
-  const effectiveViewMode = viewMode === "grid" ? layout.variant : viewMode;
+  const effectiveViewMode = (viewMode === "grid" ? layout.variant : viewMode) as "grid" | "list" | "masonry";
 
   // Debug logging
   console.log("VideoList - Layout:", layout);
@@ -51,7 +51,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
   // Generate grid class names based on theme using explicit conditionals
   // This ensures Tailwind can detect all possible classes at build time
   const getGridClasses = () => {
-    const cols = layout.gridCols;
+    const cols = layout.gridCols as { sm: number; md: number; lg: number };
 
     // Base grid classes
     let classes = "grid gap-6";
