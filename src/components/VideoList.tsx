@@ -7,6 +7,8 @@ import EmbedCodeModal from "./EmbedCodeModal";
 import VisibilityToggle from "./VisibilityToggle";
 import { Button } from "./ui/Button";
 import { fetchWithCsrf } from "@/lib/csrf-client";
+import { useTheme } from "@/contexts/ThemeContext";
+import { theme as defaultTheme } from "@/themes/asiago/theme";
 
 interface Video {
   id: string;
@@ -31,11 +33,49 @@ interface VideoListProps {
 }
 
 export default function VideoList({ type, teamId, groupId, viewMode = "grid", compact = false }: VideoListProps) {
+  const { themeConfig } = useTheme();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [shareVideoId, setShareVideoId] = useState<string | null>(null);
   const [embedVideoId, setEmbedVideoId] = useState<string | null>(null);
+
+  // Get theme layout settings
+  const layout = themeConfig?.layout?.videoList || defaultTheme.layout.videoList;
+  const effectiveViewMode = (viewMode === "grid" ? layout.variant : viewMode) as "grid" | "list" | "masonry";
+
+  // Debug logging
+  console.log("VideoList - Layout:", layout);
+  console.log("VideoList - ViewMode:", viewMode, "->", effectiveViewMode);
+
+  // Generate grid class names based on theme using explicit conditionals
+  // This ensures Tailwind can detect all possible classes at build time
+  const getGridClasses = () => {
+    const cols = layout.gridCols as { sm: number; md: number; lg: number };
+
+    // Base grid classes
+    let classes = "grid gap-6";
+
+    // Small screen columns
+    if (cols.sm === 1) classes += " grid-cols-1";
+    else if (cols.sm === 2) classes += " grid-cols-2";
+    else if (cols.sm === 3) classes += " grid-cols-3";
+    else if (cols.sm === 4) classes += " grid-cols-4";
+
+    // Medium screen columns
+    if (cols.md === 1) classes += " md:grid-cols-1";
+    else if (cols.md === 2) classes += " md:grid-cols-2";
+    else if (cols.md === 3) classes += " md:grid-cols-3";
+    else if (cols.md === 4) classes += " md:grid-cols-4";
+
+    // Large screen columns
+    if (cols.lg === 1) classes += " lg:grid-cols-1";
+    else if (cols.lg === 2) classes += " lg:grid-cols-2";
+    else if (cols.lg === 3) classes += " lg:grid-cols-3";
+    else if (cols.lg === 4) classes += " lg:grid-cols-4";
+
+    return classes;
+  };
 
   const fetchVideos = async () => {
     try {
@@ -118,23 +158,23 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
 
   return (
     <>
-      <div className={viewMode === "grid" ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" : "space-y-4"}>
+      <div className={effectiveViewMode === "grid" || effectiveViewMode === "masonry" ? getGridClasses() : "space-y-4"}>
         {videos.map((video) => (
           <div
             key={video.id}
             className={`bg-white shadow rounded-lg hover:shadow-lg transition-shadow ${
-              viewMode === "list" ? "flex items-center" : ""
+              effectiveViewMode === "list" ? "flex items-center" : ""
             }`}
           >
-            <div className={`${viewMode === "list" ? `flex gap-${compact ? "4" : "6"} w-full ${compact ? "p-3" : "p-5"}` : "p-5"}`}>
+            <div className={`${effectiveViewMode === "list" ? `flex gap-${compact ? "4" : "6"} w-full ${compact ? "p-3" : "p-5"}` : "p-5"}`}>
               {/* Video Info Section */}
-              <div className={viewMode === "list" ? "flex-1 min-w-0 flex flex-col justify-center" : ""}>
-                <div className={`${viewMode === "list" ? "mb-1" : "mb-3"}`}>
-                  <div className={`flex items-center ${viewMode === "list" ? `gap-${compact ? "2" : "4"} mb-${compact ? "1" : "2"}` : "justify-between mb-3"}`}>
-                    <h3 className={`font-medium text-gray-900 ${viewMode === "list" ? (compact ? "text-base" : "text-xl") : "text-lg truncate"}`}>
+              <div className={effectiveViewMode === "list" ? "flex-1 min-w-0 flex flex-col justify-center" : ""}>
+                <div className={`${effectiveViewMode === "list" ? "mb-1" : "mb-3"}`}>
+                  <div className={`flex items-center ${effectiveViewMode === "list" ? `gap-${compact ? "2" : "4"} mb-${compact ? "1" : "2"}` : "justify-between mb-3"}`}>
+                    <h3 className={`font-medium text-gray-900 ${effectiveViewMode === "list" ? (compact ? "text-base" : "text-xl") : "text-lg truncate"}`}>
                       {video.title}
                     </h3>
-                    {viewMode === "grid" && video.transcodingStatus !== "COMPLETED" && (
+                    {(effectiveViewMode === "grid" || effectiveViewMode === "masonry") && video.transcodingStatus !== "COMPLETED" && (
                       <div className="flex gap-2">
                         <span
                           className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -151,7 +191,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                     )}
                   </div>
 
-                  {viewMode === "list" && video.transcodingStatus !== "COMPLETED" && (
+                  {effectiveViewMode === "list" && video.transcodingStatus !== "COMPLETED" && (
                     <div className="flex items-center gap-2 mb-2">
                       <span
                         className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -168,7 +208,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                   )}
 
                   {/* Visibility Toggle - List View */}
-                  {viewMode === "list" && (type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
+                  {effectiveViewMode === "list" && (type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                     <div className="mb-2 flex justify-start">
                       <VisibilityToggle
                         videoId={video.id}
@@ -180,7 +220,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                 </div>
 
 
-                  <p className={`text-sm text-gray-500 mb-3 ${viewMode === "list" ? "line-clamp-1" : "line-clamp-2"}`}>
+                  <p className={`text-sm text-gray-500 mb-3 ${effectiveViewMode === "list" ? "line-clamp-1" : "line-clamp-2"}`}>
                     {video.description || "No description provided."}
                   </p>
 
@@ -197,7 +237,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                   </p>
                 )}
 
-                <div className={`flex items-center text-xs text-gray-500 ${viewMode === "list" ? "gap-4" : "justify-between mb-4"}`}>
+                <div className={`flex items-center text-xs text-gray-500 ${effectiveViewMode === "list" ? "gap-4" : "justify-between mb-4"}`}>
                   <span>{new Date(video.createdAt).toLocaleDateString()}</span>
                   {(type === "owned" || (type === "team" && video.isOwner)) &&
                     video.shares &&
@@ -207,7 +247,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                 </div>
 
                 {/* Visibility Toggle - Grid View */}
-                {viewMode === "grid" && (type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
+                {(effectiveViewMode === "grid" || effectiveViewMode === "masonry") && (type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                   <div className="mb-3">
                     <VisibilityToggle
                       videoId={video.id}
@@ -219,7 +259,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
               </div>
 
               {/* Action Buttons - Grid View */}
-              {viewMode === "grid" && (
+              {(effectiveViewMode === "grid" || effectiveViewMode === "masonry") && (
                 <div className="flex justify-between w-full">
                   <div className="flex items-center gap-2">
                     {video.transcodingStatus === "COMPLETED" && (
@@ -279,8 +319,26 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
             </div>
 
             {/* Action Buttons - List View */}
-            {viewMode === "list" && (
-              <div className={`flex flex-col ${compact ? "gap-1 pr-3" : "gap-2 pr-4"} flex-shrink-0`}>
+            {effectiveViewMode === "list" && (
+              <div className={`grid grid-cols-2 ${compact ? "gap-1 pr-3" : "gap-2 pr-4"} flex-shrink-0`}>
+                {/* Top-left: Empty if only 3 buttons (no embed), otherwise Embed button */}
+                {video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (type === "owned" || (type === "team" && video.isOwner)) && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setEmbedVideoId(video.id)}
+                    className={compact ? "p-1.5" : "p-2"}
+                  >
+                    <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                  </Button>
+                )}
+                {!(video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (type === "owned" || (type === "team" && video.isOwner))) && (
+                  <div></div>
+                )}
+
+                {/* Top-right: Play button */}
                 {video.transcodingStatus === "COMPLETED" && (
                   <Button
                     variant="secondary"
@@ -294,41 +352,33 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                     </svg>
                   </Button>
                 )}
+
+                {/* Bottom-left: Share button */}
                 {(type === "owned" || (type === "team" && video.isOwner)) && (
-                  <>
-                    {video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setEmbedVideoId(video.id)}
-                        className={compact ? "p-1.5" : "p-2"}
-                      >
-                        <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                        </svg>
-                      </Button>
-                    )}
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setShareVideoId(video.id)}
-                      className={compact ? "p-1.5" : "p-2"}
-                    >
-                      <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                      </svg>
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleDelete(video.id)}
-                      className={compact ? "p-1.5" : "p-2"}
-                    >
-                      <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </Button>
-                  </>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShareVideoId(video.id)}
+                    className={compact ? "p-1.5" : "p-2"}
+                  >
+                    <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                  </Button>
+                )}
+
+                {/* Bottom-right: Delete button */}
+                {(type === "owned" || (type === "team" && video.isOwner)) && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleDelete(video.id)}
+                    className={compact ? "p-1.5" : "p-2"}
+                  >
+                    <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </Button>
                 )}
               </div>
             )}

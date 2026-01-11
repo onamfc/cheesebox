@@ -1,0 +1,86 @@
+/**
+ * DANABLU THEME STYLES
+ * ====================
+ *
+ * A professional neutral theme with balanced grays.
+ */
+
+[data-theme="danablu"] {
+  /* Brand colors - neutral gray palette with good contrast for light backgrounds */
+  --brand-primary: #374151;        /* Gray-700 - dark enough for light backgrounds */
+  --brand-primary-hover: #1F2937;  /* Gray-800 */
+  --brand-secondary: #6B7280;      /* Gray-500 - medium gray */
+  --brand-accent: #9CA3AF;         /* Gray-400 */
+  --brand-light: #F9FAFB;          /* Gray-50 - very light background */
+  --brand-dark: #111827;           /* Gray-900 - text color */
+  --brand-border-light: #E5E7EB;   /* Gray-200 */
+  --nav-active-text: #111827;      /* Dark text for active nav on medium gray pill */
+
+  /* Status colors */
+  --success: #10B981;
+  --success-hover: #059669;
+  --success-light: #D1FAE5;
+
+  --warning: #F59E0B;
+  --warning-hover: #D97706;
+  --warning-light: #FEF3C7;
+
+  --danger: #EF4444;
+  --danger-hover: #DC2626;
+  --danger-light: #FEE2E2;
+
+  --info: #3B82F6;
+  --info-hover: #2563EB;
+  --info-light: #DBEAFE;
+}
+
+@layer utilities {
+  [data-theme="danablu"] .bg-brand-primary { background-color: var(--brand-primary); }
+  [data-theme="danablu"] .bg-brand-primary-hover { background-color: var(--brand-primary-hover); }
+  [data-theme="danablu"] .bg-brand-secondary { background-color: var(--brand-secondary); }
+  [data-theme="danablu"] .bg-brand-accent { background-color: var(--brand-accent); }
+  [data-theme="danablu"] .bg-brand-light { background-color: var(--brand-light); }
+  [data-theme="danablu"] .bg-success { background-color: var(--success); }
+  [data-theme="danablu"] .bg-success-light { background-color: var(--success-light); }
+  [data-theme="danablu"] .bg-warning { background-color: var(--warning); }
+  [data-theme="danablu"] .bg-warning-light { background-color: var(--warning-light); }
+  [data-theme="danablu"] .bg-danger { background-color: var(--danger); }
+  [data-theme="danablu"] .bg-danger-light { background-color: var(--danger-light); }
+  [data-theme="danablu"] .bg-info { background-color: var(--info); }
+  [data-theme="danablu"] .bg-info-light { background-color: var(--info-light); }
+  [data-theme="danablu"] .hover\:bg-brand-primary-hover:hover { background-color: var(--brand-primary-hover); }
+  [data-theme="danablu"] .hover\:bg-brand-primary:hover { background-color: var(--brand-primary); }
+  [data-theme="danablu"] .hover\:bg-success-hover:hover { background-color: var(--success-hover); }
+  [data-theme="danablu"] .hover\:bg-warning-hover:hover { background-color: var(--warning-hover); }
+  [data-theme="danablu"] .hover\:bg-danger-hover:hover { background-color: var(--danger-hover); }
+  [data-theme="danablu"] .hover\:bg-info-hover:hover { background-color: var(--info-hover); }
+  [data-theme="danablu"] .text-brand-primary { color: var(--brand-primary); }
+  [data-theme="danablu"] .text-brand-secondary { color: var(--brand-secondary); }
+  [data-theme="danablu"] .text-brand-accent { color: var(--brand-accent); }
+  [data-theme="danablu"] .text-brand-dark { color: var(--brand-dark); }
+  [data-theme="danablu"] .text-nav-active { color: var(--nav-active-text); }
+  [data-theme="danablu"] .text-success { color: var(--success); }
+  [data-theme="danablu"] .text-warning { color: var(--warning); }
+  [data-theme="danablu"] .text-danger { color: var(--danger); }
+  [data-theme="danablu"] .text-info { color: var(--info); }
+  [data-theme="danablu"] .hover\:text-white:hover { color: #ffffff; }
+  [data-theme="danablu"] .hover\:text-brand-secondary:hover { color: var(--brand-secondary); }
+  [data-theme="danablu"] .border-brand-primary { border-color: var(--brand-primary); }
+  [data-theme="danablu"] .border-brand-secondary { border-color: var(--brand-secondary); }
+  [data-theme="danablu"] .border-brand-light { border-color: var(--brand-border-light); }
+  [data-theme="danablu"] .border-success { border-color: var(--success); }
+  [data-theme="danablu"] .border-warning { border-color: var(--warning); }
+  [data-theme="danablu"] .border-danger { border-color: var(--danger); }
+  [data-theme="danablu"] .border-info { border-color: var(--info); }
+  [data-theme="danablu"] .ring-brand-primary { --tw-ring-color: var(--brand-primary); }
+  [data-theme="danablu"] .ring-brand-accent { --tw-ring-color: var(--brand-accent); }
+  [data-theme="danablu"] .ring-success { --tw-ring-color: var(--success); }
+  [data-theme="danablu"] .ring-warning { --tw-ring-color: var(--warning); }
+  [data-theme="danablu"] .ring-danger { --tw-ring-color: var(--danger); }
+  [data-theme="danablu"] .ring-info { --tw-ring-color: var(--info); }
+  [data-theme="danablu"] .from-brand-primary { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
+  [data-theme="danablu"] .to-brand-primary-dark { --tw-gradient-to: var(--brand-primary-hover) var(--tw-gradient-to-position); }
+  [data-theme="danablu"] .to-brand-secondary { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
+  [data-theme="danablu"] .hover\:from-brand-primary:hover { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
+  [data-theme="danablu"] .hover\:to-brand-secondary:hover { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
+}

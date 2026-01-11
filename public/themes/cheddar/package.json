@@ -1,0 +1,20 @@
+{
+  "name": "cheddar",
+  "version": "1.0.0",
+  "displayName": "Cheddar",
+  "description": "A warm and energetic theme with orange and yellow tones. Perfect for a vibrant, creative workspace.",
+  "author": "Cheesebox Team",
+  "category": "light",
+  "tags": ["bright", "warm", "energetic", "creative"],
+  "preview": "./preview.png",
+  "main": "./theme.ts",
+  "styles": "./styles.css",
+  "colors": {
+    "primary": "#F59E0B",
+    "secondary": "#FCD34D",
+    "accent": "#FBBF24",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "danger": "#EF4444"
+  }
+}

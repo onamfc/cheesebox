@@ -4,126 +4,37 @@
   THEMING GUIDE
   =============
 
-  This app supports two theming approaches:
+  This app uses a pluggable WordPress-style theme system.
 
-  1. TAILWIND COLORS (Current default)
-     - Edit: src/config/theme.ts
-     - Uses Tailwind's built-in colors (purple-600, blue-500, etc.)
-     - Pro: Names always match colors, autocomplete works
-     - Con: Limited to Tailwind's palette
+  Themes are defined in the /themes directory. Each theme has:
+  - package.json: Theme metadata (name, version, description, etc.)
+  - theme.ts: Theme configuration object
+  - styles.css: Theme-specific CSS variables and utilities
+  - preview.png: Theme preview image
+  - README.md: Theme documentation
 
-  2. CUSTOM COLORS (Alternative)
-     - Define custom CSS utilities below
-     - Use semantic names (brand-primary, brand-accent, etc.)
-     - Pro: Use any hex color you want, semantic naming
-     - Con: Need to define all utilities yourself
+  The active theme is determined by the user's settings (stored in database).
+  Theme styles are scoped with [data-theme="theme-name"] selectors.
 
-  See THEMING.md for detailed instructions.
+  To create a new theme:
+  1. Copy an existing theme directory in /themes
+  2. Customize the colors, styles, and metadata
+  3. Add to /themes/registry.json
+  4. Users can switch themes via Settings page
+
+  See /themes/asiago/README.md for an example theme structure.
 */
 
 /*
-  CUSTOM COLOR UTILITIES
-  =======================
+  THEME SYSTEM
+  ============
 
-  Uncomment and customize these to use your own brand colors.
-  Then update src/config/theme.ts to use these class names.
+  Theme-specific styles are loaded from /themes/[theme-name]/styles.css
+  Each theme defines its own CSS variables scoped to [data-theme="theme-name"]
+
+  The global styles below provide fallback values for the default theme (asiago).
+  When themes switch, the active theme's CSS file is dynamically loaded.
 */
-:root {
-  /* Brand colors - single source of truth */
-  --brand-primary: #181717;
-  --brand-primary-hover: rgba(24,23,23, 1);
-  --brand-secondary: #FAEACB;
-  --brand-accent: #F5BE4B;
-  --brand-light: #FAEACB;
-  --brand-dark: #181717;
-  --brand-border-light: #FAEACB;
-
-  /* Status colors - success, warning, danger, info */
-  --success: #10B981;           /* Green-500 */
-  --success-hover: #059669;     /* Green-600 */
-  --success-light: #D1FAE5;     /* Green-100 */
-
-  --warning: #F59E0B;           /* Amber-500 */
-  --warning-hover: #D97706;     /* Amber-600 */
-  --warning-light: #FEF3C7;     /* Amber-100 */
-
-  --danger: #EF4444;            /* Red-500 */
-  --danger-hover: #DC2626;      /* Red-600 */
-  --danger-light: #FEE2E2;      /* Red-100 */
-
-  --info: #3B82F6;              /* Blue-500 */
-  --info-hover: #2563EB;        /* Blue-600 */
-  --info-light: #DBEAFE;        /* Blue-100 */
-}
-
-
-@layer utilities {
-  /* Brand background colors */
-  .bg-brand-primary { background-color: var(--brand-primary); }
-  .bg-brand-primary-hover { background-color: var(--brand-primary-hover); }
-  .bg-brand-secondary { background-color: var(--brand-secondary); }
-  .bg-brand-accent { background-color: var(--brand-accent); }
-  .bg-brand-light { background-color: var(--brand-light); }
-
-  /* Status background colors */
-  .bg-success { background-color: var(--success); }
-  .bg-success-light { background-color: var(--success-light); }
-  .bg-warning { background-color: var(--warning); }
-  .bg-warning-light { background-color: var(--warning-light); }
-  .bg-danger { background-color: var(--danger); }
-  .bg-danger-light { background-color: var(--danger-light); }
-  .bg-info { background-color: var(--info); }
-  .bg-info-light { background-color: var(--info-light); }
-
-  /* Hover background colors */
-  .hover\:bg-brand-primary-hover:hover { background-color: var(--brand-primary-hover); }
-  .hover\:bg-brand-primary:hover { background-color: var(--brand-primary); }
-  .hover\:bg-success-hover:hover { background-color: var(--success-hover); }
-  .hover\:bg-warning-hover:hover { background-color: var(--warning-hover); }
-  .hover\:bg-danger-hover:hover { background-color: var(--danger-hover); }
-  .hover\:bg-info-hover:hover { background-color: var(--info-hover); }
-
-  /* Brand text colors */
-  .text-brand-primary { color: var(--brand-primary); }
-  .text-brand-secondary { color: var(--brand-secondary); }
-  .text-brand-accent { color: var(--brand-accent); }
-  .text-brand-dark { color: var(--brand-dark); }
-
-  /* Status text colors */
-  .text-success { color: var(--success); }
-  .text-warning { color: var(--warning); }
-  .text-danger { color: var(--danger); }
-  .text-info { color: var(--info); }
-
-  /* Hover text colors */
-  .hover\:text-white:hover { color: #ffffff; }
-
-  /* Brand border colors */
-  .border-brand-primary { border-color: var(--brand-primary); }
-  .border-brand-secondary { border-color: var(--brand-secondary); }
-  .border-brand-light { border-color: var(--brand-border-light); }
-
-  /* Status border colors */
-  .border-success { border-color: var(--success); }
-  .border-warning { border-color: var(--warning); }
-  .border-danger { border-color: var(--danger); }
-  .border-info { border-color: var(--info); }
-
-  /* Focus ring */
-  .ring-brand-primary { --tw-ring-color: var(--brand-primary); }
-  .ring-brand-accent { --tw-ring-color: var(--brand-accent); }
-  .ring-success { --tw-ring-color: var(--success); }
-  .ring-warning { --tw-ring-color: var(--warning); }
-  .ring-danger { --tw-ring-color: var(--danger); }
-  .ring-info { --tw-ring-color: var(--info); }
-
-  /* Gradients - for VideoRecorder mode buttons */
-  .from-brand-primary { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
-  .to-brand-primary-dark { --tw-gradient-to: var(--brand-primary-hover) var(--tw-gradient-to-position); }
-  .to-brand-secondary { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
-  .hover\:from-brand-primary:hover { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
-  .hover\:to-brand-secondary:hover { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
-}
 
 
 html {
