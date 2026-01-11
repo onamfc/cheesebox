@@ -42,17 +42,30 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link href="/">
+                <h1 className="text-2xl font-bold text-brand-primary">Cheesebox</h1>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="text-center text-3xl font-extrabold text-gray-900">
+              Sign in to your account
+            </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{" "}
             <Link
               href="/auth/signup"
-              className="font-medium text-purple-700 hover:text-purple-500"
+              className="font-medium text-brand-primary hover:text-brand-primary-hover"
             >
               create a new account
             </Link>
@@ -90,17 +103,16 @@ export default function SignInPage() {
           </div>
 
           <div>
-            <Button
+            <button
               type="submit"
               disabled={isLoading}
-              loading={isLoading}
-              variant="primary"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign in
-            </Button>
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
