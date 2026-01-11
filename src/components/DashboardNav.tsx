@@ -15,7 +15,7 @@ export default function DashboardNav() {
   // Get theme configuration
   const layout = themeConfig?.layout?.navigation || defaultTheme.layout.navigation;
   const spacing = themeConfig?.spacing || defaultTheme.spacing;
-  const isMinimal = layout.variant === "minimal";
+  const isMinimal = false; // Theme uses 'sidebar' variant, not 'minimal'
 
   const handleSignOut = async () => {
     const { signOut } = await import("next-auth/react");
