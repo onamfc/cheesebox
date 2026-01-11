@@ -1,6 +1,9 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
-import { theme } from '@/config/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import { theme as defaultTheme } from '@/themes/asiago/theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success' | 'warning' | 'info';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -20,16 +23,23 @@ interface LinkButtonProps extends Omit<ButtonProps, 'onClick' | 'type' | 'loadin
   href: string;
 }
 
-// Centralized theme configuration - edit src/config/theme.ts to change colors
-const variantStyles: Record<ButtonVariant, string> = {
-  primary: theme.button.primary,
-  secondary: theme.button.secondary,
-  ghost: theme.button.ghost,
-  danger: theme.button.danger,
-  success: theme.button.success,
-  warning: theme.button.warning,
-  info: theme.button.info,
-};
+// Get variant styles from theme context with fallback
+function useVariantStyles(): Record<ButtonVariant, string> {
+  const { themeConfig } = useTheme();
+
+  // Use themeConfig if available, otherwise fallback to default theme
+  const buttonStyles = themeConfig?.button || defaultTheme.button;
+
+  return {
+    primary: buttonStyles.primary,
+    secondary: buttonStyles.secondary,
+    ghost: buttonStyles.ghost,
+    danger: buttonStyles.danger,
+    success: buttonStyles.success,
+    warning: buttonStyles.warning,
+    info: buttonStyles.info,
+  };
+}
 
 const sizeStyles: Record<ButtonSize, string> = {
   sm: 'px-3 py-1.5 text-sm',
@@ -49,6 +59,8 @@ export function Button({
   onClick,
   type = 'button',
 }: ButtonProps) {
+  const variantStyles = useVariantStyles();
+
   return (
     <button
       type={type}
@@ -69,6 +81,8 @@ export function LinkButton({
   className = '',
   href,
 }: LinkButtonProps) {
+  const variantStyles = useVariantStyles();
+
   if (disabled) {
     return (
       <span className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} pointer-events-none opacity-50 ${className}`}>

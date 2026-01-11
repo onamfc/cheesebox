@@ -103,16 +103,14 @@ export function requiresCsrfValidation(request: NextRequest): boolean {
     return false;
   }
 
-  // Skip CSRF for API routes that use other authentication (mobile JWT, OAuth)
-  // These routes are already protected by JWT tokens or OAuth flows
+  // Skip CSRF for API routes that use other authentication
+  // - NextAuth routes (NextAuth handles its own CSRF)
+  // - Mobile JWT routes (protected by JWT tokens)
   const exemptPaths = [
+    '/api/auth/', // NextAuth endpoints
     '/api/auth/mobile/login',
     '/api/auth/mobile/signup',
     '/api/auth/mobile/me',
-    '/api/auth/signin',        // NextAuth OAuth sign-in
-    '/api/auth/callback',      // NextAuth OAuth callbacks
-    '/api/auth/session',       // NextAuth session checks
-    '/api/auth/csrf',          // NextAuth CSRF token endpoint
   ];
 
   if (exemptPaths.some(exempt => path.startsWith(exempt))) {

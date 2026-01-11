@@ -1,0 +1,106 @@
+/**
+ * ASIAGO THEME STYLES
+ * ====================
+ *
+ * A sophisticated dark theme with cream and gold accents.
+ * All styles are scoped to [data-theme="asiago"] for hot-swapping.
+ */
+
+[data-theme="asiago"] {
+  /* Brand colors - single source of truth */
+  --brand-primary: #181717;
+  --brand-primary-hover: rgba(24,23,23, 1);
+  --brand-secondary: #FAEACB;
+  --brand-accent: #F5BE4B;
+  --brand-light: #FAEACB;
+  --brand-dark: #181717;
+  --brand-border-light: #FAEACB;
+  --nav-active-text: #111827;      /* Dark text for active nav on light cream pill */
+
+  /* Status colors - success, warning, danger, info */
+  --success: #10B981;           /* Green-500 */
+  --success-hover: #059669;     /* Green-600 */
+  --success-light: #D1FAE5;     /* Green-100 */
+
+  --warning: #F59E0B;           /* Amber-500 */
+  --warning-hover: #D97706;     /* Amber-600 */
+  --warning-light: #FEF3C7;     /* Amber-100 */
+
+  --danger: #EF4444;            /* Red-500 */
+  --danger-hover: #DC2626;      /* Red-600 */
+  --danger-light: #FEE2E2;      /* Red-100 */
+
+  --info: #3B82F6;              /* Blue-500 */
+  --info-hover: #2563EB;        /* Blue-600 */
+  --info-light: #DBEAFE;        /* Blue-100 */
+}
+
+@layer utilities {
+  /* Brand background colors */
+  [data-theme="asiago"] .bg-brand-primary { background-color: var(--brand-primary); }
+  [data-theme="asiago"] .bg-brand-primary-hover { background-color: var(--brand-primary-hover); }
+  [data-theme="asiago"] .bg-brand-secondary { background-color: var(--brand-secondary); }
+  [data-theme="asiago"] .bg-brand-accent { background-color: var(--brand-accent); }
+  [data-theme="asiago"] .bg-brand-light { background-color: var(--brand-light); }
+
+  /* Status background colors */
+  [data-theme="asiago"] .bg-success { background-color: var(--success); }
+  [data-theme="asiago"] .bg-success-light { background-color: var(--success-light); }
+  [data-theme="asiago"] .bg-warning { background-color: var(--warning); }
+  [data-theme="asiago"] .bg-warning-light { background-color: var(--warning-light); }
+  [data-theme="asiago"] .bg-danger { background-color: var(--danger); }
+  [data-theme="asiago"] .bg-danger-light { background-color: var(--danger-light); }
+  [data-theme="asiago"] .bg-info { background-color: var(--info); }
+  [data-theme="asiago"] .bg-info-light { background-color: var(--info-light); }
+
+  /* Hover background colors */
+  [data-theme="asiago"] .hover\:bg-brand-primary-hover:hover { background-color: var(--brand-primary-hover); }
+  [data-theme="asiago"] .hover\:bg-brand-primary:hover { background-color: var(--brand-primary); }
+  [data-theme="asiago"] .hover\:bg-success-hover:hover { background-color: var(--success-hover); }
+  [data-theme="asiago"] .hover\:bg-warning-hover:hover { background-color: var(--warning-hover); }
+  [data-theme="asiago"] .hover\:bg-danger-hover:hover { background-color: var(--danger-hover); }
+  [data-theme="asiago"] .hover\:bg-info-hover:hover { background-color: var(--info-hover); }
+
+  /* Brand text colors */
+  [data-theme="asiago"] .text-brand-primary { color: var(--brand-primary); }
+  [data-theme="asiago"] .text-brand-secondary { color: var(--brand-secondary); }
+  [data-theme="asiago"] .text-brand-accent { color: var(--brand-accent); }
+  [data-theme="asiago"] .text-brand-dark { color: var(--brand-dark); }
+  [data-theme="asiago"] .text-nav-active { color: var(--nav-active-text); }
+
+  /* Status text colors */
+  [data-theme="asiago"] .text-success { color: var(--success); }
+  [data-theme="asiago"] .text-warning { color: var(--warning); }
+  [data-theme="asiago"] .text-danger { color: var(--danger); }
+  [data-theme="asiago"] .text-info { color: var(--info); }
+
+  /* Hover text colors */
+  [data-theme="asiago"] .hover\:text-white:hover { color: #ffffff; }
+  [data-theme="asiago"] .hover\:text-brand-secondary:hover { color: var(--brand-secondary); }
+
+  /* Brand border colors */
+  [data-theme="asiago"] .border-brand-primary { border-color: var(--brand-primary); }
+  [data-theme="asiago"] .border-brand-secondary { border-color: var(--brand-secondary); }
+  [data-theme="asiago"] .border-brand-light { border-color: var(--brand-border-light); }
+
+  /* Status border colors */
+  [data-theme="asiago"] .border-success { border-color: var(--success); }
+  [data-theme="asiago"] .border-warning { border-color: var(--warning); }
+  [data-theme="asiago"] .border-danger { border-color: var(--danger); }
+  [data-theme="asiago"] .border-info { border-color: var(--info); }
+
+  /* Focus ring */
+  [data-theme="asiago"] .ring-brand-primary { --tw-ring-color: var(--brand-primary); }
+  [data-theme="asiago"] .ring-brand-accent { --tw-ring-color: var(--brand-accent); }
+  [data-theme="asiago"] .ring-success { --tw-ring-color: var(--success); }
+  [data-theme="asiago"] .ring-warning { --tw-ring-color: var(--warning); }
+  [data-theme="asiago"] .ring-danger { --tw-ring-color: var(--danger); }
+  [data-theme="asiago"] .ring-info { --tw-ring-color: var(--info); }
+
+  /* Gradients - for VideoRecorder mode buttons */
+  [data-theme="asiago"] .from-brand-primary { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
+  [data-theme="asiago"] .to-brand-primary-dark { --tw-gradient-to: var(--brand-primary-hover) var(--tw-gradient-to-position); }
+  [data-theme="asiago"] .to-brand-secondary { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
+  [data-theme="asiago"] .hover\:from-brand-primary:hover { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
+  [data-theme="asiago"] .hover\:to-brand-secondary:hover { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
+}

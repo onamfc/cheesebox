@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
+import ThemeProviderWrapper from "@/components/ThemeProviderWrapper";
 import { Analytics } from "@vercel/analytics/react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,17 +24,40 @@ export const metadata: Metadata = {
     "Share business-sensitive videos securely with AWS S3 and HLS streaming",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Get user's theme preference
+  let userTheme = "asiago"; // default theme
+
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (session?.user?.email) {
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: { settings: true },
+      });
+
+      if (user?.settings?.theme) {
+        userTheme = user.settings.theme;
+      }
+    }
+  } catch (error) {
+    console.error("Failed to load user theme:", error);
+    // Fall back to default theme
+  }
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>{children}</SessionProvider>
+        <ThemeProviderWrapper initialTheme={userTheme}>
+          <SessionProvider>{children}</SessionProvider>
+        </ThemeProviderWrapper>
         <Analytics />
       </body>
     </html>

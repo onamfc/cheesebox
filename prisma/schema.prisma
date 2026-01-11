@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
 }
 
+// User model for authentication
 model User {
   id               String            @id @default(cuid())
   email            String            @unique
@@ -17,19 +18,36 @@ model User {
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
   pushToken        String?           @map("push_token")
-  awsCredentials   AwsCredentials?
-  emailCredentials EmailCredentials?
-  ownedGroups      ShareGroup[]
-  teamMemberships  TeamMember[]
-  settings         UserSettings?
-  groupShares      VideoGroupShare[]
-  sharedVideos     VideoShare[]      @relation("SharedByUser")
-  videos           Video[]
+
+  // Relations
+  awsCredentials    AwsCredentials?
+  emailCredentials  EmailCredentials?
+  settings          UserSettings?
+  videos            Video[]
+  sharedVideos      VideoShare[]      @relation("SharedByUser")
+  ownedGroups       ShareGroup[]
+  teamMemberships   TeamMember[]
+  groupShares       VideoGroupShare[]
 
   @@unique([provider, providerId])
   @@map("users")
 }
 
+// User settings (theme, preferences, etc.)
+model UserSettings {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  theme     String   @default("asiago")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+// AWS credentials stored securely (encrypted)
 model AwsCredentials {
   id               String   @id @default(cuid())
   userId           String?  @unique @map("user_id")
@@ -185,17 +203,7 @@ model VideoGroupShare {
   @@map("video_group_shares")
 }
 
-model UserSettings {
-  id        String   @id @default(cuid())
-  userId    String   @unique @map("user_id")
-  theme     String   @default("asiago")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_settings")
-}
-
+// Enums
 enum TranscodingStatus {
   PENDING
   PROCESSING

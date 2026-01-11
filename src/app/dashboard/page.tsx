@@ -9,6 +9,8 @@ import VideoList from "@/components/VideoList";
 import FloatingActionMenu from "@/components/FloatingActionMenu";
 import VideoRecorder from "@/components/VideoRecorder";
 import { LinkButton, Button } from "@/components/ui/Button";
+import { useTheme } from "@/contexts/ThemeContext";
+import { theme as defaultTheme } from "@/themes/asiago/theme";
 
 type Tab = "my-videos" | "shared";
 type ViewMode = "grid" | "list";
@@ -22,6 +24,7 @@ interface Team {
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  const { themeConfig } = useTheme();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("my-videos");
   const [showUpload, setShowUpload] = useState(false);
@@ -37,6 +40,10 @@ export default function DashboardPage() {
     }
     return "grid";
   });
+
+  // Get theme configuration
+  const spacing = themeConfig?.spacing || defaultTheme.spacing;
+  const components = themeConfig?.components || defaultTheme.components;
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -84,7 +91,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div className={`${spacing.containerMaxWidth} mx-auto py-6 sm:px-6 lg:px-8`}>
         {!hasCredentials && (
           <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-md p-4">
             <div className="flex">
@@ -244,7 +251,7 @@ export default function DashboardPage() {
         )}
 
         {/* Floating Action Menu */}
-        {activeTab === "my-videos" && hasCredentials && !showRecorder && (
+        {components.showFloatingActionMenu && activeTab === "my-videos" && hasCredentials && !showRecorder && (
           <FloatingActionMenu
             onUpload={() => setShowUpload(true)}
             onRecord={(mode) => {

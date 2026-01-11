@@ -1,0 +1,86 @@
+/**
+ * BRIE THEME STYLES
+ * =================
+ *
+ * A clean, minimal light theme with soft blues and whites.
+ */
+
+[data-theme="brie"] {
+  /* Brand colors - soft blue palette with good contrast for light backgrounds */
+  --brand-primary: #3B82F6;        /* Blue-500 - main brand color */
+  --brand-primary-hover: #2563EB;  /* Blue-600 - darker on hover */
+  --brand-secondary: #1E40AF;      /* Blue-800 - dark enough for light backgrounds */
+  --brand-accent: #60A5FA;         /* Blue-400 */
+  --brand-light: #EFF6FF;          /* Blue-50 - very light background */
+  --brand-dark: #1E3A8A;           /* Blue-900 - text color */
+  --brand-border-light: #DBEAFE;   /* Blue-100 */
+  --nav-active-text: #FFFFFF;      /* White text for active nav on dark blue pill */
+
+  /* Status colors */
+  --success: #10B981;
+  --success-hover: #059669;
+  --success-light: #D1FAE5;
+
+  --warning: #F59E0B;
+  --warning-hover: #D97706;
+  --warning-light: #FEF3C7;
+
+  --danger: #EF4444;
+  --danger-hover: #DC2626;
+  --danger-light: #FEE2E2;
+
+  --info: #3B82F6;
+  --info-hover: #2563EB;
+  --info-light: #DBEAFE;
+}
+
+@layer utilities {
+  [data-theme="brie"] .bg-brand-primary { background-color: var(--brand-primary); }
+  [data-theme="brie"] .bg-brand-primary-hover { background-color: var(--brand-primary-hover); }
+  [data-theme="brie"] .bg-brand-secondary { background-color: var(--brand-secondary); }
+  [data-theme="brie"] .bg-brand-accent { background-color: var(--brand-accent); }
+  [data-theme="brie"] .bg-brand-light { background-color: var(--brand-light); }
+  [data-theme="brie"] .bg-success { background-color: var(--success); }
+  [data-theme="brie"] .bg-success-light { background-color: var(--success-light); }
+  [data-theme="brie"] .bg-warning { background-color: var(--warning); }
+  [data-theme="brie"] .bg-warning-light { background-color: var(--warning-light); }
+  [data-theme="brie"] .bg-danger { background-color: var(--danger); }
+  [data-theme="brie"] .bg-danger-light { background-color: var(--danger-light); }
+  [data-theme="brie"] .bg-info { background-color: var(--info); }
+  [data-theme="brie"] .bg-info-light { background-color: var(--info-light); }
+  [data-theme="brie"] .hover\:bg-brand-primary-hover:hover { background-color: var(--brand-primary-hover); }
+  [data-theme="brie"] .hover\:bg-brand-primary:hover { background-color: var(--brand-primary); }
+  [data-theme="brie"] .hover\:bg-success-hover:hover { background-color: var(--success-hover); }
+  [data-theme="brie"] .hover\:bg-warning-hover:hover { background-color: var(--warning-hover); }
+  [data-theme="brie"] .hover\:bg-danger-hover:hover { background-color: var(--danger-hover); }
+  [data-theme="brie"] .hover\:bg-info-hover:hover { background-color: var(--info-hover); }
+  [data-theme="brie"] .text-brand-primary { color: var(--brand-primary); }
+  [data-theme="brie"] .text-brand-secondary { color: var(--brand-secondary); }
+  [data-theme="brie"] .text-brand-accent { color: var(--brand-accent); }
+  [data-theme="brie"] .text-brand-dark { color: var(--brand-dark); }
+  [data-theme="brie"] .text-nav-active { color: var(--nav-active-text); }
+  [data-theme="brie"] .text-success { color: var(--success); }
+  [data-theme="brie"] .text-warning { color: var(--warning); }
+  [data-theme="brie"] .text-danger { color: var(--danger); }
+  [data-theme="brie"] .text-info { color: var(--info); }
+  [data-theme="brie"] .hover\:text-white:hover { color: #ffffff; }
+  [data-theme="brie"] .hover\:text-brand-secondary:hover { color: var(--brand-secondary); }
+  [data-theme="brie"] .border-brand-primary { border-color: var(--brand-primary); }
+  [data-theme="brie"] .border-brand-secondary { border-color: var(--brand-secondary); }
+  [data-theme="brie"] .border-brand-light { border-color: var(--brand-border-light); }
+  [data-theme="brie"] .border-success { border-color: var(--success); }
+  [data-theme="brie"] .border-warning { border-color: var(--warning); }
+  [data-theme="brie"] .border-danger { border-color: var(--danger); }
+  [data-theme="brie"] .border-info { border-color: var(--info); }
+  [data-theme="brie"] .ring-brand-primary { --tw-ring-color: var(--brand-primary); }
+  [data-theme="brie"] .ring-brand-accent { --tw-ring-color: var(--brand-accent); }
+  [data-theme="brie"] .ring-success { --tw-ring-color: var(--success); }
+  [data-theme="brie"] .ring-warning { --tw-ring-color: var(--warning); }
+  [data-theme="brie"] .ring-danger { --tw-ring-color: var(--danger); }
+  [data-theme="brie"] .ring-info { --tw-ring-color: var(--info); }
+  [data-theme="brie"] .from-brand-primary { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
+  [data-theme="brie"] .to-brand-primary-dark { --tw-gradient-to: var(--brand-primary-hover) var(--tw-gradient-to-position); }
+  [data-theme="brie"] .to-brand-secondary { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
+  [data-theme="brie"] .hover\:from-brand-primary:hover { --tw-gradient-from: var(--brand-primary) var(--tw-gradient-from-position); }
+  [data-theme="brie"] .hover\:to-brand-secondary:hover { --tw-gradient-to: var(--brand-secondary) var(--tw-gradient-to-position); }
+}
