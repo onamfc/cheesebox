@@ -16,18 +16,18 @@
   --brand-border-light: #FDE68A;   /* Amber-200 */
   --nav-active-text: #78350F;      /* Dark text for active nav on light amber pill */
 
-  /* Status colors */
-  --success: #10B981;           /* Green-500 */
-  --success-hover: #059669;     /* Green-600 */
-  --success-light: #D1FAE5;     /* Green-100 */
+  /* Status colors - Warmer, vibrant tones for Cheddar */
+  --success: #84CC16;           /* Lime-500 - bright lime green */
+  --success-hover: #65A30D;     /* Lime-600 */
+  --success-light: #ECFCCB;     /* Lime-100 */
 
-  --warning: #F59E0B;           /* Amber-500 */
-  --warning-hover: #D97706;     /* Amber-600 */
-  --warning-light: #FEF3C7;     /* Amber-100 */
+  --warning: #EA580C;           /* Orange-600 - deep burnt orange */
+  --warning-hover: #C2410C;     /* Orange-700 */
+  --warning-light: #FFEDD5;     /* Orange-100 */
 
-  --danger: #EF4444;            /* Red-500 */
-  --danger-hover: #DC2626;      /* Red-600 */
-  --danger-light: #FEE2E2;      /* Red-100 */
+  --danger: #DC2626;            /* Red-600 - vibrant red */
+  --danger-hover: #B91C1C;      /* Red-700 */
+  --danger-light: #FECACA;      /* Red-200 */
 
   --info: #3B82F6;              /* Blue-500 */
   --info-hover: #2563EB;        /* Blue-600 */

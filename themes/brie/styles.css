@@ -16,18 +16,18 @@
   --brand-border-light: #DBEAFE;   /* Blue-100 */
   --nav-active-text: #FFFFFF;      /* White text for active nav on dark blue pill */
 
-  /* Status colors */
-  --success: #10B981;
-  --success-hover: #059669;
-  --success-light: #D1FAE5;
+  /* Status colors - Cooler, softer tones for Brie */
+  --success: #14B8A6;           /* Teal-500 - cooler mint green */
+  --success-hover: #0D9488;     /* Teal-600 */
+  --success-light: #CCFBF1;     /* Teal-100 */
 
-  --warning: #F59E0B;
-  --warning-hover: #D97706;
-  --warning-light: #FEF3C7;
+  --warning: #FB923C;           /* Orange-400 - soft warm orange */
+  --warning-hover: #F97316;     /* Orange-500 */
+  --warning-light: #FFEDD5;     /* Orange-100 */
 
-  --danger: #EF4444;
-  --danger-hover: #DC2626;
-  --danger-light: #FEE2E2;
+  --danger: #F472B6;            /* Pink-400 - soft rose/pink red */
+  --danger-hover: #EC4899;      /* Pink-500 */
+  --danger-light: #FCE7F3;      /* Pink-100 */
 
   --info: #3B82F6;
   --info-hover: #2563EB;
