@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.7.1] - 2026-01-11
+### Added
+- add llms.txt for ai index
+- add GitHub button to header
+- add favicon
+- update footer and add the necessary pages
+### Fixed
+- update input color for input fields on the homepage
+
 ## [1.7.0] - 2026-01-11
 - add homepage
 - add google sso

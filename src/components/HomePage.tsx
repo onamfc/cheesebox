@@ -91,8 +91,19 @@ export default function HomePage() {
               <h1 className="text-2xl font-bold text-white">Cheesebox</h1>
             </div>
             <div className="flex items-center gap-4">
+              <a
+                href="https://github.com/onamfc/cheesebox"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-white hover:text-gray-300 font-medium px-4 py-2 rounded-md border border-white/20 hover:border-white/40 transition-colors cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                </svg>
+                <span>GitHub</span>
+              </a>
               <Link href="/auth/signin">
-                <button className="text-white hover:text-gray-300 font-medium px-4 py-2 rounded-md border border-white/20 hover:border-white/40 transition-colors">
+                <button className="text-white hover:text-gray-300 font-medium px-4 py-2 rounded-md border border-white/20 hover:border-white/40 transition-colors cursor-pointer">
                   Sign in
                 </button>
               </Link>
@@ -121,7 +132,7 @@ export default function HomePage() {
             </p>
             <div className="mt-10 flex justify-center">
               <a href="#signup" className="inline-block">
-                <button className="bg-white text-black hover:bg-gray-100 font-medium px-8 py-3 rounded-md text-lg transition-colors">
+                <button className="bg-white text-black hover:bg-gray-100 font-medium px-8 py-3 rounded-md text-lg transition-colors cursor-pointer">
                   Get Started Free
                 </button>
               </a>
@@ -415,6 +426,7 @@ export default function HomePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 labelClassName="block text-sm font-medium text-white mb-1"
+                className="!text-white !bg-white/10 !border-white/20 focus:!border-purple-500 placeholder:!text-gray-400"
               />
 
               <Input
@@ -428,6 +440,7 @@ export default function HomePage() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 labelClassName="block text-sm font-medium text-white mb-1"
+                className="!text-white !bg-white/10 !border-white/20 focus:!border-purple-500 placeholder:!text-gray-400"
               />
 
               <Input
@@ -441,12 +454,13 @@ export default function HomePage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isLoading}
                 labelClassName="block text-sm font-medium text-white mb-1"
+                className="!text-white !bg-white/10 !border-white/20 focus:!border-purple-500 placeholder:!text-gray-400"
               />
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium px-4 py-2 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </button>
@@ -464,7 +478,7 @@ export default function HomePage() {
                 type="button"
                 onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-white font-medium px-4 py-2 rounded-md border border-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-white font-medium px-4 py-2 rounded-md border border-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -507,33 +521,114 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black border-t border-white/10 text-gray-400 py-12">
+      <footer className="bg-black border-t border-white/10 text-gray-400 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-white font-semibold text-lg mb-4">Cheesebox</h3>
-              <p className="text-sm">
-                Secure, free video sharing platform powered by your AWS infrastructure.
+          {/* Main Footer Content */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+            {/* Company/Brand */}
+            <div className="col-span-2 md:col-span-1">
+              <h3 className="text-white font-bold text-xl mb-4">Cheesebox</h3>
+              <p className="text-sm mb-4">
+                Secure video sharing with complete data ownership.
               </p>
+              {/* Social Links */}
+              <div className="flex gap-4">
+                <a
+                  href="https://github.com/onamfc/cheesebox"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors"
+                  aria-label="GitHub"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                  </svg>
+                </a>
+                <a
+                  href="https://twitter.com/cheeseboxapp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors"
+                  aria-label="Twitter"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
+              </div>
             </div>
+
+            {/* Product */}
             <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#signup" className="hover:text-white transition-colors">Get Started</a></li>
+              <h4 className="text-white font-semibold text-sm mb-4">Product</h4>
+              <ul className="space-y-3 text-sm">
+                <li><a href="#signup" className="hover:text-white transition-colors cursor-pointer">Get Started</a></li>
                 <li><Link href="/help/aws-setup" className="hover:text-white transition-colors">AWS Setup</Link></li>
                 <li><Link href="/help/email-setup" className="hover:text-white transition-colors">Email Setup</Link></li>
               </ul>
             </div>
+
+            {/* Developers */}
             <div>
-              <h4 className="text-white font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/auth/signin" className="hover:text-white transition-colors">Sign In</Link></li>
-                <li><Link href="/auth/signup" className="hover:text-white transition-colors">Sign Up</Link></li>
+              <h4 className="text-white font-semibold text-sm mb-4">Developers</h4>
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <a
+                    href="https://github.com/onamfc/cheesebox"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    GitHub Repo
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/onamfc/cheesebox/blob/main/LICENSE"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    MIT License
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/onamfc/cheesebox/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    Report Issue
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/onamfc/cheesebox/blob/main/CONTRIBUTING.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    Contributing
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-4">Company</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms</Link></li>
+                <li><Link href="/security" className="hover:text-white transition-colors">Security</Link></li>
               </ul>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-white/10 text-sm text-center">
-            <p>&copy; {new Date().getFullYear()} Cheesebox. All rights reserved.</p>
+
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-white/10 text-center">
+            <p className="text-sm">&copy; {new Date().getFullYear()} Cheesebox. All rights reserved.</p>
           </div>
         </div>
       </footer>

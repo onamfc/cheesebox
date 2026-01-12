@@ -1,0 +1,61 @@
+# Cheesebox
+
+> Cheesebox is a free, open-source video sharing platform where you maintain complete ownership of your data. Videos are stored in your AWS account, transcoded to HLS format, and shared securely with email-based permissions. Unlike traditional platforms, Cheesebox never has access to your content or credentials - you pay only AWS infrastructure costs with zero platform fees.
+
+Cheesebox enables secure, private video sharing for teams, clients, and collaborators. Upload videos directly or record from your webcam, share with individuals or groups via email permissions, and maintain full control over who can access your content. All videos use time-limited presigned URLs that expire after 3 hours for enhanced security.
+
+Key features include industry-standard HLS streaming, public and private sharing options, team collaboration with shared AWS credentials, reusable share groups, and enterprise-grade security with 70+ automated tests, CSRF protection, rate limiting, and AES-256-GCM encryption.
+
+## Getting Started
+
+- [Quick Start Guide](/llms/quick-start.md): Complete setup walkthrough from account creation to first video upload
+- [AWS Setup Guide](/llms/aws-setup.md): Detailed CloudFormation deployment and IAM configuration
+- [Email Setup Guide](/llms/email-setup.md): Configure Resend for email notifications
+
+## Core Concepts
+
+- [Architecture Overview](/llms/architecture.md): System design, AWS services, and data flow
+- [Video Workflow](/llms/video-workflow.md): Upload, transcoding, storage, and streaming pipeline
+- [Permissions Model](/llms/permissions.md): Email-based access control and share groups
+- [Security Model](/llms/security.md): Encryption, CSRF protection, rate limiting, and security testing
+- [Theme System](/llms/themes.md): WordPress-style pluggable themes and customization
+
+## API Reference
+
+- [API Routes](/llms/api-routes.md): Complete REST API documentation with endpoints, parameters, and responses
+- [Authentication](/llms/authentication.md): NextAuth.js setup, Google OAuth, and JWT tokens
+- [Database Schema](/llms/database-schema.md): Prisma models and relationships
+
+## Development
+
+- [Tech Stack](/llms/tech-stack.md): Next.js 14, TypeScript, Prisma, PostgreSQL, AWS SDK
+- [Local Development](/llms/local-development.md): Environment setup, running locally, and debugging
+- [Testing Guide](/llms/testing.md): Jest configuration, security tests, and CI/CD
+- [Deployment Guide](/llms/deployment.md): Production deployment on Vercel and custom servers
+
+## Features
+
+- [Teams](/llms/teams.md): Collaborative video management with shared AWS credentials
+- [Share Groups](/llms/share-groups.md): Batch sharing with reusable email lists
+- [Video Recording](/llms/video-recording.md): In-browser webcam recording with MediaRecorder API
+- [HLS Streaming](/llms/hls-streaming.md): Adaptive bitrate streaming with AWS MediaConvert
+- [Presigned URLs](/llms/presigned-urls.md): Temporary, secure access to S3 objects
+
+## Configuration
+
+- [Environment Variables](/llms/environment-variables.md): Required and optional configuration options
+- [AWS Permissions](/llms/aws-permissions.md): Minimal IAM policies for S3 and MediaConvert
+- [Rate Limiting](/llms/rate-limiting.md): Upstash Redis configuration and limits
+
+## Troubleshooting
+
+- [Common Issues](/llms/troubleshooting.md): Solutions for frequent problems
+- [AWS Errors](/llms/aws-errors.md): Debugging S3, MediaConvert, and IAM issues
+- [Email Delivery](/llms/email-delivery.md): Resend configuration and troubleshooting
+
+## Optional
+
+- [Roadmap](/llms/roadmap.md): Planned features and future development
+- [Contributing](/llms/contributing.md): Guidelines for contributing to Cheesebox
+- [Changelog](/llms/changelog.md): Version history and release notes
+- [Mobile App](/llms/mobile-app.md): React Native Expo mobile application
