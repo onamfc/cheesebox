@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt } from "@/lib/encryption";
 import { createEmailProvider } from "@/lib/email/factory";
 import { EmailProviderType } from "@/lib/email/interface";
+import dev from "@onamfc/developer-log";
 
 // GET - Fetch email credentials
 export async function GET() {
@@ -44,7 +45,7 @@ export async function GET() {
       lastValidated: credentials.lastValidated,
     });
   } catch (error) {
-    console.error("Error fetching email credentials:", error);
+    dev.error("Error fetching email credentials:", error, {tag: "email"});
     return NextResponse.json(
       { error: "Failed to fetch email credentials" },
       { status: 500 },
@@ -183,7 +184,7 @@ export async function POST(request: NextRequest) {
         );
       }
     } catch (validationError) {
-      console.error("Email credentials validation error:", validationError);
+      dev.error("Email credentials validation error:", validationError, {tag: "email"});
       return NextResponse.json(
         {
           error:
@@ -259,7 +260,7 @@ export async function POST(request: NextRequest) {
       message: "Email credentials saved successfully",
     });
   } catch (error) {
-    console.error("Error saving email credentials:", error);
+    dev.error("Error saving email credentials:", error, {tag: "email"});
     return NextResponse.json(
       { error: "Failed to save email credentials" },
       { status: 500 },
