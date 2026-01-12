@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
     const video = await prisma.video.findUnique({
       where: { id: videoId },
       include: {
-        user: true,
         team: {
           include: {
             awsCredentials: true,
