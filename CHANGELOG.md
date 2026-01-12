@@ -6,14 +6,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
 ## [1.7.1] - 2026-01-11
 ### Added
-- add llms.txt for ai index
-- add GitHub button to header
-- add favicon
-- update footer and add the necessary pages
+- **LLMS.txt Documentation**: Comprehensive AI-friendly documentation system
+  - Created `/public/llms.txt` main index following llmstxt.org specification
+  - 12 comprehensive documentation files in `/public/llms/`:
+    - quick-start.md, architecture.md, api-routes.md, database-schema.md
+    - aws-setup.md, email-setup.md, security.md, permissions.md
+    - video-workflow.md, environment-variables.md, tech-stack.md, troubleshooting.md
+  - 18 stub documentation files for future expansion
+- **Policy Pages**: Complete legal and security documentation
+  - `/privacy` - Privacy Policy page with data ownership explanation
+  - `/terms` - Terms of Service page with MIT license details
+  - `/security` - Security Policy page with responsible disclosure process
+  - All pages styled with dark theme matching homepage
+  - "Back to Home" navigation on all policy pages
+- **Dynamic Favicon**: Play icon favicon with purple-to-pink gradient
+  - Created `/src/app/icon.tsx` for standard 32x32 favicon
+  - Created `/src/app/apple-icon.tsx` for 180x180 Apple device icon
+  - Gradient background matches homepage brand colors
+  - Removed old static `favicon.ico`
+- **GitHub Navigation**: Added GitHub repository link to homepage header
+  - GitHub icon and text in outlined button style
+  - Positioned left of Sign In button
+  - Links to https://github.com/onamfc/cheesebox
+
+### Changed
+- **Footer Enhancement**: Cleaned up and simplified footer structure
+  - Removed non-clickable Features column (HLS Streaming, Email Permissions, Teams, etc.)
+  - Removed Documentation link (llms.txt is for AI consumption, not user docs)
+  - Updated grid from 5 columns to 4 columns for better layout
+  - Updated Company section links to point to new policy pages (/privacy, /terms, /security)
+  - Removed Dashboard link from Product section (not needed in footer)
+- **Homepage Navigation**: All buttons now show cursor pointer on hover
+  - GitHub button, Sign In button, Get Started button, Create Account button, Google Sign Up button
+
 ### Fixed
-- update input color for input fields on the homepage
+- **Signup Form Visibility**: Improved input field readability
+  - Changed text color from gray-900 to white for better contrast
+  - Updated background from white to semi-transparent white (white/10)
+  - Updated border from gray to subtle white/20
+  - Added purple focus border to match brand
+  - Gray placeholder text for better visibility
+  - All changes applied to email, password, and confirm password fields
+
+### Removed
+- Removed `LLMS_DOCUMENTATION.md` - Content integrated into `/public/llms/` structure
 
 ## [1.7.0] - 2026-01-11
 - add homepage
