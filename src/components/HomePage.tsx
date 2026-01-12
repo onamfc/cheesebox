@@ -426,6 +426,7 @@ export default function HomePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 labelClassName="block text-sm font-medium text-white mb-1"
+                className="!text-white !bg-white/10 !border-white/20 focus:!border-purple-500 placeholder:!text-gray-400"
               />
 
               <Input
@@ -439,6 +440,7 @@ export default function HomePage() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 labelClassName="block text-sm font-medium text-white mb-1"
+                className="!text-white !bg-white/10 !border-white/20 focus:!border-purple-500 placeholder:!text-gray-400"
               />
 
               <Input
@@ -452,6 +454,7 @@ export default function HomePage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isLoading}
                 labelClassName="block text-sm font-medium text-white mb-1"
+                className="!text-white !bg-white/10 !border-white/20 focus:!border-purple-500 placeholder:!text-gray-400"
               />
 
               <button
