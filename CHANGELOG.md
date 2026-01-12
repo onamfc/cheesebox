@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **User Onboarding Flow**: Interactive onboarding experience for new users
+  - Database schema: Added `onboardingCompleted` and `onboardingPath` fields to User model
+  - Path selection: Users choose between "uploader" or "recipient" roles
+  - Uploader path: 7-step guided setup (Welcome → Path → How It Works → AWS → Email → Sharing → Completion)
+  - Recipient path: 3-step quick setup (Welcome → Path → Completion)
+  - Onboarding components:
+    - `OnboardingLayout` - Wrapper with progress bar and step counter
+    - `WelcomeStep` - Introduction and benefits overview
+    - `PathSelectionStep` - Role selection with detailed descriptions
+    - `HowItWorksStep` - Video upload and sharing process explanation
+    - `AWSSetupStep` - AWS configuration guidance with CloudFormation option
+    - `EmailSetupStep` - Email provider setup guidance
+    - `SharingDemoStep` - Video sharing workflow demonstration
+    - `CompletionStep` - Personalized completion message with quick reference card
+  - Integration with signup flow: New users redirected to `/onboarding` after account creation
+  - State persistence: Progress saved to localStorage for multi-session completion
+  - Dashboard integration: "Setup Guide" link in navigation for easy access
+  - API endpoint: `PATCH /api/user/onboarding` to mark completion
+  - Mobile-responsive design with confetti celebration animation
+
+### Changed
+- **Help Pages Dark Theme**: Updated AWS and Email setup pages to match onboarding dark theme
+  - AWS Setup (`/help/aws-setup`):
+    - Background: Light gradient → Dark (#0a0a0a)
+    - Cards: White → Semi-transparent white (white/5)
+    - Text: Dark gray → White/gray-300
+    - Accent color: Blue/Green → Purple
+    - Buttons: Green → Purple-to-pink gradient
+  - Email Setup (`/help/email-setup`):
+    - Same dark theme conversion as AWS setup
+    - Provider cards (Resend, AWS SES, SMTP) with purple borders
+    - SVG checkmark icons replacing text checkmarks
+    - Icon color: Purple (#c084fc) to match site theme
+  - Text contrast improvements:
+    - Code blocks: Light gray background → Dark translucent (white/10)
+    - Labels: Added explicit white color for better readability
+    - Body text: Added explicit gray-300 color in credential sections
+
+### Fixed
+- **Onboarding Recipient Path**: Fixed multiple UX issues
+  - Step counter: Now correctly shows "Step 3 of 3" instead of "Step 7 of 3"
+  - Horizontal scrolling: Added overflow protection to prevent unwanted scroll
+  - Removed "View Help Docs" button from completion step
+  - Updated recipient message: Now mentions videos appear in dashboard AND email notifications
+    - Before: "You're ready to watch videos! Check your email for shared links."
+    - After: "You're ready to watch videos! Shared videos will appear in your dashboard, and you'll also receive email notifications."
+
 
 ## [1.7.1] - 2026-01-11
 ### Added
