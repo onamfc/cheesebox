@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { fetchWithCsrf } from "@/lib/csrf-client";
+import dev from "@onamfc/developer-log";
 
 interface ShareVideoModalProps {
   videoId: string;
@@ -92,7 +93,7 @@ export default function ShareVideoModal({
         }
       }
     } catch (error) {
-      console.error("Error fetching shares:", error);
+      dev.error("Error fetching shares:", error, {tag: "share-video"});
     }
   };
 
@@ -104,7 +105,7 @@ export default function ShareVideoModal({
         setGroups(data);
       }
     } catch (error) {
-      console.error("Error fetching groups:", error);
+      dev.error("Error fetching groups:", error, {tag: "share-video"});
     }
   };
 
@@ -116,7 +117,7 @@ export default function ShareVideoModal({
         setPreviouslySharedUsers(data);
       }
     } catch (error) {
-      console.error("Error fetching previously shared users:", error);
+      dev.error("Error fetching previously shared users:", error, {tag: "share-video"});
     }
   };
 
@@ -219,7 +220,7 @@ export default function ShareVideoModal({
         alert("Failed to remove share");
       }
     } catch (error) {
-      console.error("Error removing share:", error);
+      dev.error("Error removing share:", error, {tag: "share-video"});
       alert("Failed to remove share");
     }
   };
@@ -241,7 +242,7 @@ export default function ShareVideoModal({
         alert("Failed to remove group share");
       }
     } catch (error) {
-      console.error("Error removing group share:", error);
+      dev.error("Error removing group share:", error, {tag: "share-video"});
       alert("Failed to remove group share");
     }
   };
