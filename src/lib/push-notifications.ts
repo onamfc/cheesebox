@@ -1,4 +1,5 @@
 import { Expo, ExpoPushMessage } from "expo-server-sdk";
+import dev from "@onamfc/developer-log";
 
 const expo = new Expo();
 
@@ -18,7 +19,7 @@ export async function sendPushNotification(
 ): Promise<boolean> {
   // Check if the push token is valid
   if (!Expo.isExpoPushToken(pushToken)) {
-    console.error(`Push token ${pushToken} is not a valid Expo push token`);
+    dev.error(`Push token ${pushToken} is not a valid Expo push token`, {tag: 'push-notifications'});
     return false;
   }
 
@@ -37,16 +38,16 @@ export async function sendPushNotification(
 
     // Check for errors
     if (ticketChunk[0].status === "error") {
-      console.error(
-        `Error sending push notification: ${ticketChunk[0].message}`
+      dev.error(
+        `Error sending push notification: ${ticketChunk[0].message}`, {tag: 'push-notifications'}
       );
       return false;
     }
 
-    console.log(`Push notification sent successfully to ${pushToken}`);
+    dev.log(`Push notification sent successfully to ${pushToken}`, {tag: 'push-notifications'});
     return true;
   } catch (error) {
-    console.error("Error sending push notification:", error);
+    dev.error("Error sending push notification:", error, {tag: 'push-notifications'});
     return false;
   }
 }
@@ -84,12 +85,12 @@ export async function sendBulkPushNotifications(
       try {
         await expo.sendPushNotificationsAsync(chunk);
       } catch (error) {
-        console.error("Error sending push notification chunk:", error);
+        dev.error("Error sending push notification chunk:", error, {tag: 'push-notifications'});
       }
     }
 
-    console.log(`Sent ${messages.length} push notifications`);
+    dev.log(`Sent ${messages.length} push notifications`, {tag: 'push-notifications'});
   } catch (error) {
-    console.error("Error sending bulk push notifications:", error);
+    dev.error("Error sending bulk push notifications:", error, {tag: 'push-notifications'});
   }
 }

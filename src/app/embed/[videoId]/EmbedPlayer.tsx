@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
+import dev from "@onamfc/developer-log";
 
 interface EmbedPlayerProps {
   videoId: string;
@@ -61,7 +62,7 @@ export default function EmbedPlayer({
             setLoading(false);
             if (autoplay && videoRef.current) {
               videoRef.current.play().catch((err) => {
-                console.warn("Autoplay failed:", err);
+                dev.warn("Autoplay failed:", err, {tag: "embed-player"});
               });
             }
           });
@@ -70,11 +71,11 @@ export default function EmbedPlayer({
             if (data.fatal) {
               switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
-                  console.warn("Network error, attempting recovery...");
+                  dev.warn("Network error, attempting recovery...", {tag: "embed-player"});
                   hls.startLoad();
                   break;
                 case Hls.ErrorTypes.MEDIA_ERROR:
-                  console.warn("Media error, attempting recovery...");
+                  dev.warn("Media error, attempting recovery...", {tag: "embed-player"});
                   hls.recoverMediaError();
                   break;
                 default:
@@ -93,7 +94,7 @@ export default function EmbedPlayer({
             setLoading(false);
             if (autoplay && videoRef.current) {
               videoRef.current.play().catch((err) => {
-                console.warn("Autoplay failed:", err);
+                dev.warn("Autoplay failed:", err, {tag: "embed-player"});
               });
             }
           });

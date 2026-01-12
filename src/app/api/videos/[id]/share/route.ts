@@ -7,6 +7,7 @@ import { createEmailProvider } from "@/lib/email/factory";
 import { EmailProviderType } from "@/lib/email/interface";
 import { sendPushNotification, sendBulkPushNotifications } from "@/lib/push-notifications";
 import { deepLinkService } from "@/lib/deep-link";
+import dev from "@onamfc/developer-log";
 
 // Helper to get email credentials (user's own or team's)
 async function getEmailCredentials(userId: string) {
@@ -214,15 +215,15 @@ export async function POST(
                 text: `${user.email} has shared a video titled "${video.title}" with the group ${group.name}. Click this link to watch: ${videoLink}${video.visibility === 'PRIVATE' ? ' (login required)' : ''}`,
               });
             } catch (emailError) {
-              console.error(
+              dev.error(
                 `Failed to send email to ${member.email}:`,
-                emailError,
+                emailError, {tag: "email"}
               );
             }
           }
         }
       } catch (emailError) {
-        console.error("Email sending error:", emailError);
+        dev.error("Email sending error:", emailError, {tag: "email"});
         // Continue even if email fails
       }
 
@@ -253,7 +254,7 @@ export async function POST(
           await sendBulkPushNotifications(notifications);
         }
       } catch (pushError) {
-        console.error("Push notification error:", pushError);
+        dev.error("Push notification error:", pushError, {tag: "email"});
         // Continue even if push notification fails
       }
 
@@ -314,7 +315,7 @@ export async function POST(
       const emailCredentials = await getEmailCredentials(user.id);
 
       if (!emailCredentials) {
-        console.warn("No email credentials configured for user");
+        dev.warn("No email credentials configured for user", {tag: "email"});
         // Still return success - email is optional
         return NextResponse.json(
           {
@@ -383,7 +384,7 @@ export async function POST(
         text: `${user.email} has shared a video titled "${video.title}" with you. Click this link to watch: ${videoLink}${video.visibility === 'PRIVATE' ? ' (login required)' : ''}`,
       });
     } catch (emailError) {
-      console.error("Email sending error:", emailError);
+      dev.error("Email sending error:", emailError, {tag: "email"});
       // Continue even if email fails
     }
 
@@ -406,8 +407,8 @@ export async function POST(
         );
       }
     } catch (pushError) {
-      console.error("Push notification error:", pushError);
-      // Continue even if push notification fails
+      dev.error("Push notification error:", pushError, {tag: "email"});
+      // Continue even if the push notification fails
     }
 
     return NextResponse.json(
@@ -422,7 +423,7 @@ export async function POST(
       { status: 201 },
     );
   } catch (error) {
-    console.error("Error sharing video:", error);
+    dev.error("Error sharing video:", error, {tag: "email"});
     return NextResponse.json(
       { error: "Failed to share video" },
       { status: 500 },
@@ -485,7 +486,7 @@ export async function DELETE(
       { status: 200 },
     );
   } catch (error) {
-    console.error("Error unsharing video:", error);
+    dev.error("Error unsharing video:", error, {tag: "email"});
     return NextResponse.json(
       { error: "Failed to unshare video" },
       { status: 500 },

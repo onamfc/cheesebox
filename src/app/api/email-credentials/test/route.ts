@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/encryption";
 import { createEmailProvider } from "@/lib/email/factory";
 import { EmailProviderType } from "@/lib/email/interface";
+import dev from "@onamfc/developer-log";
 
 // POST - Send test email
 export async function POST(request: NextRequest) {
@@ -113,7 +114,7 @@ If you didn't request this test, you can safely ignore it.
       provider: emailCredentials.provider,
     });
   } catch (error) {
-    console.error("Test email error:", error);
+    dev.error("Test email error:", error, { tag: "email" });
 
     // Provide helpful error messages
     let errorMessage = "Failed to send test email";

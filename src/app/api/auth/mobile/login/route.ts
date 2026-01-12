@@ -9,6 +9,7 @@ import {
   clearFailedLogins,
   calculateProgressiveDelay,
 } from '@/lib/rate-limit';
+import dev from "@onamfc/developer-log";
 
 /**
  * POST /api/auth/mobile/login
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
       token,
     });
   } catch (error) {
-    console.error('Login error:', error);
+    dev.error('Login error:', error, { tag: "auth" });
     return NextResponse.json(
       { error: 'Failed to login' },
       { status: 500 }

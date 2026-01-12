@@ -7,6 +7,7 @@ import Input from "./ui/Input";
 import { useTheme } from "@/contexts/ThemeContext";
 import { theme as defaultTheme } from "@/themes/asiago/theme";
 import { fetchCsrfToken } from "@/lib/csrf-client";
+import dev from "@onamfc/developer-log";
 
 type RecordingMode = "webcam" | "screen";
 type RecordingState = "idle" | "countdown" | "recording" | "preview" | "uploading";
@@ -105,7 +106,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
         setGroups(data);
       }
     } catch (err) {
-      console.error("Failed to load groups:", err);
+      dev.error("Failed to load groups:", err, { tag: "video" });
     }
   };
 
@@ -238,7 +239,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
         }
       });
     } catch (err: any) {
-      console.error("Error starting webcam recording:", err);
+      dev.error("Error starting webcam recording:", err, { tag: "video" });
 
       if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
         setError("webcam-permission-denied");
@@ -302,7 +303,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
         }
       });
     } catch (err: any) {
-      console.error("Error starting screen recording:", err);
+      dev.error("Error starting screen recording:", err, { tag: "video" });
 
       if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
         setError("screen-permission-denied");
@@ -408,7 +409,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
                     body: JSON.stringify({ groupId }),
                   });
                 } catch (err) {
-                  console.error(`Failed to share with group ${groupId}:`, err);
+                  dev.error(`Failed to share with group ${groupId}:`, err, { tag: "video" });
                 }
               }
             }
@@ -442,7 +443,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
       xhr.setRequestHeader("x-csrf-token", csrfToken);
       xhr.send(formData);
     } catch (err) {
-      console.error("Upload error:", err);
+      dev.error("Upload error:", err, { tag: "video" });
       setError("Upload failed. Please try again.");
       setRecordingState("preview");
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import dev from "@onamfc/developer-log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
       email: session.user.email,
     });
   } catch (error) {
-    console.error("Error fetching current user:", error);
+    dev.error("Error fetching current user:", error, {tag: "auth"});
     return NextResponse.json(
       { error: "Failed to fetch user" },
       { status: 500 }

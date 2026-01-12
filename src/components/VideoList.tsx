@@ -9,6 +9,7 @@ import { Button } from "./ui/Button";
 import { fetchWithCsrf } from "@/lib/csrf-client";
 import { useTheme } from "@/contexts/ThemeContext";
 import { theme as defaultTheme } from "@/themes/asiago/theme";
+import dev from "@onamfc/developer-log";
 
 interface Video {
   id: string;
@@ -45,8 +46,8 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
   const effectiveViewMode = (viewMode === "grid" ? layout.variant : viewMode) as "grid" | "list" | "masonry";
 
   // Debug logging
-  console.log("VideoList - Layout:", layout);
-  console.log("VideoList - ViewMode:", viewMode, "->", effectiveViewMode);
+  dev.log("VideoList - Layout:", layout, {tag: 'layout'});
+  dev.log("VideoList - ViewMode:", viewMode, "->", effectiveViewMode, {tag: 'layout'});
 
   // Generate grid class names based on theme using explicit conditionals
   // This ensures Tailwind can detect all possible classes at build time
@@ -89,7 +90,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
         setVideos(data);
       }
     } catch (error) {
-      console.error("Error fetching videos:", error);
+      dev.error("Error fetching videos:", error, {tag: 'videos'});
     } finally {
       setLoading(false);
     }
@@ -117,7 +118,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
         alert("Failed to delete video");
       }
     } catch (error) {
-      console.error("Error deleting video:", error);
+      dev.error("Error deleting video:", error, {tag: "video"});
       alert("Failed to delete video");
     }
   };

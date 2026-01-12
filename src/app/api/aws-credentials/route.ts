@@ -4,6 +4,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt } from "@/lib/encryption";
+import dev from "@onamfc/developer-log";
 
 const awsCredentialsSchema = z.object({
   accessKeyId: z.string().min(16, "Access Key ID is required"),
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(configurationStatus);
   } catch (error) {
-    console.error("Error retrieving AWS credentials:", error);
+    dev.error("Error retrieving AWS credentials:", error, {tag:"aws"});
     return NextResponse.json(
       { error: "Failed to retrieve AWS credentials" },
       { status: 500 },
@@ -195,7 +196,7 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Error saving AWS credentials:", error);
+    dev.error("Error saving AWS credentials:", error, {tag:"aws"});
     return NextResponse.json(
       { error: "Failed to save AWS credentials" },
       { status: 500 },

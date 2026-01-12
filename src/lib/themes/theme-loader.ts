@@ -9,6 +9,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { Theme } from '@/themes/asiago/theme';
+import dev from "@onamfc/developer-log";
 
 export interface ThemeMetadata {
   id: string;
@@ -55,9 +56,9 @@ export async function loadThemeRegistry(): Promise<ThemeRegistry> {
     const data = await fs.readFile(registryPath, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    console.error('Failed to load theme registry:', error);
+    dev.error('Failed to load theme registry:', error, { tag: "theme" });
 
-    // Return default registry if file doesn't exist
+    // Return default registry if the file doesn't exist
     return {
       version: '1.0.0',
       themes: [{
@@ -117,7 +118,7 @@ export async function loadThemeConfig(themeId: string): Promise<Theme | null> {
   const themeMetadata = await getThemeById(themeId);
 
   if (!themeMetadata) {
-    console.error(`Theme "${themeId}" not found`);
+    dev.error(`Theme "${themeId}" not found`, { tag: "theme" });
     return null;
   }
 
@@ -138,12 +139,12 @@ export async function loadThemeConfig(themeId: string): Promise<Theme | null> {
         themeModule = await import('@/themes/danablu/theme');
         break;
       default:
-        console.error(`Unknown theme: ${themeId}`);
+        dev.error(`Unknown theme: ${themeId}`, { tag: "theme" });
         return null;
     }
     return themeModule.theme as Theme;
   } catch (error) {
-    console.error(`Failed to load theme config for "${themeId}":`, error);
+    dev.error(`Failed to load theme config for "${themeId}":`, error, { tag: "theme" });
     return null;
   }
 }
@@ -162,7 +163,7 @@ export async function getThemeStyles(themeId: string): Promise<string | null> {
   const themeMetadata = await getThemeById(themeId);
 
   if (!themeMetadata) {
-    console.error(`Theme "${themeId}" not found`);
+    dev.error(`Theme "${themeId}" not found`, { tag: "theme" });
     return null;
   }
 
@@ -170,7 +171,7 @@ export async function getThemeStyles(themeId: string): Promise<string | null> {
     const stylesPath = getThemeStylesPath(themeMetadata);
     return await fs.readFile(stylesPath, 'utf-8');
   } catch (error) {
-    console.error(`Failed to load theme styles for "${themeId}":`, error);
+    dev.error(`Failed to load theme styles for "${themeId}":`, error, { tag: "theme" });
     return null;
   }
 }
@@ -230,7 +231,7 @@ export async function autoDiscoverThemes(): Promise<ThemeMetadata[]> {
       }
     }
   } catch (error) {
-    console.error('Failed to auto-discover themes:', error);
+    dev.error('Failed to auto-discover themes:', error, { tag: "theme" });
   }
 
   return discovered;

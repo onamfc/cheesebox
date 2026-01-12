@@ -1,0 +1,15 @@
+{
+  "disabledTags": [
+    "root",
+    "video",
+    "video-deletion",
+    "auth",
+    "video-upload",
+    "email",
+    "embed-player",
+    "team",
+    "group",
+    "theme",
+    "aws"
+  ]
+}

@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import dev from "@onamfc/developer-log";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,8 +47,8 @@ export default async function RootLayout({
       }
     }
   } catch (error) {
-    console.error("Failed to load user theme:", error);
-    // Fall back to default theme
+    dev.error("Failed to load user theme:", error, {tag: "root"});
+    // Fall back to the default theme
   }
 
   return (

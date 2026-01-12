@@ -11,6 +11,7 @@ import VideoRecorder from "@/components/VideoRecorder";
 import { LinkButton, Button } from "@/components/ui/Button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { theme as defaultTheme } from "@/themes/asiago/theme";
+import dev from "@onamfc/developer-log";
 
 type Tab = "my-videos" | "shared";
 type ViewMode = "grid" | "list";
@@ -72,7 +73,7 @@ export default function DashboardPage() {
         setHasCredentials(hasPersonalCredentials || userTeams.length > 0);
         setTeams(userTeams);
       } catch (error) {
-        console.error("Error checking credentials:", error);
+        dev.error("Error checking credentials:", error, {tag: "auth"});
         setHasCredentials(false);
       }
     };

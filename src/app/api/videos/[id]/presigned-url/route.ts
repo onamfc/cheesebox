@@ -3,6 +3,7 @@ import { getAuthUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/encryption";
 import { createS3Client, generatePresignedUrl } from "@/lib/aws-services";
+import dev from "@onamfc/developer-log";
 
 export async function GET(
   request: NextRequest,
@@ -132,7 +133,7 @@ export async function GET(
       useStreamingProxy: true, // Flag to use streaming proxy instead of pre-signed URL
     });
   } catch (error) {
-    console.error("Error generating pre-signed URL:", error);
+    dev.error("Error generating pre-signed URL:", error, {tag: "video"});
     return NextResponse.json(
       { error: "Failed to generate pre-signed URL" },
       { status: 500 },

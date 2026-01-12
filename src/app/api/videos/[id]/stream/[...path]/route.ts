@@ -7,6 +7,7 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { verify } from "jsonwebtoken";
 import { JWT_SECRET } from "@/lib/jwt";
 import { validateStreamingPath, validateS3Key } from "@/lib/path-validation";
+import dev from "@onamfc/developer-log";
 
 export async function GET(
   request: NextRequest,
@@ -56,7 +57,7 @@ export async function GET(
             }
           }
         } catch (error) {
-          console.error("Invalid streaming token:", error);
+          dev.error("Invalid streaming token:", error, {tag: "video"});
         }
       }
     }
@@ -241,7 +242,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error streaming file:", error);
+    dev.error("Error streaming file:", error, {tag: "video"});
     return NextResponse.json(
       { error: "Failed to stream file" },
       { status: 500 },

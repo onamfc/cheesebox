@@ -7,6 +7,7 @@ import {
   deleteFromS3,
   deleteS3Directory,
 } from "@/lib/aws-services";
+import dev from "@onamfc/developer-log";
 
 // DELETE - Delete a video
 export async function DELETE(
@@ -85,7 +86,7 @@ export async function DELETE(
         await deleteS3Directory(s3Client, credentials.bucketName, hlsDirectory);
       }
     } catch (s3Error) {
-      console.error("S3 deletion error:", s3Error);
+      dev.error("S3 deletion error:", s3Error, {tag: "video-deletion"});
       // Continue with database deletion even if S3 deletion fails
     }
 
@@ -99,7 +100,7 @@ export async function DELETE(
       { status: 200 },
     );
   } catch (error) {
-    console.error("Error deleting video:", error);
+    dev.error("Error deleting video:", error, {tag: "video-deletion"});
     return NextResponse.json(
       { error: "Failed to delete video" },
       { status: 500 },
