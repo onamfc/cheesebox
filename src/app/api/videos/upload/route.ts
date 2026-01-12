@@ -8,6 +8,7 @@ import {
   createMediaConvertClient,
   createHLSTranscodeJob,
 } from "@/lib/aws-services";
+import dev from "@onamfc/developer-log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -85,12 +86,12 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        console.log("Team membership check:", {
+        dev.log("Team membership check:", {
           hasTeamMembership: !!teamMembership,
           teamId: teamMembership?.teamId,
           teamName: teamMembership?.team?.name,
           hasTeamCredentials: !!teamMembership?.team?.awsCredentials,
-        });
+        }, {tag: "video-upload"});
 
         awsCredentials = teamMembership?.team?.awsCredentials ?? null;
         selectedTeamId = teamMembership?.teamId ?? null;
@@ -107,22 +108,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log("Upload request received:", {
+    dev.log("Upload request received:", {
       hasFile: !!file,
       fileType: file?.type,
       fileName: file?.name,
       fileSize: file?.size,
       title: title,
       hasDescription: !!description,
-    });
+    }, { tag: "video-upload" });
 
     if (!file) {
-      console.error("Upload failed: No file provided");
+      dev.error("Upload failed: No file provided", { tag: "video-upload" });
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     if (!title || !title.trim()) {
-      console.error("Upload failed: Title is required");
+      dev.error("Upload failed: Title is required", { tag: "video-upload" });
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
 
@@ -135,10 +136,10 @@ export async function POST(request: NextRequest) {
       "video/x-matroska",
     ];
     if (!videoMimeTypes.includes(file.type)) {
-      console.error("Upload failed: Invalid file type", {
+      dev.error("Upload failed: Invalid file type", {
         fileType: file.type,
         fileName: file.name,
-      });
+      }, { tag: "video-upload" });
       return NextResponse.json(
         {
           error: `Invalid file type: ${file.type}. Supported formats: MP4, MOV, AVI, WebM, MKV`,
@@ -150,10 +151,10 @@ export async function POST(request: NextRequest) {
     // Validate file size (5GB limit)
     const maxSize = 5 * 1024 * 1024 * 1024; // 5GB
     if (file.size > maxSize) {
-      console.error("Upload failed: File too large", {
+      dev.error("Upload failed: File too large", {
         fileSize: file.size,
         maxSize,
-      });
+      }, { tag: "video-upload" });
       return NextResponse.json(
         { error: "File size exceeds 5GB limit" },
         { status: 400 },
@@ -241,7 +242,7 @@ export async function POST(request: NextRequest) {
         { status: 201 },
       );
     } catch (transcodeError) {
-      console.error("Transcoding error:", transcodeError);
+      dev.error("Transcoding error:", transcodeError, { tag: "video-upload" });
 
       // Update status to failed
       await prisma.video.update({
@@ -263,7 +264,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Video upload error:", error);
+    dev.error("Video upload error:", error, { tag: "video-upload" });
     return NextResponse.json(
       { error: "Failed to upload video" },
       { status: 500 },
