@@ -47,6 +47,7 @@ Resources:
             AllowedMethods:
               - GET
               - HEAD
+              - PUT
             AllowedOrigins:
               - 'http://localhost:3000'
               - !Ref AppDomain

@@ -117,7 +117,7 @@ export default function AWSSetupGuide() {
   const corsConfig = `[
   {
     "AllowedHeaders": ["*"],
-    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedMethods": ["GET", "HEAD", "PUT"],
     "AllowedOrigins": [
       "http://localhost:3000",
       "https://your-production-domain.com"
@@ -640,11 +640,11 @@ export default function AWSSetupGuide() {
 
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mt-4">
                 <h4 className="font-semibold text-white mb-2">
-                  Configure CORS (Required for Video Streaming)
+                  Configure CORS (Required for Uploads & Streaming)
                 </h4>
                 <p className="text-gray-300 text-sm mb-3">
                   After creating the bucket, configure CORS to allow your
-                  browser to stream videos:
+                  browser to upload and stream videos directly:
                 </p>
                 <ol className="space-y-2 list-decimal list-inside text-sm text-gray-300">
                   <li>Click on your newly created bucket</li>
