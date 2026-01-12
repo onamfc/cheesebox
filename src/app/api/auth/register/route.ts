@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, registerRateLimit, getClientIp } from "@/lib/rate-limit";
+import dev from "@onamfc/developer-log";
 
 const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    dev.error("Registration error:", error, {tag: "auth"});
     return NextResponse.json(
       { error: "An error occurred during registration" },
       { status: 500 },
