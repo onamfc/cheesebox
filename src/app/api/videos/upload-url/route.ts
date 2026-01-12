@@ -28,8 +28,11 @@ export async function POST(request: NextRequest) {
     // Validate file size (5GB limit)
     const maxSize = 5 * 1024 * 1024 * 1024; // 5GB
     if (fileSize > maxSize) {
+      const fileSizeGB = (fileSize / 1024 / 1024 / 1024).toFixed(2);
       return NextResponse.json(
-        { error: "File size exceeds 5GB limit" },
+        {
+          error: `File size (${fileSizeGB} GB) exceeds the maximum allowed size of 5 GB. Please compress your video or select a smaller file. For larger files, consider using video compression software.`
+        },
         { status: 400 }
       );
     }
