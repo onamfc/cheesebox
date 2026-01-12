@@ -72,8 +72,8 @@ export default function HomePage() {
         return;
       }
 
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // Redirect to onboarding for new users
+      router.push("/onboarding");
       router.refresh();
     } catch (err) {
       setError("An error occurred during registration");

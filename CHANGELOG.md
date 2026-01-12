@@ -6,14 +6,103 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.7.2] - 2026-01-11
+### Added
+- **User Onboarding Flow**: Interactive onboarding experience for new users
+  - Database schema: Added `onboardingCompleted` and `onboardingPath` fields to User model
+  - Path selection: Users choose between "uploader" or "recipient" roles
+  - Uploader path: 7-step guided setup (Welcome → Path → How It Works → AWS → Email → Sharing → Completion)
+  - Recipient path: 3-step quick setup (Welcome → Path → Completion)
+  - Onboarding components:
+    - `OnboardingLayout` - Wrapper with progress bar and step counter
+    - `WelcomeStep` - Introduction and benefits overview
+    - `PathSelectionStep` - Role selection with detailed descriptions
+    - `HowItWorksStep` - Video upload and sharing process explanation
+    - `AWSSetupStep` - AWS configuration guidance with CloudFormation option
+    - `EmailSetupStep` - Email provider setup guidance
+    - `SharingDemoStep` - Video sharing workflow demonstration
+    - `CompletionStep` - Personalized completion message with quick reference card
+  - Integration with signup flow: New users redirected to `/onboarding` after account creation
+  - State persistence: Progress saved to localStorage for multi-session completion
+  - Dashboard integration: "Setup Guide" link in navigation for easy access
+  - API endpoint: `PATCH /api/user/onboarding` to mark completion
+  - Mobile-responsive design with confetti celebration animation
+
+### Changed
+- **Help Pages Dark Theme**: Updated AWS and Email setup pages to match onboarding dark theme
+  - AWS Setup (`/help/aws-setup`):
+    - Background: Light gradient → Dark (#0a0a0a)
+    - Cards: White → Semi-transparent white (white/5)
+    - Text: Dark gray → White/gray-300
+    - Accent color: Blue/Green → Purple
+    - Buttons: Green → Purple-to-pink gradient
+  - Email Setup (`/help/email-setup`):
+    - Same dark theme conversion as AWS setup
+    - Provider cards (Resend, AWS SES, SMTP) with purple borders
+    - SVG checkmark icons replacing text checkmarks
+    - Icon color: Purple (#c084fc) to match site theme
+  - Text contrast improvements:
+    - Code blocks: Light gray background → Dark translucent (white/10)
+    - Labels: Added explicit white color for better readability
+    - Body text: Added explicit gray-300 color in credential sections
+  - Update success, warning and error colors for Brie, Cheddar, and Danablu themes
+
+### Fixed
+- **Onboarding Recipient Path**: Fixed multiple UX issues
+  - Step counter: Now correctly shows "Step 3 of 3" instead of "Step 7 of 3"
+  - Horizontal scrolling: Added overflow protection to prevent unwanted scroll
+  - Removed "View Help Docs" button from completion step
+  - Updated recipient message: Now mentions videos appear in dashboard AND email notifications
+    - Before: "You're ready to watch videos! Check your email for shared links."
+    - After: "You're ready to watch videos! Shared videos will appear in your dashboard, and you'll also receive email notifications."
+
+
 ## [1.7.1] - 2026-01-11
 ### Added
-- add llms.txt for ai index
-- add GitHub button to header
-- add favicon
-- update footer and add the necessary pages
+- **LLMS.txt Documentation**: Comprehensive AI-friendly documentation system
+  - Created `/public/llms.txt` main index following llmstxt.org specification
+  - 12 comprehensive documentation files in `/public/llms/`:
+    - quick-start.md, architecture.md, api-routes.md, database-schema.md
+    - aws-setup.md, email-setup.md, security.md, permissions.md
+    - video-workflow.md, environment-variables.md, tech-stack.md, troubleshooting.md
+  - 18 stub documentation files for future expansion
+- **Policy Pages**: Complete legal and security documentation
+  - `/privacy` - Privacy Policy page with data ownership explanation
+  - `/terms` - Terms of Service page with MIT license details
+  - `/security` - Security Policy page with responsible disclosure process
+  - All pages styled with dark theme matching homepage
+  - "Back to Home" navigation on all policy pages
+- **Dynamic Favicon**: Play icon favicon with purple-to-pink gradient
+  - Created `/src/app/icon.tsx` for standard 32x32 favicon
+  - Created `/src/app/apple-icon.tsx` for 180x180 Apple device icon
+  - Gradient background matches homepage brand colors
+  - Removed old static `favicon.ico`
+- **GitHub Navigation**: Added GitHub repository link to homepage header
+  - GitHub icon and text in outlined button style
+  - Positioned left of Sign In button
+  - Links to https://github.com/onamfc/cheesebox
+
+### Changed
+- **Footer Enhancement**: Cleaned up and simplified footer structure
+  - Removed non-clickable Features column (HLS Streaming, Email Permissions, Teams, etc.)
+  - Removed Documentation link (llms.txt is for AI consumption, not user docs)
+  - Updated grid from 5 columns to 4 columns for better layout
+  - Updated Company section links to point to new policy pages (/privacy, /terms, /security)
+  - Removed Dashboard link from Product section (not needed in footer)
+- **Homepage Navigation**: All buttons now show cursor pointer on hover
+  - GitHub button, Sign In button, Get Started button, Create Account button, Google Sign Up button
+
 ### Fixed
-- update input color for input fields on the homepage
+- **Signup Form Visibility**: Improved input field readability
+  - Changed text color from gray-900 to white for better contrast
+  - Updated background from white to semi-transparent white (white/10)
+  - Updated border from gray to subtle white/20
+  - Added purple focus border to match brand
+  - Gray placeholder text for better visibility
+  - All changes applied to email, password, and confirm password fields
+
+### Removed
+- Removed `LLMS_DOCUMENTATION.md` - Content integrated into `/public/llms/` structure
 
 ## [1.7.0] - 2026-01-11
 - add homepage

@@ -16,18 +16,18 @@
   --brand-border-light: #E5E7EB;   /* Gray-200 */
   --nav-active-text: #111827;      /* Dark text for active nav on medium gray pill */
 
-  /* Status colors */
-  --success: #10B981;
-  --success-hover: #059669;
-  --success-light: #D1FAE5;
+  /* Status colors - Professional, muted tones for Danablu */
+  --success: #059669;           /* Emerald-600 - muted forest green */
+  --success-hover: #047857;     /* Emerald-700 */
+  --success-light: #D1FAE5;     /* Emerald-100 */
 
-  --warning: #F59E0B;
-  --warning-hover: #D97706;
-  --warning-light: #FEF3C7;
+  --warning: #CA8A04;           /* Yellow-600 - muted mustard */
+  --warning-hover: #A16207;     /* Yellow-700 */
+  --warning-light: #FEF9C3;     /* Yellow-100 */
 
-  --danger: #EF4444;
-  --danger-hover: #DC2626;
-  --danger-light: #FEE2E2;
+  --danger: #BE123C;            /* Rose-700 - deep burgundy/wine */
+  --danger-hover: #9F1239;      /* Rose-800 */
+  --danger-light: #FFE4E6;      /* Rose-100 */
 
   --info: #3B82F6;
   --info-hover: #2563EB;

@@ -13,8 +13,8 @@
     "primary": "#F59E0B",
     "secondary": "#FCD34D",
     "accent": "#FBBF24",
-    "success": "#10B981",
-    "warning": "#F59E0B",
-    "danger": "#EF4444"
+    "success": "#84CC16",
+    "warning": "#EA580C",
+    "danger": "#DC2626"
   }
 }

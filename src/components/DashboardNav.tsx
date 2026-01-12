@@ -107,6 +107,13 @@ export default function DashboardNav() {
           </div>
           <div className={`flex items-center ${isMinimal ? "space-x-2" : "space-x-4"}`}>
             <Link
+              href="/onboarding"
+              className={`${isMinimal ? "text-xs" : "text-sm"} text-white hover:text-brand-secondary transition`}
+              title="Setup Guide"
+            >
+              Setup Guide
+            </Link>
+            <Link
               href="/settings"
               className={`${isMinimal ? "text-xs" : "text-sm"} text-white hover:text-brand-secondary transition`}
             >
