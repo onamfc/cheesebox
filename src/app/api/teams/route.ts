@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-helpers";
+import dev from "@onamfc/developer-log";
 
 // GET /api/teams - List user's teams
 export async function GET(request: NextRequest) {
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(teamsWithRole);
   } catch (error) {
-    console.error("Error fetching teams:", error);
+    dev.error("Error fetching teams:", error, {tag: "team"});
     return NextResponse.json(
       { error: "Failed to fetch teams" },
       { status: 500 }
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ...team, userRole: "OWNER" }, { status: 201 });
   } catch (error) {
-    console.error("Error creating team:", error);
+    dev.error("Error creating team:", error, {tag: "team"});
     return NextResponse.json(
       { error: "Failed to create team" },
       { status: 500 }

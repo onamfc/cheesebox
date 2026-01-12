@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { fetchWithCsrf } from "@/lib/csrf-client";
+import dev from "@onamfc/developer-log";
 
 interface Team {
   id: string;
@@ -33,7 +34,7 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
           setTeams(data);
         }
       } catch (error) {
-        console.error("Error fetching teams:", error);
+        dev.error("Error fetching teams:", error, {tag:"team"});
       }
     };
 

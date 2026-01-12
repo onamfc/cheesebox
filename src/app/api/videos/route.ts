@@ -6,6 +6,7 @@ import {
   GetJobCommand,
 } from "@aws-sdk/client-mediaconvert";
 import { getAuthUser } from "@/lib/auth-helpers";
+import dev from "@onamfc/developer-log";
 
 // GET - Retrieve user's videos and videos shared with them
 export async function GET(request: NextRequest) {
@@ -314,7 +315,7 @@ export async function GET(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Error retrieving videos:", error);
+    dev.error("Error retrieving videos:", error, { tag: "video" });
     return NextResponse.json(
       { error: "Failed to retrieve videos" },
       { status: 500 },
@@ -387,10 +388,10 @@ async function updateProcessingVideos(videos: any[], userId: string) {
           });
         }
       } catch (error) {
-        console.error(`Error checking job ${video.transcodingJobId}:`, error);
+        dev.error(`Error checking job ${video.transcodingJobId}:`, error, {tag: "video"});
       }
     }
   } catch (error) {
-    console.error("Error updating processing videos:", error);
+    dev.error("Error updating processing videos:", error, {tag: "video"});
   }
 }

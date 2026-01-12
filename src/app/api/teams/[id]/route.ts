@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-helpers";
+import dev from "@onamfc/developer-log";
 
 // GET /api/teams/[id] - Get team details
 export async function GET(
@@ -70,7 +71,7 @@ export async function GET(
       userRole: membership.role,
     });
   } catch (error) {
-    console.error("Error fetching team:", error);
+    dev.error("Error fetching team:", error, {tag: "team"});
     return NextResponse.json(
       { error: "Failed to fetch team" },
       { status: 500 }
@@ -166,7 +167,7 @@ export async function PATCH(
       userRole: membership.role,
     });
   } catch (error) {
-    console.error("Error updating team:", error);
+    dev.error("Error updating team:", error, {tag: "team"});
     return NextResponse.json(
       { error: "Failed to update team" },
       { status: 500 }
@@ -211,7 +212,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Team deleted successfully" });
   } catch (error) {
-    console.error("Error deleting team:", error);
+    dev.error("Error deleting team:", error, {tag: "team"});
     return NextResponse.json(
       { error: "Failed to delete team" },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-helpers";
+import dev from "@onamfc/developer-log";
 
 // Helper to check if user has access to group
 async function checkGroupAccess(groupId: string, userId: string, userEmail: string) {
@@ -136,7 +137,7 @@ export async function PATCH(
 
     return NextResponse.json(group);
   } catch (error) {
-    console.error("Error updating group:", error);
+    dev.error("Error updating group:", error, {tag: "group"});
     return NextResponse.json(
       { error: "Failed to update group" },
       { status: 500 }
@@ -173,7 +174,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Group deleted successfully" });
   } catch (error) {
-    console.error("Error deleting group:", error);
+    dev.error("Error deleting group:", error, {tag: "group"});
     return NextResponse.json(
       { error: "Failed to delete group" },
       { status: 500 }

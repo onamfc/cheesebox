@@ -118,7 +118,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
         alert("Failed to delete video");
       }
     } catch (error) {
-      console.error("Error deleting video:", error);
+      dev.error("Error deleting video:", error, {tag: "video"});
       alert("Failed to delete video");
     }
   };
