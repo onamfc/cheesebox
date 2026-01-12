@@ -276,9 +276,9 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                         </svg>
                       </Button>
                     )}
-                    {(type === "owned" || (type === "team" && video.isOwner)) && (
+                    {(type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                       <>
-                        {video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (
+                        {video.visibility === "PUBLIC" && (
                           <Button
                             variant="secondary"
                             size="sm"
@@ -303,7 +303,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                       </>
                     )}
                   </div>
-                  {(type === "owned" || (type === "team" && video.isOwner)) && (
+                  {(type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                     <Button
                       variant="secondary"
                       size="sm"
@@ -355,7 +355,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                 )}
 
                 {/* Bottom-left: Share button */}
-                {(type === "owned" || (type === "team" && video.isOwner)) && (
+                {(type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                   <Button
                     variant="secondary"
                     size="sm"
@@ -369,7 +369,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                 )}
 
                 {/* Bottom-right: Delete button */}
-                {(type === "owned" || (type === "team" && video.isOwner)) && (
+                {(type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                   <Button
                     variant="secondary"
                     size="sm"

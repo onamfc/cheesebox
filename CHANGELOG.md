@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.7.5] - 2026-01-12
+### Fixed
+- **Presigned URL Signature Mismatch**: Fixed 413 Content Too Large errors during S3 uploads
+  - Removed `ContentType` from presigned URL generation to prevent signature mismatch
+  - Removed `Content-Type` header from XHR upload request
+  - S3 now auto-detects content type based on file extension
+  - Resolves upload failures caused by header/signature discrepancies
+- **Video Action Buttons During Processing**: Hidden action buttons until video transcoding completes
+  - Play, Share, Embed, and Delete buttons now only appear for COMPLETED videos
+  - Prevents user confusion and errors from interacting with incomplete videos
+  - Status badges (PENDING, PROCESSING, FAILED) clearly indicate video state
+  - Applies to both Grid and List view modes
+
+### Changed
+- **Upload Error Logging**: Enhanced debugging information for upload failures
+  - Added file size in both MB and GB to error messages
+  - Logs S3 response text and HTTP status details
+  - Helps diagnose upload issues more quickly
+
 ## [1.7.4] - 2026-01-12
 ### Fixed
 - **CORS Configuration for Direct S3 Uploads**: Fixed CORS errors preventing video uploads
