@@ -6,8 +6,58 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ## [1.7.3] - 2026-01-12
 
+### Added
+- **Direct S3 Uploads with Presigned URLs**: Bypass Vercel serverless function limits for video uploads
+  - New API endpoint: `POST /api/videos/upload-url` - Generate presigned S3 URL and create video record
+  - New API endpoint: `POST /api/videos/complete-upload` - Finalize upload and start transcoding
+  - 3-step upload flow:
+    1. Request presigned URL from backend
+    2. Upload directly to S3 (client → S3, no intermediary)
+    3. Notify backend to start transcoding
+  - Removes 4.5MB Vercel serverless function payload limit
+  - Supports full 5GB video uploads
+  - Faster uploads with direct S3 connection
+  - Better progress tracking with XHR upload events
+
+### Changed
+- **Theme Status Colors**: Updated success, warning, and danger colors for better theme differentiation
+  - **Brie Theme** (soft blue) - Cooler, softer tones:
+    - Success: Teal/mint green (#14B8A6) - softer than standard green
+    - Warning: Soft warm orange (#FB923C) - gentler than amber
+    - Danger: Soft rose/pink (#F472B6) - less harsh than red
+  - **Cheddar Theme** (warm orange) - Warmer, vibrant tones:
+    - Success: Bright lime green (#84CC16) - energetic and fresh
+    - Warning: Deep burnt orange (#EA580C) - rich and warm
+    - Danger: Vibrant red (#DC2626) - bold and striking
+  - **Danablu Theme** (neutral gray) - Professional, muted tones:
+    - Success: Muted forest green (#059669) - sophisticated emerald
+    - Warning: Muted mustard (#CA8A04) - professional yellow
+    - Danger: Deep burgundy/wine (#BE123C) - refined rose
+  - Updated both `themes/` and `public/themes/` directories
+  - Updated `package.json` color metadata for all three themes
+
+### Fixed
+- **Video Upload Error Handling**: Comprehensive error feedback for file size limits
+  - File selection validation: Shows actual file size in GB when limit exceeded
+  - Form submission double-check: Prevents wasted upload attempts
+  - Clear error messages at multiple validation points:
+    - "File size (X.XX GB) exceeds the maximum allowed size of 5 GB"
+    - Actionable guidance: "Please compress your video or select a smaller file"
+  - Added helpful UI hints:
+    - "Maximum file size: 5 GB. Supported formats: MP4, MOV, AVI, WebM, MKV"
+  - S3 upload error handling:
+    - HTTP 400/413 errors with specific file size feedback
+    - Network error messages: "Please check your internet connection"
+    - Upload cancellation detection
+  - Automatic file input clearing when oversized file selected
+  - Backend validation with detailed error messages including compression suggestions
+- **Onboarding API Import**: Fixed prisma import in `/api/user/onboarding/route.ts`
+  - Changed from default import to named import: `import { prisma } from "@/lib/prisma"`
+  - Fixes Vercel build error: "Export default doesn't exist in target module"
+  - Resolves Turbopack build failure during deployment
 
 ## [1.7.2] - 2026-01-11
 ### Added
