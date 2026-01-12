@@ -74,16 +74,30 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
     setProgress(0);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("title", title);
-      if (description) {
-        formData.append("description", description);
-      }
-      if (selectedTeam) {
-        formData.append("teamId", selectedTeam);
+      // Step 1: Get presigned URL and create video record
+      const uploadUrlResponse = await fetch("/api/videos/upload-url", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          title,
+          description,
+          teamId: selectedTeam || undefined,
+        }),
+      });
+
+      if (!uploadUrlResponse.ok) {
+        const data = await uploadUrlResponse.json();
+        throw new Error(data.error || "Failed to get upload URL");
       }
 
+      const { videoId, uploadUrl, originalKey, outputKeyPrefix } = await uploadUrlResponse.json();
+
+      // Step 2: Upload directly to S3 using presigned URL
       const xhr = new XMLHttpRequest();
 
       xhr.upload.addEventListener("progress", (e) => {
@@ -93,14 +107,36 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
         }
       });
 
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 201) {
-          alert("Video uploaded successfully! Transcoding has started.");
-          onClose();
-          window.location.reload();
+      xhr.addEventListener("load", async () => {
+        if (xhr.status === 200) {
+          // Step 3: Notify backend to start transcoding
+          try {
+            const completeResponse = await fetch("/api/videos/complete-upload", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                videoId,
+                originalKey,
+                outputKeyPrefix,
+              }),
+            });
+
+            if (!completeResponse.ok) {
+              const data = await completeResponse.json();
+              throw new Error(data.error || "Failed to start transcoding");
+            }
+
+            alert("Video uploaded successfully! Transcoding has started.");
+            onClose();
+            window.location.reload();
+          } catch (completeError) {
+            setError(completeError instanceof Error ? completeError.message : "Failed to complete upload");
+            setUploading(false);
+          }
         } else {
-          const response = JSON.parse(xhr.responseText);
-          setError(response.error || "Failed to upload video");
+          setError("Failed to upload video to storage");
           setUploading(false);
         }
       });
@@ -110,10 +146,11 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
         setUploading(false);
       });
 
-      xhr.open("POST", "/api/videos/upload");
-      xhr.send(formData);
+      xhr.open("PUT", uploadUrl);
+      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.send(file);
     } catch (err) {
-      setError("Failed to upload video");
+      setError(err instanceof Error ? err.message : "Failed to upload video");
       setUploading(false);
     }
   };
