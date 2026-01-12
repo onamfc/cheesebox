@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 
 interface Team {
   id: string;
@@ -87,7 +88,7 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
 
     try {
       // Step 1: Get presigned URL and create video record
-      const uploadUrlResponse = await fetch("/api/videos/upload-url", {
+      const uploadUrlResponse = await fetchWithCsrf("/api/videos/upload-url", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,7 +124,7 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
         if (xhr.status === 200) {
           // Step 3: Notify backend to start transcoding
           try {
-            const completeResponse = await fetch("/api/videos/complete-upload", {
+            const completeResponse = await fetchWithCsrf("/api/videos/complete-upload", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
