@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Upload cancellation detection
   - Automatic file input clearing when oversized file selected
   - Backend validation with detailed error messages including compression suggestions
+### Changed
+- being replacing console.log with the developer log package
 
 ## [1.7.2] - 2026-01-11
 ### Added
