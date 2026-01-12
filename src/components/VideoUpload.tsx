@@ -45,9 +45,13 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
 
       // File size validation (5GB limit)
       const maxSize = 5 * 1024 * 1024 * 1024; // 5GB in bytes
+      const fileSizeGB = (selectedFile.size / 1024 / 1024 / 1024).toFixed(2);
+
       if (selectedFile.size > maxSize) {
-        setError("File size exceeds 5GB limit. Please select a smaller file.");
+        setError(`File size (${fileSizeGB} GB) exceeds the maximum allowed size of 5 GB. Please compress your video or select a smaller file.`);
         setFile(null);
+        // Clear the file input
+        e.target.value = "";
         return;
       }
 
@@ -69,21 +73,43 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
       return;
     }
 
+    // Double-check file size before upload
+    const maxSize = 5 * 1024 * 1024 * 1024; // 5GB
+    if (file.size > maxSize) {
+      const fileSizeGB = (file.size / 1024 / 1024 / 1024).toFixed(2);
+      setError(`File size (${fileSizeGB} GB) exceeds the maximum allowed size of 5 GB. Please compress your video or select a smaller file.`);
+      return;
+    }
+
     setUploading(true);
     setError("");
     setProgress(0);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("title", title);
-      if (description) {
-        formData.append("description", description);
-      }
-      if (selectedTeam) {
-        formData.append("teamId", selectedTeam);
+      // Step 1: Get presigned URL and create video record
+      const uploadUrlResponse = await fetch("/api/videos/upload-url", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          title,
+          description,
+          teamId: selectedTeam || undefined,
+        }),
+      });
+
+      if (!uploadUrlResponse.ok) {
+        const data = await uploadUrlResponse.json();
+        throw new Error(data.error || "Failed to get upload URL");
       }
 
+      const { videoId, uploadUrl, originalKey, outputKeyPrefix } = await uploadUrlResponse.json();
+
+      // Step 2: Upload directly to S3 using presigned URL
       const xhr = new XMLHttpRequest();
 
       xhr.upload.addEventListener("progress", (e) => {
@@ -93,27 +119,60 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
         }
       });
 
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 201) {
-          alert("Video uploaded successfully! Transcoding has started.");
-          onClose();
-          window.location.reload();
+      xhr.addEventListener("load", async () => {
+        if (xhr.status === 200) {
+          // Step 3: Notify backend to start transcoding
+          try {
+            const completeResponse = await fetch("/api/videos/complete-upload", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                videoId,
+                originalKey,
+                outputKeyPrefix,
+              }),
+            });
+
+            if (!completeResponse.ok) {
+              const data = await completeResponse.json();
+              throw new Error(data.error || "Failed to start transcoding");
+            }
+
+            alert("Video uploaded successfully! Transcoding has started.");
+            onClose();
+            window.location.reload();
+          } catch (completeError) {
+            setError(completeError instanceof Error ? completeError.message : "Failed to complete upload");
+            setUploading(false);
+          }
+        } else if (xhr.status === 400 || xhr.status === 413) {
+          // S3 rejected the upload - likely file too large
+          const fileSizeGB = (file.size / 1024 / 1024 / 1024).toFixed(2);
+          setError(`Upload rejected by storage service. File size (${fileSizeGB} GB) may exceed the maximum allowed size of 5 GB. Please compress your video or select a smaller file.`);
+          setUploading(false);
         } else {
-          const response = JSON.parse(xhr.responseText);
-          setError(response.error || "Failed to upload video");
+          setError(`Failed to upload video to storage (Error ${xhr.status}). Please try again or contact support if the problem persists.`);
           setUploading(false);
         }
       });
 
       xhr.addEventListener("error", () => {
-        setError("Failed to upload video");
+        setError("Network error during upload. Please check your internet connection and try again.");
         setUploading(false);
       });
 
-      xhr.open("POST", "/api/videos/upload");
-      xhr.send(formData);
+      xhr.addEventListener("abort", () => {
+        setError("Upload was cancelled.");
+        setUploading(false);
+      });
+
+      xhr.open("PUT", uploadUrl);
+      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.send(file);
     } catch (err) {
-      setError("Failed to upload video");
+      setError(err instanceof Error ? err.message : "Failed to upload video");
       setUploading(false);
     }
   };
@@ -232,10 +291,14 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary"
               required
             />
-            {file && (
+            {file ? (
               <p className="mt-1 text-sm text-gray-500">
                 Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)}{" "}
                 MB)
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-500">
+                Maximum file size: 5 GB. Supported formats: MP4, MOV, AVI, WebM, MKV
               </p>
             )}
           </div>
