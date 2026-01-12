@@ -152,10 +152,15 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
         } else if (xhr.status === 400 || xhr.status === 413) {
           // S3 rejected the upload - likely file too large
           const fileSizeGB = (file.size / 1024 / 1024 / 1024).toFixed(2);
-          setError(`Upload rejected by storage service. File size (${fileSizeGB} GB) may exceed the maximum allowed size of 5 GB. Please compress your video or select a smaller file.`);
+          const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+          dev.error(`S3 Upload rejected: ${xhr.status} - File size: ${fileSizeMB} MB (${fileSizeGB} GB)`, null, {tag: "upload"});
+          dev.error(`Response: ${xhr.responseText}`, null, {tag: "upload"});
+          setError(`Upload rejected by storage service. File size: ${fileSizeMB} MB (${fileSizeGB} GB). Maximum allowed: 5 GB. Please compress your video or select a smaller file.`);
           setUploading(false);
         } else {
-          setError(`Failed to upload video to storage (Error ${xhr.status}). Please try again or contact support if the problem persists.`);
+          dev.error(`S3 Upload failed: ${xhr.status} - ${xhr.statusText}`, null, {tag: "upload"});
+          dev.error(`Response: ${xhr.responseText}`, null, {tag: "upload"});
+          setError(`Failed to upload video to storage (Error ${xhr.status}: ${xhr.statusText}). Please try again or contact support if the problem persists.`);
           setUploading(false);
         }
       });
@@ -171,7 +176,8 @@ export default function VideoUpload({ onClose }: VideoUploadProps) {
       });
 
       xhr.open("PUT", uploadUrl);
-      xhr.setRequestHeader("Content-Type", file.type);
+      // Don't set Content-Type - it's not in the signed headers
+      // The presigned URL already includes the content type in the signature
       xhr.send(file);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to upload video");

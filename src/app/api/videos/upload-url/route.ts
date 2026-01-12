@@ -160,7 +160,8 @@ export async function POST(request: NextRequest) {
     const command = new PutObjectCommand({
       Bucket: credentials.bucketName,
       Key: originalKey,
-      ContentType: fileType,
+      // Don't specify ContentType here - it causes signature mismatches
+      // S3 will auto-detect or we can set it later via metadata
     });
 
     const presignedUrl = await getSignedUrl(s3Client, command, {
