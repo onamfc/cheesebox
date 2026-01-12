@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.7.4] - 2026-01-12
+### Fixed
+- **CORS Configuration for Direct S3 Uploads**: Fixed CORS errors preventing video uploads
+  - Added `PUT` method to CloudFormation template CORS configuration
+  - Updated AWS setup documentation to include PUT method in CORS examples
+  - Updated help page CORS section title: "Required for Uploads & Streaming"
+  - Allows browser to upload directly to S3 using presigned URLs
+  - Users with existing S3 buckets need to update CORS settings to include PUT method
+- **CSRF Token Protection**: Fixed video upload CSRF validation errors
+  - Updated `VideoUpload` component to use `fetchWithCsrf()` for all API calls
+  - Upload-url endpoint now includes CSRF token automatically
+  - Complete-upload endpoint now includes CSRF token automatically
+
+### Added
+- **Video Upload Security Tests**: Comprehensive test suite for upload functionality
+  - 29 tests covering direct S3 upload architecture
+  - File size validation (frontend & backend)
+  - CORS configuration verification
+  - Error handling and user feedback
+  - Authentication & authorization checks
+  - Security best practices validation
+  - CloudFormation template security audit
+  - Progress tracking verification
 
 ## [1.7.3] - 2026-01-12
 ### Added
