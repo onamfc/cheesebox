@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { generateToken } from '@/lib/jwt';
+import { acceptPendingInvitations } from '@/lib/team-invitations';
 
 /**
  * POST /api/auth/mobile/signup
@@ -56,6 +57,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Accept any pending team invitations
+    const invitationResult = await acceptPendingInvitations(user.id, user.email);
+
     // Generate JWT token
     const token = generateToken({
       userId: user.id,
@@ -68,6 +72,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
       },
       token,
+      teamInvitations: invitationResult,
     });
   } catch (error) {
     console.error('Signup error:', error);

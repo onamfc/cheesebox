@@ -103,6 +103,13 @@ export function requiresCsrfValidation(request: NextRequest): boolean {
     return false;
   }
 
+  // Skip CSRF for requests using JWT Bearer token authentication
+  // Mobile apps use JWT tokens instead of session cookies
+  const authHeader = request.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return false;
+  }
+
   // Skip CSRF for API routes that use other authentication
   // - NextAuth routes (NextAuth handles its own CSRF)
   // - Mobile JWT routes (protected by JWT tokens)

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import VideoPlayer from "./VideoPlayer";
 import ShareVideoModal from "./ShareVideoModal";
 import EmbedCodeModal from "./EmbedCodeModal";
+import EditVideoModal from "./EditVideoModal";
 import VisibilityToggle from "./VisibilityToggle";
 import { Button } from "./ui/Button";
 import { fetchWithCsrf } from "@/lib/csrf-client";
@@ -40,6 +41,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [shareVideoId, setShareVideoId] = useState<string | null>(null);
   const [embedVideoId, setEmbedVideoId] = useState<string | null>(null);
+  const [editVideo, setEditVideo] = useState<Video | null>(null);
 
   // Get theme layout settings
   const layout = themeConfig?.layout?.videoList || defaultTheme.layout.videoList;
@@ -186,7 +188,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                                 : "bg-gray-100 text-gray-800"
                           }`}
                         >
-                          {video.transcodingStatus}
+                          {video.transcodingStatus === "PROCESSING" ? "Processing" : video.transcodingStatus === "FAILED" ? "Failed" : "Pending"}
                         </span>
                       </div>
                     )}
@@ -203,13 +205,13 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                               : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {video.transcodingStatus}
+                        {video.transcodingStatus === "PROCESSING" ? "Processing" : video.transcodingStatus === "FAILED" ? "Failed" : "Pending"}
                       </span>
                     </div>
                   )}
 
                   {/* Visibility Toggle - List View */}
-                  {effectiveViewMode === "list" && (type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
+                  {effectiveViewMode === "list" && (type === "owned" || ((type === "team" || type === "group") && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                     <div className="mb-2 flex justify-start">
                       <VisibilityToggle
                         videoId={video.id}
@@ -240,7 +242,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
 
                 <div className={`flex items-center text-xs text-gray-500 ${effectiveViewMode === "list" ? "gap-4" : "justify-between mb-4"}`}>
                   <span>{new Date(video.createdAt).toLocaleDateString()}</span>
-                  {(type === "owned" || (type === "team" && video.isOwner)) &&
+                  {(type === "owned" || ((type === "team" || type === "group") && video.isOwner)) &&
                     video.shares &&
                     video.shares.length > 0 && (
                       <span>{video.shares.length} shares</span>
@@ -248,7 +250,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                 </div>
 
                 {/* Visibility Toggle - Grid View */}
-                {(effectiveViewMode === "grid" || effectiveViewMode === "masonry") && (type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
+                {(effectiveViewMode === "grid" || effectiveViewMode === "masonry") && (type === "owned" || ((type === "team" || type === "group") && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                   <div className="mb-3">
                     <VisibilityToggle
                       videoId={video.id}
@@ -276,7 +278,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                         </svg>
                       </Button>
                     )}
-                    {(type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
+                    {(type === "owned" || ((type === "team" || type === "group") && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                       <>
                         {video.visibility === "PUBLIC" && (
                           <Button
@@ -303,17 +305,29 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                       </>
                     )}
                   </div>
-                  {(type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleDelete(video.id)}
-                      className="p-2"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </Button>
+                  {(type === "owned" || ((type === "team" || type === "group") && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setEditVideo(video)}
+                        className="p-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleDelete(video.id)}
+                        className="p-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}
@@ -321,22 +335,19 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
 
             {/* Action Buttons - List View */}
             {effectiveViewMode === "list" && (
-              <div className={`grid grid-cols-2 ${compact ? "gap-1 pr-3" : "gap-2 pr-4"} flex-shrink-0`}>
-                {/* Top-left: Empty if only 3 buttons (no embed), otherwise Embed button */}
-                {video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (type === "owned" || (type === "team" && video.isOwner)) && (
+              <div className={`grid ${(type === "owned" || ((type === "team" || type === "group") && video.isOwner)) ? "grid-cols-2" : "grid-cols-1"} ${compact ? "gap-1 pr-3" : "gap-2 pr-4"} flex-shrink-0`}>
+                {/* Top-left: Edit button (for owners) or empty */}
+                {(type === "owned" || ((type === "team" || type === "group") && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => setEmbedVideoId(video.id)}
+                    onClick={() => setEditVideo(video)}
                     className={compact ? "p-1.5" : "p-2"}
                   >
                     <svg className={compact ? "w-4 h-4" : "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </Button>
-                )}
-                {!(video.visibility === "PUBLIC" && video.transcodingStatus === "COMPLETED" && (type === "owned" || (type === "team" && video.isOwner))) && (
-                  <div></div>
                 )}
 
                 {/* Top-right: Play button */}
@@ -355,7 +366,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                 )}
 
                 {/* Bottom-left: Share button */}
-                {(type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
+                {(type === "owned" || ((type === "team" || type === "group") && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                   <Button
                     variant="secondary"
                     size="sm"
@@ -369,7 +380,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
                 )}
 
                 {/* Bottom-right: Delete button */}
-                {(type === "owned" || (type === "team" && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
+                {(type === "owned" || ((type === "team" || type === "group") && video.isOwner)) && video.transcodingStatus === "COMPLETED" && (
                   <Button
                     variant="secondary"
                     size="sm"
@@ -408,6 +419,16 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
         <EmbedCodeModal
           videoId={embedVideoId}
           onClose={() => setEmbedVideoId(null)}
+        />
+      )}
+
+      {editVideo && (
+        <EditVideoModal
+          videoId={editVideo.id}
+          currentTitle={editVideo.title}
+          currentDescription={editVideo.description}
+          onClose={() => setEditVideo(null)}
+          onSuccess={fetchVideos}
         />
       )}
     </>

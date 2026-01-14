@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { compare } from "bcryptjs";
 import { prisma } from "./prisma";
+import { acceptPendingInvitations } from "./team-invitations";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -96,7 +97,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Create new user with Google
-        await prisma.user.create({
+        const newUser = await prisma.user.create({
           data: {
             email: user.email,
             name: user.name,
@@ -105,6 +106,9 @@ export const authOptions: NextAuthOptions = {
             providerId: account.providerAccountId,
           },
         });
+
+        // Accept any pending team invitations
+        await acceptPendingInvitations(newUser.id, newUser.email);
 
         return true;
       }

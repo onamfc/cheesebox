@@ -9,6 +9,80 @@ import {
 } from "@/lib/aws-services";
 import dev from "@onamfc/developer-log";
 
+// PATCH - Update video details (title and description)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const user = await getAuthUser(request);
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const { title, description } = body;
+
+    // Validate input
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Title is required" },
+        { status: 400 },
+      );
+    }
+
+    if (title.trim().length > 255) {
+      return NextResponse.json(
+        { error: "Title must be less than 255 characters" },
+        { status: 400 },
+      );
+    }
+
+    if (description && typeof description !== "string") {
+      return NextResponse.json(
+        { error: "Description must be a string" },
+        { status: 400 },
+      );
+    }
+
+    // Get the video
+    const video = await prisma.video.findUnique({
+      where: { id },
+    });
+
+    if (!video) {
+      return NextResponse.json({ error: "Video not found" }, { status: 404 });
+    }
+
+    // Check if user is the owner
+    if (video.userId !== user.id) {
+      return NextResponse.json(
+        { error: "Only the video owner can edit it" },
+        { status: 403 },
+      );
+    }
+
+    // Update the video
+    const updatedVideo = await prisma.video.update({
+      where: { id },
+      data: {
+        title: title.trim(),
+        description: description?.trim() || null,
+      },
+    });
+
+    return NextResponse.json(updatedVideo, { status: 200 });
+  } catch (error) {
+    dev.error("Error updating video:", error, {tag: "video-update"});
+    return NextResponse.json(
+      { error: "Failed to update video" },
+      { status: 500 },
+    );
+  }
+}
+
 // DELETE - Delete a video
 export async function DELETE(
   request: NextRequest,

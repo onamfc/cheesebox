@@ -6,6 +6,87 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.8.1] - 2026-01-15
+### Fixed
+**TypeScript Build Errors**: Fixed compilation errors in VideoList component
+- Removed unsupported `title` prop from Button components
+- Button component doesn't support native HTML title attribute
+- Fixed 5 TypeScript errors preventing production builds
+
+## [1.8.0] - 2026-01-14
+### Added
+- **Pending Team Invitations**: Invite users to teams before they create an account
+  - Team owners and admins can now invite users by email even if they don't have a Cheesebox account yet
+  - Pending invitations are displayed separately from active members on team details page
+  - Invitations include role assignment (OWNER, ADMIN, or MEMBER)
+  - Pending invitations show with yellow "Pending" badge and clock icon
+  - Team admins can cancel pending invitations before they're accepted
+  - When invited user signs up (via web, mobile, or Google OAuth), they're automatically added to the team
+  - Team members see invitation count and clear status messages
+  - Database schema updated to support optional userId and email fields
+  - New `InvitationStatus` enum (PENDING, ACCEPTED) added to TeamMember model
+  - Enhanced authentication flows to auto-accept pending invitations on signup
+  - New API endpoint: `DELETE /api/teams/[id]/invitations/[memberId]` for cancelling invitations
+- **Video Editing**: New ability to edit video title and description after upload
+  - Created `EditVideoModal` component for editing video details
+  - Added PATCH endpoint `/api/videos/[id]` for updating video information
+  - Title field required (max 255 characters) with character counter
+  - Optional description field with multi-line text area
+  - Edit button appears in video cards for video owners only
+  - Form validation and error handling
+  - CSRF protection on update requests
+- **Beta Badge in Navigation**: Added beta badge to Cheesebox branding in dashboard navigation
+  - Displays "BETA" badge next to Cheesebox logo
+  - Hover tooltip explains beta status and what users can expect
+  - Includes information about frequent updates, UI changes, and active development
+  - Encourages user feedback
+- **Enhanced Onboarding API**: Extended onboarding status endpoint with teams and groups data
+  - GET `/api/user/onboarding` now returns user's teams with roles and counts
+  - Includes user's groups (owned and member) with share counts
+  - Added team information (members, videos, groups) to response
+  - Mobile authentication endpoint returns `onboardingCompleted` status
+
+### Changed
+- **Teams Page UI Redesign**: Improved layout and visual hierarchy
+  - Removed separate stats cards section
+  - Moved team statistics to header subtitle (members, videos, groups)
+  - Improved spacing and typography throughout
+  - Enhanced view mode toggle with better visual feedback
+  - More compact and cleaner member management section
+  - Consistent button styling across all actions
+  - Better visual separation between sections
+- **Groups Page UI Redesign**: Improved layout and visual hierarchy
+  - Removed separate stats cards section
+  - Moved group statistics to header subtitle (members, shared videos)
+  - Enhanced view mode toggle matching teams page style
+  - Improved spacing and section organization
+  - Better visual separation of "How to Use" instructions
+  - Consistent button styling across all actions
+- **Onboarding Button Text**: Removed arrow symbols from onboarding navigation buttons
+  - Changed "← Back" to "Back"
+  - Changed "Next →" style buttons to remove arrows
+  - Changed "Open CloudFormation Guide →" to "Open CloudFormation Guide"
+  - Changed "I've Completed AWS Setup →" to "I've Completed AWS Setup"
+  - Changed "I'm Ready to Set Up AWS →" to "I'm Ready to Set Up AWS"
+  - Changed "Finish Setup →" to "Finish Setup"
+  - Cleaner, more modern button appearance
+- **Email Setup Copy**: Changed em dash to hyphen in email setup step message
+  - Changed "Videos will still work perfectly—recipients" to "Videos will still work perfectly - recipients"
+
+### Fixed
+- **CSRF Mobile Authentication**: Fixed CSRF validation blocking legitimate mobile API requests
+  - Added JWT Bearer token detection to CSRF validation logic
+  - Mobile app requests with `Authorization: Bearer <token>` now bypass CSRF checks
+  - Prevents false positive CSRF validation failures for mobile clients
+  - Maintains CSRF protection for web browser sessions
+
+
+### Removed
+- **Proxy Matcher Configuration**: Removed unused middleware config export
+  - Removed `config.matcher` export from `src/proxy.ts`
+  - Matcher configuration is now handled at a different level
+  - Cleaned up unused code
+
 ## [1.7.5] - 2026-01-12
 ### Fixed
 - **Presigned URL Signature Mismatch**: Fixed 413 Content Too Large errors during S3 uploads

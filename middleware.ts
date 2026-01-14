@@ -1,5 +1,5 @@
 /**
- * Next.js Proxy (Edge Middleware)
+ * Next.js Middleware
  *
  * Runs on Edge Runtime for all requests
  * Handles CSRF protection for API routes
@@ -12,9 +12,9 @@ import {
   getCsrfToken,
   setCsrfTokenCookie,
   createCsrfErrorResponse,
-} from './lib/csrf';
+} from './src/lib/csrf';
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Handle CSRF for API routes
   if (request.nextUrl.pathname.startsWith('/api/')) {
     // Check if this request requires CSRF validation

@@ -191,13 +191,13 @@ export default function GroupDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <Link
             href="/dashboard/groups"
-            className="text-brand-primary hover:text-brand-primary-hover mb-4 inline-flex items-center"
+            className="text-brand-primary hover:text-brand-primary-hover mb-4 inline-flex items-center text-sm font-medium"
           >
             <svg
               className="w-4 h-4 mr-1"
@@ -242,8 +242,11 @@ export default function GroupDetailsPage() {
                 </button>
               </div>
               {group.description && (
-                <p className="mt-1 text-gray-600">{group.description}</p>
+                <p className="mt-2 text-gray-600">{group.description}</p>
               )}
+              <p className="mt-2 text-gray-600">
+                {group.members.length} {group.members.length === 1 ? "member" : "members"} · {group._count.videoShares} {group._count.videoShares === 1 ? "shared video" : "shared videos"}
+              </p>
               {group.team && (
                 <div className="mt-2">
                   <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-brand-accent text-brand-dark rounded">
@@ -261,36 +264,18 @@ export default function GroupDetailsPage() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600 mb-1">Members</div>
-            <div className="text-3xl font-bold text-gray-900">
-              {group.members.length}
-            </div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600 mb-1">Shared Videos</div>
-            <div className="text-3xl font-bold text-gray-900">
-              {group._count.videoShares}
-            </div>
-          </div>
-        </div>
-
         {/* Members Section */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Members</h2>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-hover transition text-sm"
-              >
-                Add Members
-              </button>
-            </div>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Members</h2>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-hover transition text-sm font-medium"
+            >
+              Add Members
+            </button>
           </div>
-          <div className="divide-y divide-gray-200">
+          <div className="bg-white rounded-lg shadow divide-y divide-gray-200">
             {group.members.length === 0 ? (
               <div className="p-6 text-center text-gray-500">
                 No members yet. Add some to get started.
@@ -332,11 +317,11 @@ export default function GroupDetailsPage() {
         </div>
 
         {/* How to Use */}
-        <div className="mt-8 mb-4 bg-brand-secondary border border-brand-secondary rounded-lg p-6">
-          <h3 className="font-semibold text-brand-dark mb-2">
+        <div className="mb-8 bg-brand-light border-2 border-brand-secondary rounded-lg p-6">
+          <h3 className="font-semibold text-brand-dark mb-3 text-base">
             How to share videos with this group
           </h3>
-          <ol className="list-decimal list-inside space-y-1 text-sm text-brand-dark">
+          <ol className="list-decimal list-inside space-y-2 text-sm text-brand-dark">
             <li>Go to your video in the dashboard</li>
             <li>Click the share button</li>
             <li>Select "Share with Group" tab</li>
@@ -346,50 +331,40 @@ export default function GroupDetailsPage() {
         </div>
 
         {/* Shared Videos Section */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Videos Shared with This Group
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  All videos that have been shared with "{group.name}"
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded-lg transition ${
-                    viewMode === "grid"
-                      ? "bg-brand-primary text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                  title="Grid view"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded-lg transition ${
-                    viewMode === "list"
-                      ? "bg-brand-primary text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                  title="List view"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              </div>
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Videos Shared with This Group
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                All videos that have been shared with "{group.name}"
+              </p>
+            </div>
+
+            <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2 ${viewMode === "grid" ? "bg-blue-100 text-black-200" : "text-gray-600 hover:bg-gray-100"}`}
+                title="Grid view"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 ${viewMode === "list" ? "bg-blue-100 text-black-200" : "text-gray-600 hover:bg-gray-100"}`}
+                title="List view"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
             </div>
           </div>
-          <div className="p-6">
-            <VideoList type="group" groupId={groupId} viewMode={viewMode} compact={true} />
-          </div>
+
+          <VideoList type="group" groupId={groupId} viewMode={viewMode} />
         </div>
 
         {/* Add Members Modal */}

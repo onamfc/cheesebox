@@ -54,41 +54,64 @@ export async function POST(
       );
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     // Find user by email
     const invitedUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
     });
 
-    if (!invitedUser) {
-      return NextResponse.json(
-        { error: "User not found. They need to create an account first." },
-        { status: 404 }
-      );
-    }
-
-    // Check if user is already a member
-    const existingMember = await prisma.teamMember.findUnique({
+    // Check if there's already a pending invitation or existing member for this email
+    const existingInvitation = await prisma.teamMember.findUnique({
       where: {
-        teamId_userId: {
+        teamId_email: {
           teamId,
-          userId: invitedUser.id,
+          email: normalizedEmail,
         },
       },
     });
 
-    if (existingMember) {
-      return NextResponse.json(
-        { error: "User is already a team member" },
-        { status: 400 }
-      );
+    if (existingInvitation) {
+      if (existingInvitation.status === "PENDING") {
+        return NextResponse.json(
+          { error: "An invitation has already been sent to this email" },
+          { status: 400 }
+        );
+      } else {
+        return NextResponse.json(
+          { error: "User is already a team member" },
+          { status: 400 }
+        );
+      }
     }
 
-    // Add member
+    // If user exists, check if they're already a member by userId
+    if (invitedUser) {
+      const existingMemberByUserId = await prisma.teamMember.findUnique({
+        where: {
+          teamId_userId: {
+            teamId,
+            userId: invitedUser.id,
+          },
+        },
+      });
+
+      if (existingMemberByUserId) {
+        return NextResponse.json(
+          { error: "User is already a team member" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Create invitation (pending if user doesn't exist, accepted if they do)
     const newMember = await prisma.teamMember.create({
       data: {
         teamId,
-        userId: invitedUser.id,
+        userId: invitedUser?.id,
+        email: normalizedEmail,
         role,
+        status: invitedUser ? "ACCEPTED" : "PENDING",
       },
       include: {
         user: {
@@ -99,6 +122,9 @@ export async function POST(
         },
       },
     });
+
+    // TODO: Send invitation email to the user
+    // This will be implemented in a later step
 
     return NextResponse.json(newMember, { status: 201 });
   } catch (error) {

@@ -73,7 +73,7 @@ export default function AWSSetupStep({ onNext, onBack, onSkipToDashboard }: AWSS
                   target="_blank"
                   className="inline-block px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-md transition-all cursor-pointer"
                 >
-                  Open CloudFormation Guide →
+                  Open CloudFormation Guide
                 </Link>
               </div>
             </div>
@@ -134,7 +134,7 @@ export default function AWSSetupStep({ onNext, onBack, onSkipToDashboard }: AWSS
                   target="_blank"
                   className="inline-block px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-md border border-white/10 transition-all cursor-pointer"
                 >
-                  Open Manual Setup Guide →
+                  Open Manual Setup Guide
                 </Link>
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function AWSSetupStep({ onNext, onBack, onSkipToDashboard }: AWSS
           onClick={onBack}
           className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-md border border-white/10 transition-all cursor-pointer"
         >
-          ← Back
+          Back
         </button>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
@@ -161,7 +161,7 @@ export default function AWSSetupStep({ onNext, onBack, onSkipToDashboard }: AWSS
             onClick={onNext}
             className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-md transition-all cursor-pointer"
           >
-            I've Completed AWS Setup →
+            I've Completed AWS Setup
           </button>
         </div>
       </div>

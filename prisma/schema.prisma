@@ -112,16 +112,20 @@ model Team {
 }
 
 model TeamMember {
-  id        String   @id @default(cuid())
-  teamId    String   @map("team_id")
-  userId    String   @map("user_id")
-  role      TeamRole @default(MEMBER)
-  createdAt DateTime @default(now()) @map("created_at")
-  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String           @id @default(cuid())
+  teamId    String           @map("team_id")
+  userId    String?          @map("user_id")
+  email     String?
+  role      TeamRole         @default(MEMBER)
+  status    InvitationStatus @default(PENDING)
+  createdAt DateTime         @default(now()) @map("created_at")
+  team      Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, userId])
+  @@unique([teamId, email])
   @@index([userId])
+  @@index([email])
   @@map("team_members")
 }
 
@@ -232,6 +236,11 @@ enum TeamRole {
   OWNER
   ADMIN
   MEMBER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
 }
 
 enum AuthProvider {
