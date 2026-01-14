@@ -8,7 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ## [1.8.1] - 2026-01-15
 ### Fixed
-- removed the title prop from all Button components in VideoList.ts
+**TypeScript Build Errors**: Fixed compilation errors in VideoList component
+- Removed unsupported `title` prop from Button components
+- Button component doesn't support native HTML title attribute
+- Fixed 5 TypeScript errors preventing production builds
 
 ## [1.8.0] - 2026-01-14
 ### Added
@@ -76,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Mobile app requests with `Authorization: Bearer <token>` now bypass CSRF checks
   - Prevents false positive CSRF validation failures for mobile clients
   - Maintains CSRF protection for web browser sessions
+
 
 ### Removed
 - **Proxy Matcher Configuration**: Removed unused middleware config export
