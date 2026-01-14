@@ -5,7 +5,43 @@
  * Handles CSRF protection for API routes
  */
 
-export { proxy as middleware } from './src/proxy';
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  requiresCsrfValidation,
+  validateCsrfToken,
+  getCsrfToken,
+  setCsrfTokenCookie,
+  createCsrfErrorResponse,
+} from './src/lib/csrf';
+
+export async function middleware(request: NextRequest) {
+  // Handle CSRF for API routes
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    // Check if this request requires CSRF validation
+    if (requiresCsrfValidation(request)) {
+      // Validate CSRF token
+      const isValid = await validateCsrfToken(request);
+      if (!isValid) {
+        return createCsrfErrorResponse();
+      }
+    }
+
+    // For GET requests to API routes, ensure CSRF token cookie is set
+    if (request.method === 'GET') {
+      const token = getCsrfToken(request);
+      const response = NextResponse.next();
+      setCsrfTokenCookie(response, token);
+      return response;
+    }
+  }
+
+  // For all other requests, ensure CSRF token is available
+  const token = getCsrfToken(request);
+  const response = NextResponse.next();
+  setCsrfTokenCookie(response, token);
+
+  return response;
+}
 
 export const config = {
   matcher: [
