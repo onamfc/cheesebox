@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## [1.8.0] - 2026-01-15
+## [1.8.1] - 2026-01-15
+### Fixed
+- removed the title prop from all Button components in VideoList.ts
+
+## [1.8.0] - 2026-01-14
 ### Added
 - **Pending Team Invitations**: Invite users to teams before they create an account
   - Team owners and admins can now invite users by email even if they don't have a Cheesebox account yet
