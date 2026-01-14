@@ -98,7 +98,7 @@ export default function EmailSetupStep({ onNext, onBack }: EmailSetupStepProps) 
         <div className="bg-black/40 rounded-lg p-6 mb-6">
           <h4 className="text-white font-semibold mb-2">No Problem!</h4>
           <p className="text-sm text-gray-400">
-            You can always set up email later in Settings. Videos will still work perfectly—recipients can access them via direct links or their dashboard.
+            You can always set up email later in Settings. Videos will still work perfectly - recipients can access them via direct links or their dashboard.
           </p>
         </div>
       )}
@@ -109,7 +109,7 @@ export default function EmailSetupStep({ onNext, onBack }: EmailSetupStepProps) 
           onClick={onBack}
           className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-md border border-white/10 transition-all cursor-pointer"
         >
-          ← Back
+          Back
         </button>
         <button
           onClick={onNext}

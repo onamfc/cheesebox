@@ -60,7 +60,7 @@ export async function PATCH(request: Request) {
   }
 }
 
-// GET /api/user/onboarding - Get user's onboarding status
+// GET /api/user/onboarding - Get user's onboarding status with teams and groups
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -72,6 +72,8 @@ export async function GET() {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
+        id: true,
+        email: true,
         onboardingCompleted: true,
         onboardingPath: true,
         onboardingCompletedAt: true,
@@ -82,7 +84,91 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    // Get user's teams
+    const teams = await prisma.team.findMany({
+      where: {
+        members: {
+          some: {
+            userId: user.id,
+          },
+        },
+      },
+      include: {
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+        _count: {
+          select: {
+            videos: true,
+            groups: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Add user's role to each team
+    const teamsWithRole = teams.map((team) => {
+      const membership = team.members.find((m) => m.user?.email === session.user.email);
+      return {
+        ...team,
+        userRole: membership?.role,
+      };
+    });
+
+    // Get user's groups (both owned and member of)
+    const groups = await prisma.shareGroup.findMany({
+      where: {
+        OR: [
+          { owner: { email: session.user.email } }, // Groups owned by user
+          {
+            members: {
+              some: {
+                email: session.user.email, // Groups where user is a member
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        members: true,
+        team: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: {
+            videoShares: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json({
+      onboardingCompleted: user.onboardingCompleted,
+      onboardingPath: user.onboardingPath,
+      onboardingCompletedAt: user.onboardingCompletedAt,
+      teams: teamsWithRole,
+      groups: groups,
+    });
   } catch (error) {
     console.error("Error fetching onboarding status:", error);
     return NextResponse.json(

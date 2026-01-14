@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, registerRateLimit, getClientIp } from "@/lib/rate-limit";
+import { acceptPendingInvitations } from "@/lib/team-invitations";
 import dev from "@onamfc/developer-log";
 
 const registerSchema = z.object({
@@ -74,8 +75,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Accept any pending team invitations
+    const invitationResult = await acceptPendingInvitations(user.id, user.email);
+
     return NextResponse.json(
-      { message: "User created successfully", user },
+      {
+        message: "User created successfully",
+        user,
+        teamInvitations: invitationResult,
+      },
       { status: 201 },
     );
   } catch (error) {

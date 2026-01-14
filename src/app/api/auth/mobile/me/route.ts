@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
         id: true,
         email: true,
         createdAt: true,
+        onboardingCompleted: true,
       },
     });
 
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       id: user.id,
       email: user.email,
+      onboardingCompleted: user.onboardingCompleted,
     });
   } catch (error) {
     console.error('Get user error:', error);

@@ -10,6 +10,7 @@ export default function DashboardNav() {
   const pathname = usePathname();
   const { themeConfig } = useTheme();
   const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
+  const [showBetaTooltip, setShowBetaTooltip] = useState(false);
   const navRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
 
   // Get theme configuration
@@ -51,12 +52,41 @@ export default function DashboardNav() {
       <div className={`${spacing.containerMaxWidth} mx-auto px-4 sm:px-6 lg:px-8`}>
         <div className={`flex justify-between ${isMinimal ? "h-12" : "h-16"}`}>
           <div className={`flex items-center ${isMinimal ? "space-x-4" : "space-x-8"}`}>
-            <Link
-              href="/dashboard"
-              className={`${isMinimal ? "text-lg" : "text-xl"} font-bold text-white transition`}
-            >
-              Cheesebox
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard"
+                className={`${isMinimal ? "text-lg" : "text-xl"} font-bold text-white transition`}
+              >
+                Cheesebox
+              </Link>
+              <div className="relative">
+                <span
+                  className="inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-brand-accent text-brand-primary rounded cursor-help"
+                  onMouseEnter={() => setShowBetaTooltip(true)}
+                  onMouseLeave={() => setShowBetaTooltip(false)}
+                >
+                  BETA
+                </span>
+                {showBetaTooltip && (
+                  <div className="absolute left-0 top-full mt-2 w-72 bg-gray-900 text-white text-xs rounded-lg shadow-lg p-4 z-50">
+                    <div className="absolute -top-2 left-4 w-4 h-4 bg-gray-900 transform rotate-45"></div>
+                    <div className="relative">
+                      <p className="font-semibold mb-2 text-brand-accent">🚀 Cheesebox is in Beta</p>
+                      <p className="mb-2">You can expect:</p>
+                      <ul className="space-y-1 ml-4 list-disc text-gray-300">
+                        <li>Frequent updates and new features</li>
+                        <li>Occasional UI/UX changes</li>
+                        <li>Possible bugs (please report them!)</li>
+                        <li>Active development and improvements</li>
+                      </ul>
+                      <p className="mt-3 text-gray-400 text-xs">
+                        Your feedback helps us improve! 💛
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
             <div className={`hidden md:flex ${isMinimal ? "space-x-2" : "space-x-4"} relative`}>
               {/* Animated pill background - hidden in minimal mode */}
               {!isMinimal && (

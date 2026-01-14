@@ -9,10 +9,12 @@ import { fetchWithCsrf } from "@/lib/csrf-client";
 interface TeamMember {
   id: string;
   role: "OWNER" | "ADMIN" | "MEMBER";
+  status: "PENDING" | "ACCEPTED";
+  email: string | null;
   user: {
     id: string;
     email: string;
-  };
+  } | null;
 }
 
 interface Team {
@@ -125,7 +127,7 @@ export default function TeamDetailsPage() {
 
   const handleUpdateRole = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingMember) return;
+    if (!editingMember || !editingMember.user) return;
 
     setError("");
     setUpdating(true);
@@ -166,6 +168,26 @@ export default function TeamDetailsPage() {
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to remove member");
+      }
+
+      await loadTeam();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleCancelInvitation = async (memberId: string) => {
+    const member = team?.members.find(m => m.id === memberId);
+    if (!confirm(`Cancel invitation for ${member?.email}?`)) return;
+
+    try {
+      const res = await fetchWithCsrf(`/api/teams/${teamId}/invitations/${memberId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to cancel invitation");
       }
 
       await loadTeam();
@@ -271,13 +293,13 @@ export default function TeamDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <Link
             href="/dashboard/teams"
-            className="text-black-600 mb-4 inline-flex items-center"
+            className="text-brand-primary hover:text-brand-primary-hover mb-4 inline-flex items-center text-sm font-medium"
           >
             <svg
               className="w-4 h-4 mr-1"
@@ -306,98 +328,74 @@ export default function TeamDetailsPage() {
                   {team.userRole}
                 </span>
               </div>
-              <p className="mt-1 text-gray-600">
-                {team.members.length} {team.members.length === 1 ? "member" : "members"}
+              <p className="mt-2 text-gray-600">
+                {team.members.length} {team.members.length === 1 ? "member" : "members"} · {team._count.videos} {team._count.videos === 1 ? "video" : "videos"} · {team._count.groups} {team._count.groups === 1 ? "group" : "groups"}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600 mb-1">Videos</div>
-            <div className="text-3xl font-bold text-gray-900">
-              {team._count.videos}
-            </div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600 mb-1">Groups</div>
-            <div className="text-3xl font-bold text-gray-900">
-              {team._count.groups}
-            </div>
-          </div>
-        </div>
 
         {/* Team Videos Section */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Team Videos</h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  All videos uploaded by team members using this team's AWS account
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded-lg transition ${
-                    viewMode === "grid"
-                      ? "bg-brand-primary text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                  title="Grid view"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded-lg transition ${
-                    viewMode === "list"
-                      ? "bg-brand-primary text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                  title="List view"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              </div>
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Team Videos</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                All videos uploaded by team members using this team's AWS account
+              </p>
+            </div>
+
+            <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2 ${viewMode === "grid" ? "bg-blue-100 text-black-200" : "text-gray-600 hover:bg-gray-100"}`}
+                title="Grid view"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 ${viewMode === "list" ? "bg-blue-100 text-black-200" : "text-gray-600 hover:bg-gray-100"}`}
+                title="List view"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
             </div>
           </div>
-          <div className="p-6">
-            <VideoList type="team" teamId={teamId} viewMode={viewMode} compact={true} />
-          </div>
+
+          <VideoList type="team" teamId={teamId} viewMode={viewMode} />
         </div>
 
         {/* Members Section */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Members</h2>
-              {canInviteMembers && (
-                <button
-                  onClick={() => setShowInviteModal(true)}
-                  className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-hover transition text-sm"
-                >
-                  Invite Member
-                </button>
-              )}
-            </div>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Members</h2>
+            {canInviteMembers && (
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-hover transition text-sm font-medium"
+              >
+                Invite Member
+              </button>
+            )}
           </div>
-          <div className="divide-y divide-gray-200">
-            {team.members.length === 0 ? (
+
+          {/* Active Members */}
+          <div className="bg-white rounded-lg shadow divide-y divide-gray-200 mb-6">
+            {team.members.filter(m => m.status === "ACCEPTED").length === 0 ? (
               <div className="p-6 text-center text-gray-500">
                 No members yet.
               </div>
             ) : (
-              team.members.map((member) => {
-                const isCurrentUser = member.user.id === currentUserId;
+              team.members.filter(m => m.status === "ACCEPTED").map((member) => {
+                const isCurrentUser = member.user?.id === currentUserId;
                 const canRemove = canRemoveMember(member.role) && !isCurrentUser;
+                const displayEmail = member.user?.email || member.email || "Unknown";
 
                 return (
                   <div
@@ -423,7 +421,7 @@ export default function TeamDetailsPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <div className="font-medium text-gray-900">
-                            {member.user.email}
+                            {displayEmail}
                           </div>
                           {isCurrentUser && (
                             <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded">
@@ -452,10 +450,10 @@ export default function TeamDetailsPage() {
                           {member.role}
                         </span>
                       )}
-                      {canRemove && (
+                      {canRemove && member.user && (
                         <button
                           onClick={() =>
-                            handleRemoveMember(member.user.id, member.user.email)
+                            handleRemoveMember(member.user!.id, displayEmail)
                           }
                           className="text-red-700 text-sm hover:underline transition cursor-pointer"
                         >
@@ -468,18 +466,82 @@ export default function TeamDetailsPage() {
               })
             )}
           </div>
+
+          {/* Pending Invitations */}
+          {team.members.filter(m => m.status === "PENDING").length > 0 && (
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-4 border-b border-gray-200 bg-gray-50">
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Pending Invitations ({team.members.filter(m => m.status === "PENDING").length})
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  These users have been invited but haven't created an account yet
+                </p>
+              </div>
+              <div className="divide-y divide-gray-200">
+                {team.members.filter(m => m.status === "PENDING").map((member) => (
+                  <div
+                    key={member.id}
+                    className="p-4 flex items-center justify-between"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                        <svg
+                          className="w-4 h-4 text-yellow-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium text-gray-900">
+                            {member.email}
+                          </div>
+                          <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">
+                            Pending
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          Invitation sent • Will join as {member.role}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {canInviteMembers && (
+                        <button
+                          onClick={() => handleCancelInvitation(member.id)}
+                          className="text-red-600 text-sm hover:underline transition cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Team Settings (Owner/Admin only) */}
         {(team.userRole === "OWNER" || team.userRole === "ADMIN") && (
-          <div className="bg-white rounded-lg shadow mb-8">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">Team Settings</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Configure team AWS credentials so all team members can upload videos
-              </p>
-            </div>
-            <div className="p-6">
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Team Settings</h2>
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-gray-900 mb-1">AWS Credentials</h3>
+                <p className="text-sm text-gray-600">
+                  Configure team AWS credentials so all team members can upload videos
+                </p>
+              </div>
               <Link
                 href={`/settings?teamId=${teamId}`}
                 className="inline-flex items-center px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover transition text-sm font-medium"
@@ -505,7 +567,7 @@ export default function TeamDetailsPage() {
                 </svg>
                 Configure Team AWS Credentials
               </Link>
-              <p className="text-sm text-gray-500 mt-3">
+              <p className="text-xs text-gray-500 mt-3">
                 Team members without personal AWS credentials will automatically use the team's credentials when uploading videos.
               </p>
             </div>
@@ -513,11 +575,9 @@ export default function TeamDetailsPage() {
         )}
 
         {/* Danger Zone */}
-        <div className="bg-white rounded-lg shadow border border-red-200">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-red-900">Danger Zone</h2>
-          </div>
-          <div className="p-6 space-y-4">
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-red-900 mb-4">Danger Zone</h2>
+          <div className="bg-white rounded-lg shadow border-2 border-red-200 p-6 space-y-4">
             {team.userRole !== "OWNER" && (
               <div className="flex items-center justify-between">
                 <div>
@@ -657,7 +717,7 @@ export default function TeamDetailsPage() {
                       Member
                     </label>
                     <div className="px-3 py-2 bg-gray-50 rounded-lg text-gray-900">
-                      {editingMember.user.email}
+                      {editingMember.user?.email || editingMember.email}
                     </div>
                   </div>
 
