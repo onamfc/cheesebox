@@ -1,6 +1,6 @@
 {
   "name": "cheesebox",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "Secure video sharing platform with HLS streaming and AWS S3 storage",
   "author": "Cheesebox Contributors",
   "license": "MIT",

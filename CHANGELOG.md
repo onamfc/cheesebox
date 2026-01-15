@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.8.5] - 2026-01-15
+### Fixed
+- **AWS Credentials Import to Team Accounts**: Fixed blank fields preventing save after importing credentials
+    - Created new `/api/aws-credentials/import` endpoint that returns fully decrypted credentials for import
+    - Previous GET endpoint returned masked credentials (`***ABCD`) and omitted secret key for security
+    - Import now properly populates all form fields: Access Key ID, Secret Access Key, Bucket Name, Region, and MediaConvert Role
+    - Users can now successfully import personal credentials to team accounts or vice versa
+    - Import flow: Click "Import" → Select source (Personal or Team) → Credentials populate form → Click "Save" to apply
+    - Fixes issue where imported credentials showed blank/masked fields, preventing form submission
+
 ## [1.8.4] - 2026-01-15
 ### Fixed
 - **Web Video Recorder Upload Failures**: Fixed silent upload failures for recorded videos

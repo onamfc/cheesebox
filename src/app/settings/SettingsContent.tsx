@@ -156,11 +156,7 @@ export default function SettingsContent() {
   const handleImport = async (sourceId: string) => {
     setImportingFrom(sourceId);
     try {
-      const url = sourceId === "personal"
-        ? "/api/aws-credentials"
-        : `/api/aws-credentials?teamId=${sourceId}`;
-
-      const response = await fetch(url);
+      const response = await fetch(`/api/aws-credentials/import?sourceId=${sourceId}`);
       if (response.ok) {
         const data = await response.json();
         setAccessKeyId(data.accessKeyId || "");
@@ -171,7 +167,8 @@ export default function SettingsContent() {
         setShowImportModal(false);
         setSuccess("Credentials imported successfully! Click 'Save Credentials' to apply them.");
       } else {
-        setError("Failed to import credentials");
+        const errorData = await response.json();
+        setError(errorData.error || "Failed to import credentials");
       }
     } catch (err) {
       setError("Failed to import credentials");
