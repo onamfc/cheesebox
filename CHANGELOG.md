@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.3] - 2026-01-15
+### Added
+- **Team Invitation Emails**: Automatic email notifications when users are invited to teams
+  - HTML email template matching Cheesebox branding (dark #181717, cream #FAEACB, gold #F5BE4B)
+  - Plain text email fallback for all email clients
+  - Different email content for existing users vs new users
+  - Role description included in email (OWNER, ADMIN, MEMBER with explanations)
+  - Direct links to team page for existing users
+  - Signup link with redirect to team for new users
+  - Graceful error handling - invitation succeeds even if email fails
+  - Uses team or user email credentials (fallback to team if user has none)
+  - Created `src/lib/email/templates/team-invitation.ts` for email generation
+  - Email sent automatically when team member is invited via POST `/api/teams/[id]/members`
+
 ## [1.8.2] - 2026-01-15
 ### Fixed
 - **Theme Color Swatches Missing**: Fixed color swatches not displaying in theme switcher

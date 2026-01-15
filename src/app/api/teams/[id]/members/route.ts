@@ -1,6 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-helpers";
+import { decrypt } from "@/lib/encryption";
+import { createEmailProvider } from "@/lib/email/factory";
+import { EmailProviderType } from "@/lib/email/interface";
+import {
+  generateTeamInvitationEmailHTML,
+  generateTeamInvitationEmailText,
+} from "@/lib/email/templates/team-invitation";
+import dev from "@onamfc/developer-log";
+
+// Helper to get email credentials (user's own or team's)
+async function getEmailCredentials(userId: string) {
+  // Try to get user's own credentials first
+  let emailCredentials = await prisma.emailCredentials.findUnique({
+    where: { userId },
+  });
+
+  // If no direct credentials, check if user belongs to a team with credentials
+  if (!emailCredentials) {
+    const teamMembership = await prisma.teamMember.findFirst({
+      where: { userId },
+      include: {
+        team: {
+          include: {
+            emailCredentials: true,
+          },
+        },
+      },
+    });
+
+    emailCredentials = teamMembership?.team?.emailCredentials ?? null;
+  }
+
+  return emailCredentials;
+}
 
 // POST /api/teams/[id]/members - Invite team member (OWNER/ADMIN only)
 export async function POST(
@@ -104,6 +138,22 @@ export async function POST(
       }
     }
 
+    // Get team details for email
+    const team = await prisma.team.findUnique({
+      where: { id: teamId },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    if (!team) {
+      return NextResponse.json(
+        { error: "Team not found" },
+        { status: 404 }
+      );
+    }
+
     // Create invitation (pending if user doesn't exist, accepted if they do)
     const newMember = await prisma.teamMember.create({
       data: {
@@ -123,8 +173,86 @@ export async function POST(
       },
     });
 
-    // TODO: Send invitation email to the user
-    // This will be implemented in a later step
+    // Send invitation email
+    try {
+      const emailCredentials = await getEmailCredentials(user.id);
+
+      if (emailCredentials) {
+        // Get full user details for name
+        const inviter = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { name: true },
+        });
+
+        // Decrypt credentials
+        const decryptedCredentials = {
+          provider: emailCredentials.provider as EmailProviderType,
+          fromEmail: emailCredentials.fromEmail,
+          fromName: emailCredentials.fromName || undefined,
+          apiKey: emailCredentials.apiKey
+            ? decrypt(emailCredentials.apiKey)
+            : undefined,
+          awsAccessKeyId: emailCredentials.awsAccessKeyId
+            ? decrypt(emailCredentials.awsAccessKeyId)
+            : undefined,
+          awsSecretKey: emailCredentials.awsSecretKey
+            ? decrypt(emailCredentials.awsSecretKey)
+            : undefined,
+          awsRegion: emailCredentials.awsRegion || undefined,
+          smtpHost: emailCredentials.smtpHost || undefined,
+          smtpPort: emailCredentials.smtpPort || undefined,
+          smtpUsername: emailCredentials.smtpUsername
+            ? decrypt(emailCredentials.smtpUsername)
+            : undefined,
+          smtpPassword: emailCredentials.smtpPassword
+            ? decrypt(emailCredentials.smtpPassword)
+            : undefined,
+          smtpSecure: emailCredentials.smtpSecure || undefined,
+        };
+
+        // Create email provider instance
+        const emailProvider = createEmailProvider(
+          emailCredentials.provider as EmailProviderType,
+          decryptedCredentials
+        );
+
+        // Get app URL for email links
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+        // Generate email content
+        const emailData = {
+          inviterEmail: user.email,
+          inviterName: inviter?.name || undefined,
+          teamName: team.name,
+          teamId: team.id,
+          role,
+          recipientEmail: normalizedEmail,
+          hasAccount: !!invitedUser,
+          appUrl,
+        };
+
+        const htmlContent = generateTeamInvitationEmailHTML(emailData);
+        const textContent = generateTeamInvitationEmailText(emailData);
+
+        // Send the email
+        await emailProvider.sendEmail({
+          to: normalizedEmail,
+          subject: `You've been invited to join ${team.name} on Cheesebox`,
+          html: htmlContent,
+          text: textContent,
+        });
+
+        dev.log(`Team invitation email sent to ${normalizedEmail}`, { tag: "team" });
+      } else {
+        dev.warn(
+          `No email credentials found for user ${user.id}, invitation email not sent`,
+          { tag: "team" }
+        );
+      }
+    } catch (emailError) {
+      // Log error but don't fail the invitation
+      dev.error("Failed to send invitation email:", emailError, { tag: "team" });
+    }
 
     return NextResponse.json(newMember, { status: 201 });
   } catch (error) {
