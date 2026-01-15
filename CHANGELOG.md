@@ -6,9 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.8.2] - 2026-01-15
+### Fixed
+- **Theme Color Swatches Missing**: Fixed color swatches not displaying in theme switcher
+  - Added missing `colors` field to all themes in `themes/registry.json`
+  - Registry now includes color definitions for production builds
+  - Color swatches (primary, secondary, accent, success, warning, danger) now always visible
+  - Created comprehensive test suite to prevent regression
+  - - **Team Creation Blank Invitations**: Fixed team owners appearing as pending invitations with blank emails
+  - Team creators now correctly set to ACCEPTED status on team creation
+  - Email field now populated for all team members with accounts
+  - Created data migration to fix existing team members with incorrect status
+  - Prevents blank pending invitation entries from appearing
+- **Middleware Build Error**: Fixed Vercel build error with middleware.js.nft.json
+    - Consolidated middleware code into single `middleware.ts` file
+    - Removed `src/proxy.ts` re-export pattern that caused build issues
+    - Middleware now properly bundles for Vercel deployment
+
+### Added
+- **Theme Color Tests**: Added critical tests to ensure color swatches always display
+  - Validates all themes have color definitions in registry
+  - Verifies all theme package.json files have colors
+  - Ensures registry and package.json colors match
+  - Validates hex color format for all color values
+
+
 ## [1.8.1] - 2026-01-15
 ### Fixed
-**TypeScript Build Errors**: Fixed compilation errors in VideoList component
+- **TypeScript Build Errors**: Fixed compilation errors in VideoList component
 - Removed unsupported `title` prop from Button components
 - Button component doesn't support native HTML title attribute
 - Fixed 5 TypeScript errors preventing production builds
