@@ -14,7 +14,15 @@
       "preview": "./asiago/preview.png",
       "main": "./asiago/theme.ts",
       "styles": "./asiago/styles.css",
-      "default": true
+      "default": true,
+      "colors": {
+        "primary": "#181717",
+        "secondary": "#FAEACB",
+        "accent": "#F5BE4B",
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "danger": "#EF4444"
+      }
     },
     {
       "id": "cheddar",
@@ -27,7 +35,15 @@
       "path": "./cheddar",
       "preview": "./cheddar/preview.png",
       "main": "./cheddar/theme.ts",
-      "styles": "./cheddar/styles.css"
+      "styles": "./cheddar/styles.css",
+      "colors": {
+        "primary": "#F59E0B",
+        "secondary": "#FCD34D",
+        "accent": "#FBBF24",
+        "success": "#84CC16",
+        "warning": "#EA580C",
+        "danger": "#DC2626"
+      }
     },
     {
       "id": "brie",
@@ -40,7 +56,15 @@
       "path": "./brie",
       "preview": "./brie/preview.png",
       "main": "./brie/theme.ts",
-      "styles": "./brie/styles.css"
+      "styles": "./brie/styles.css",
+      "colors": {
+        "primary": "#3B82F6",
+        "secondary": "#1E40AF",
+        "accent": "#60A5FA",
+        "success": "#14B8A6",
+        "warning": "#FB923C",
+        "danger": "#F472B6"
+      }
     },
     {
       "id": "danablu",
@@ -53,7 +77,15 @@
       "path": "./danablu",
       "preview": "./danablu/preview.png",
       "main": "./danablu/theme.ts",
-      "styles": "./danablu/styles.css"
+      "styles": "./danablu/styles.css",
+      "colors": {
+        "primary": "#374151",
+        "secondary": "#6B7280",
+        "accent": "#9CA3AF",
+        "success": "#059669",
+        "warning": "#CA8A04",
+        "danger": "#BE123C"
+      }
     }
   ]
 }
