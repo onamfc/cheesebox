@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.8.4] - 2026-01-15
+### Fixed
+- **Web Video Recorder Upload Failures**: Fixed silent upload failures for recorded videos
+    - Migrated from direct `/api/videos/upload` endpoint to 3-step presigned URL upload flow
+    - Step 1: Request presigned URL from `/api/videos/upload-url`
+    - Step 2: Upload directly to S3 (bypasses Vercel 4.5MB function payload limit)
+    - Step 3: Notify backend via `/api/videos/complete-upload` to start transcoding
+    - Now supports uploading videos up to 5GB (previously limited to ~4.5MB due to Vercel serverless limits)
+    - Added comprehensive error handling with user-visible error alerts
+    - All upload errors now display prominently with detailed error messages
+    - Upload progress tracking maintained throughout the process
+    - Network errors, S3 failures, and transcoding errors now properly caught and displayed
+    - Fixes issue where 95MB recorded videos failed silently with `FUNCTION_PAYLOAD_TOO_LARGE` error
 
 ## [1.8.3] - 2026-01-15
 ### Added

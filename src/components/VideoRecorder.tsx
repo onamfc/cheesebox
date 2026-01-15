@@ -370,82 +370,123 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
 
     try {
       setRecordingState("uploading");
-
-      // Fetch CSRF token for authentication
-      const csrfToken = await fetchCsrfToken();
-
-      const formData = new FormData();
+      setUploadProgress(0);
 
       const filename = `recording-${Date.now()}.webm`;
-      const file = new File([videoBlob], filename, { type: "video/webm" });
-      formData.append("file", file);
-
-      // Use recording timestamp as title if no title provided
       const videoTitle = title || `Recording ${new Date().toLocaleString()}`;
-      formData.append("title", videoTitle);
 
+      // Step 1: Request presigned URL from backend
+      dev.log("Step 1: Requesting presigned URL...", { tag: "video-upload" });
+      const uploadUrlResponse = await fetch("/api/videos/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: filename,
+          fileType: "video/webm",
+          fileSize: videoBlob.size,
+          title: videoTitle,
+          description: null,
+        }),
+      });
+
+      if (!uploadUrlResponse.ok) {
+        const errorData = await uploadUrlResponse.json();
+        throw new Error(errorData.error || "Failed to get upload URL");
+      }
+
+      const { videoId, uploadUrl, originalKey, outputKeyPrefix } = await uploadUrlResponse.json();
+      dev.log("Step 1 complete: Presigned URL received", { videoId }, { tag: "video-upload" });
+
+      // Step 2: Upload directly to S3 using presigned URL
+      dev.log("Step 2: Uploading to S3...", { size: videoBlob.size }, { tag: "video-upload" });
       const xhr = new XMLHttpRequest();
 
+      // Track upload progress
       xhr.upload.addEventListener("progress", (event) => {
         if (event.lengthComputable) {
           const progress = Math.round((event.loaded / event.total) * 100);
           setUploadProgress(progress);
+          dev.log(`Upload progress: ${progress}%`, { tag: "video-upload" });
         }
       });
 
-      xhr.addEventListener("load", async () => {
-        if (xhr.status === 200 || xhr.status === 201) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            const videoId = response.video?.id;
-
-            // Share with selected groups if any
-            if (videoId && selectedGroups.length > 0) {
-              for (const groupId of selectedGroups) {
-                try {
-                  await fetch(`/api/videos/${videoId}/share`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ groupId }),
-                  });
-                } catch (err) {
-                  dev.error(`Failed to share with group ${groupId}:`, err, { tag: "video" });
-                }
-              }
-            }
-
-            if (onComplete) {
-              onComplete();
-            } else {
-              router.push("/dashboard");
-            }
-          } catch (err) {
-            // If we can't parse response or share fails, still redirect
-            if (onComplete) {
-              onComplete();
-            } else {
-              router.push("/dashboard");
-            }
+      // Handle upload completion
+      const uploadPromise = new Promise<void>((resolve, reject) => {
+        xhr.addEventListener("load", () => {
+          if (xhr.status === 200) {
+            dev.log("Step 2 complete: S3 upload successful", { tag: "video-upload" });
+            resolve();
+          } else {
+            const errorMsg = `S3 upload failed with status ${xhr.status}`;
+            dev.error(errorMsg, { status: xhr.status, response: xhr.responseText }, { tag: "video-upload" });
+            reject(new Error(errorMsg));
           }
-        } else {
-          setError("Upload failed. Please try again.");
-          setRecordingState("preview");
+        });
+
+        xhr.addEventListener("error", () => {
+          dev.error("Network error during S3 upload", { tag: "video-upload" });
+          reject(new Error("Network error. Please check your connection and try again."));
+        });
+
+        xhr.addEventListener("abort", () => {
+          dev.error("Upload aborted", { tag: "video-upload" });
+          reject(new Error("Upload cancelled"));
+        });
+      });
+
+      xhr.open("PUT", uploadUrl);
+      xhr.send(videoBlob);
+
+      await uploadPromise;
+
+      // Step 3: Notify backend to start transcoding
+      dev.log("Step 3: Starting transcoding...", { videoId }, { tag: "video-upload" });
+      const completeResponse = await fetch("/api/videos/complete-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoId,
+          originalKey,
+          outputKeyPrefix,
+        }),
+      });
+
+      if (!completeResponse.ok) {
+        const errorData = await completeResponse.json();
+        throw new Error(errorData.error || "Failed to start transcoding");
+      }
+
+      dev.log("Step 3 complete: Transcoding started", { videoId }, { tag: "video-upload" });
+
+      // Share with selected groups if any
+      if (selectedGroups.length > 0) {
+        dev.log(`Sharing with ${selectedGroups.length} groups`, { videoId, groups: selectedGroups }, { tag: "video-upload" });
+        for (const groupId of selectedGroups) {
+          try {
+            await fetch(`/api/videos/${videoId}/share`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ groupId }),
+            });
+          } catch (err) {
+            dev.error(`Failed to share with group ${groupId}:`, err, { tag: "video" });
+          }
         }
-      });
+      }
 
-      xhr.addEventListener("error", () => {
-        setError("Upload failed. Please check your connection.");
-        setRecordingState("preview");
-      });
-
-      xhr.open("POST", "/api/videos/upload");
-      // Add CSRF token header for authentication
-      xhr.setRequestHeader("x-csrf-token", csrfToken);
-      xhr.send(formData);
+      // Success! Navigate to dashboard
+      dev.log("Upload complete!", { videoId }, { tag: "video-upload" });
+      if (onComplete) {
+        onComplete();
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err) {
-      dev.error("Upload error:", err, { tag: "video" });
-      setError("Upload failed. Please try again.");
+      dev.error("Upload error:", err, { tag: "video-upload" });
+      const errorMessage = err instanceof Error ? err.message : "Upload failed. Please try again.";
+      setError(errorMessage);
       setRecordingState("preview");
+      setUploadProgress(0);
     }
   };
 
@@ -692,6 +733,26 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
       {recordingState === "preview" && videoUrl && (
         <div className="h-full overflow-y-auto bg-gray-900">
           <div className="max-w-4xl mx-auto p-6 space-y-6">
+            {/* Error Alert */}
+            {error && (
+              <div className="bg-red-500/10 border-2 border-red-500 rounded-xl p-6 text-white">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">⚠️</div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold mb-2">Upload Failed</h3>
+                    <p className="text-gray-200 mb-4">{error}</p>
+                    <Button
+                      onClick={() => setError(null)}
+                      variant="danger"
+                      size={components.buttonSize}
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="bg-black rounded-lg overflow-hidden">
               <video
                 ref={videoPreviewRef}
