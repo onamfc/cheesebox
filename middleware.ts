@@ -26,16 +26,13 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // For GET requests to API routes, ensure CSRF token cookie is set
-    if (request.method === 'GET') {
-      const token = getCsrfToken(request);
-      const response = NextResponse.next();
-      setCsrfTokenCookie(response, token);
-      return response;
-    }
+    // Don't set CSRF cookies for API routes in middleware.
+    // The /api/csrf-token endpoint is the sole source of truth for token generation.
+    // This avoids race conditions where middleware and route handlers generate different tokens.
+    return NextResponse.next();
   }
 
-  // For all other requests, ensure CSRF token is available
+  // For non-API requests (pages), ensure CSRF token cookie is available
   const token = getCsrfToken(request);
   const response = NextResponse.next();
   setCsrfTokenCookie(response, token);

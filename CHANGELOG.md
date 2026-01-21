@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+## [1.8.7] - 2026-01-21
+### Fixed
+- The CSRF protection is now cleaner and more robust - the middleware handles validation, and /api/csrf-token is the sole authority for token generation and distribution.
 ## [1.8.6] - 2026-01-21
 ### Added
 - JWT secret example to local environment configuration
