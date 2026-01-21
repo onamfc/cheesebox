@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.6] - 2026-01-21
+### Added
+- JWT secret example to local environment configuration
+- New line to the .env.local.example file
+- reusable copy-to-clipboard functionality for code snippets in AWS setup guide
+- Moved child components outside main component which prevents re-creation on every render
 ## [1.8.5] - 2026-01-15
 ### Fixed
 - **AWS Credentials Import to Team Accounts**: Fixed blank fields preventing save after importing credentials
@@ -16,7 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Users can now successfully import personal credentials to team accounts or vice versa
     - Import flow: Click "Import" → Select source (Personal or Team) → Credentials populate form → Click "Save" to apply
     - Fixes issue where imported credentials showed blank/masked fields, preventing form submission
-
 ## [1.8.4] - 2026-01-15
 ### Fixed
 - **Web Video Recorder Upload Failures**: Fixed silent upload failures for recorded videos
@@ -30,7 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Upload progress tracking maintained throughout the process
     - Network errors, S3 failures, and transcoding errors now properly caught and displayed
     - Fixes issue where 95MB recorded videos failed silently with `FUNCTION_PAYLOAD_TOO_LARGE` error
-
 ## [1.8.3] - 2026-01-15
 ### Added
 - **Team Invitation Emails**: Automatic email notifications when users are invited to teams
@@ -44,7 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Uses team or user email credentials (fallback to team if user has none)
   - Created `src/lib/email/templates/team-invitation.ts` for email generation
   - Email sent automatically when team member is invited via POST `/api/teams/[id]/members`
-
 ## [1.8.2] - 2026-01-15
 ### Fixed
 - **Theme Color Swatches Missing**: Fixed color swatches not displaying in theme switcher
