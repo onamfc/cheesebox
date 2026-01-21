@@ -3,6 +3,117 @@
 import { useState } from "react";
 import Link from "next/link";
 
+// Component definitions outside main component
+const CodeBlock = ({
+  code,
+  language,
+  index,
+  copiedIndex,
+  onCopy,
+}: {
+  code: string;
+  language: string;
+  index: number;
+  copiedIndex: number | null;
+  onCopy: (text: string, index: number) => void;
+}) => (
+  <div className="relative my-4 rounded-lg bg-gray-900 p-4">
+    <div className="mb-2 flex items-center justify-between">
+      <span className="text-xs font-medium text-gray-400 uppercase">
+        {language}
+      </span>
+      <button
+        onClick={() => onCopy(code, index)}
+        className="rounded bg-gray-700 px-3 py-1 text-xs text-white hover:bg-gray-600 transition-colors"
+      >
+        {copiedIndex === index ? "✓ Copied!" : "Copy"}
+      </button>
+    </div>
+    <pre className="overflow-x-auto text-sm">
+      <code className="text-green-400">{code}</code>
+    </pre>
+  </div>
+);
+
+const InlineCode = ({
+  text,
+  index,
+  copiedIndex,
+  onCopy,
+}: {
+  text: string;
+  index: number;
+  copiedIndex: number | null;
+  onCopy: (text: string, index: number) => void;
+}) => (
+  <span className="inline-flex items-center gap-1.5 bg-white/10 px-2 py-1 rounded text-sm">
+    <code>{text}</code>
+    <button
+      onClick={() => onCopy(text, index)}
+      className="inline-flex items-center justify-center hover:bg-white/10 rounded p-0.5 transition-colors"
+      title="Copy to clipboard"
+    >
+      {copiedIndex === index ? (
+        <svg
+          className="w-3.5 h-3.5 text-green-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      ) : (
+        <svg
+          className="w-3.5 h-3.5 text-gray-400 hover:text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+          />
+        </svg>
+      )}
+    </button>
+  </span>
+);
+
+const StepHeader = ({
+  number,
+  title,
+  completedSteps,
+  onToggle,
+}: {
+  number: number;
+  title: string;
+  completedSteps: Set<number>;
+  onToggle: (stepNumber: number) => void;
+}) => (
+  <div className="mb-4 flex items-start gap-4">
+    <div className="flex items-center gap-3">
+      <button
+        onClick={() => onToggle(number)}
+        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+          completedSteps.has(number)
+            ? "bg-purple-500 border-purple-500 text-white"
+            : "border-purple-400 text-purple-400"
+        }`}
+      >
+        {completedSteps.has(number) ? "✓" : number}
+      </button>
+      <h2 className="text-2xl font-bold text-white">{title}</h2>
+    </div>
+  </div>
+);
+
 export default function AWSSetupGuide() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
@@ -24,57 +135,6 @@ export default function AWSSetupGuide() {
       return newSet;
     });
   };
-
-  const CodeBlock = ({
-    code,
-    language,
-    index,
-  }: {
-    code: string;
-    language: string;
-    index: number;
-  }) => (
-    <div className="relative my-4 rounded-lg bg-gray-900 p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-400 uppercase">
-          {language}
-        </span>
-        <button
-          onClick={() => copyToClipboard(code, index)}
-          className="rounded bg-gray-700 px-3 py-1 text-xs text-white hover:bg-gray-600 transition-colors"
-        >
-          {copiedIndex === index ? "✓ Copied!" : "Copy"}
-        </button>
-      </div>
-      <pre className="overflow-x-auto text-sm">
-        <code className="text-green-400">{code}</code>
-      </pre>
-    </div>
-  );
-
-  const StepHeader = ({
-    number,
-    title,
-  }: {
-    number: number;
-    title: string;
-  }) => (
-    <div className="mb-4 flex items-start gap-4">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => toggleStepComplete(number)}
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-            completedSteps.has(number)
-              ? "bg-purple-500 border-purple-500 text-white"
-              : "border-purple-400 text-purple-400"
-          }`}
-        >
-          {completedSteps.has(number) ? "✓" : number}
-        </button>
-        <h2 className="text-2xl font-bold text-white">{title}</h2>
-      </div>
-    </div>
-  );
 
   const iamPolicy = `{
   "Version": "2012-10-17",
@@ -591,7 +651,12 @@ export default function AWSSetupGuide() {
         <div className="space-y-8">
           {/* Step 1: Create S3 Bucket */}
           <section className="bg-white/5 rounded-lg shadow-sm p-8 border border-white/10">
-            <StepHeader number={1} title="Create an S3 Bucket" />
+            <StepHeader
+              number={1}
+              title="Create an S3 Bucket"
+              completedSteps={completedSteps}
+              onToggle={toggleStepComplete}
+            />
 
             <div className="ml-12 space-y-4">
               <p className="text-gray-300">
@@ -660,7 +725,13 @@ export default function AWSSetupGuide() {
                   </li>
                   <li>Paste this configuration:</li>
                 </ol>
-                <CodeBlock code={corsConfig} language="JSON" index={1} />
+                <CodeBlock
+                  code={corsConfig}
+                  language="JSON"
+                  index={1}
+                  copiedIndex={copiedIndex}
+                  onCopy={copyToClipboard}
+                />
                 <p className="text-sm text-gray-300 mt-2">
                   <strong>Important:</strong> Replace{" "}
                   <code className="bg-yellow-500/20 px-2 py-1 rounded">
@@ -674,7 +745,12 @@ export default function AWSSetupGuide() {
 
           {/* Step 2: Create IAM User */}
           <section className="bg-white/5 rounded-lg shadow-sm p-8 border border-white/10">
-            <StepHeader number={2} title="Create IAM User with Permissions" />
+            <StepHeader
+              number={2}
+              title="Create IAM User with Permissions"
+              completedSteps={completedSteps}
+              onToggle={toggleStepComplete}
+            />
 
             <div className="ml-12 space-y-4">
               <p className="text-gray-300">
@@ -701,9 +777,12 @@ export default function AWSSetupGuide() {
                   <li>Click &quot;Create user&quot;</li>
                   <li>
                     <strong>User name:</strong>{" "}
-                    <code className="bg-white/10 px-2 py-1 rounded text-sm">
-                      private-video-user
-                    </code>
+                    <InlineCode
+                      text="private-video-user"
+                      index={100}
+                      copiedIndex={copiedIndex}
+                      onCopy={copyToClipboard}
+                    />
                   </li>
                   <li>Click &quot;Next&quot;</li>
                   <li>Select &quot;Attach policies directly&quot;</li>
@@ -747,13 +826,22 @@ export default function AWSSetupGuide() {
                   <li>Click &quot;Next&quot;</li>
                   <li>
                     <strong>Policy name:</strong>{" "}
-                    <code className="bg-white/10 px-2 py-1 rounded text-sm">
-                      PrivateVideoPolicy
-                    </code>
+                    <InlineCode
+                      text="PrivateVideoPolicy"
+                      index={101}
+                      copiedIndex={copiedIndex}
+                      onCopy={copyToClipboard}
+                    />
                   </li>
                   <li>Click &quot;Create policy&quot;</li>
                 </ol>
-                <CodeBlock code={iamPolicy} language="JSON" index={2} />
+                <CodeBlock
+                  code={iamPolicy}
+                  language="JSON"
+                  index={2}
+                  copiedIndex={copiedIndex}
+                  onCopy={copyToClipboard}
+                />
               </div>
 
               <div className="bg-black/40 rounded-lg p-4 border border-white/10 mt-4">
@@ -818,7 +906,12 @@ export default function AWSSetupGuide() {
 
           {/* Step 3: Create MediaConvert Role */}
           <section className="bg-white/5 rounded-lg shadow-sm p-8 border border-white/10">
-            <StepHeader number={3} title="Create MediaConvert IAM Role" />
+            <StepHeader
+              number={3}
+              title="Create MediaConvert IAM Role"
+              completedSteps={completedSteps}
+              onToggle={toggleStepComplete}
+            />
 
             <div className="ml-12 space-y-4">
               <p className="text-gray-300">
@@ -856,9 +949,12 @@ export default function AWSSetupGuide() {
                   <li>Click &quot;Next&quot; (skip permissions for now)</li>
                   <li>
                     <strong>Role name:</strong>{" "}
-                    <code className="bg-white/10 px-2 py-1 rounded text-sm">
-                      MediaConvertRole
-                    </code>
+                    <InlineCode
+                      text="MediaConvertRole"
+                      index={102}
+                      copiedIndex={copiedIndex}
+                      onCopy={copyToClipboard}
+                    />
                   </li>
                   <li>Click &quot;Create role&quot;</li>
                 </ol>
@@ -891,9 +987,12 @@ export default function AWSSetupGuide() {
                   <li>Click &quot;Next&quot;</li>
                   <li>
                     <strong>Policy name:</strong>{" "}
-                    <code className="bg-white/10 px-2 py-1 rounded text-sm">
-                      S3BucketAccess
-                    </code>
+                    <InlineCode
+                      text="S3BucketAccess"
+                      index={103}
+                      copiedIndex={copiedIndex}
+                      onCopy={copyToClipboard}
+                    />
                   </li>
                   <li>Click &quot;Create policy&quot;</li>
                 </ol>
@@ -901,6 +1000,8 @@ export default function AWSSetupGuide() {
                   code={mediaConvertPolicy}
                   language="JSON"
                   index={3}
+                  copiedIndex={copiedIndex}
+                  onCopy={copyToClipboard}
                 />
               </div>
 
