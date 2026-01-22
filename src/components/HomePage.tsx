@@ -524,7 +524,7 @@ export default function HomePage() {
       <footer className="bg-black border-t border-white/10 text-gray-400 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Footer Content */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             {/* Company/Brand */}
             <div className="col-span-2 md:col-span-1">
               <h3 className="text-white font-bold text-xl mb-4">Cheesebox</h3>
@@ -565,6 +565,19 @@ export default function HomePage() {
                 <li><a href="#signup" className="hover:text-white transition-colors cursor-pointer">Get Started</a></li>
                 <li><Link href="/help/aws-setup" className="hover:text-white transition-colors">AWS Setup</Link></li>
                 <li><Link href="/help/email-setup" className="hover:text-white transition-colors">Email Setup</Link></li>
+              </ul>
+            </div>
+
+            {/* Solutions */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-4">Solutions</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/family" className="hover:text-white transition-colors">For Families</Link></li>
+                <li><Link href="/creators" className="hover:text-white transition-colors">For Creators</Link></li>
+                <li><Link href="/fitness" className="hover:text-white transition-colors">For Fitness Trainers</Link></li>
+                <li><Link href="/coaches" className="hover:text-white transition-colors">For Coaches</Link></li>
+                <li><Link href="/educators" className="hover:text-white transition-colors">For Educators</Link></li>
+                <li><Link href="/videographers" className="hover:text-white transition-colors">For Videographers</Link></li>
               </ul>
             </div>
 

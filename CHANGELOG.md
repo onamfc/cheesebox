@@ -6,6 +6,319 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Creative Solution Pages**: Awwwards-inspired redesigns for target audience landing pages
+  - **`/family-creative`**: Purple/pink gradient theme with parallax hero effects
+    - Emotional storytelling focused on precious family moments
+    - Problem-solution framework highlighting video compression issues
+    - Use case cards for birthdays, graduations, vacations, everyday moments
+    - Animated gradient orbs and glassmorphism effects
+    - Parallax scrolling on hero elements
+  - **`/creators-creative`**: Bold indigo/purple theme with cursor glow effect
+    - Large typography hero ("YOUR CONTENT YOUR RULES")
+    - Platform fee calculator showing 0% cut vs competitors
+    - Creator-focused pain points (platform tax, quality, lock-in)
+    - Premium course dashboard mockup
+    - Mouse-following radial gradient spotlight effect
+  - **Design Inspiration Sources**:
+    - Awwwards landing page design patterns
+    - Hero section animation techniques
+    - Problem-solution-benefit storytelling frameworks
+    - Fluid typography with clamp() functions
+    - Micro-interactions and hover state transitions
+    - Progressive disclosure patterns
+
+### Added
+- **Creative How-It-Works Page** (`/works-creative`): New experimental page showcasing Awwwards-inspired design patterns
+  - **Dark Theme**: Full dark mode (black background) with vibrant gradients and glows
+  - **Scroll-Driven Experience**:
+    - Fixed progress bar at top tracking scroll position
+    - Full-viewport hero section with animated gradient orbs
+    - Each step presented as full-screen immersive section
+    - Scroll-triggered state management for active step tracking
+  - **Visual Storytelling Elements**:
+    - Large typography with gradient text effects (7xl-8xl headings)
+    - Numbered step badges (01/SETUP, 02/UPLOAD, 03/SHARE)
+    - Terminal mockup with syntax highlighting and animated cursor
+    - Phone mockup showing real-world sharing scenario
+    - Animated bounce indicators and pulsing elements
+  - **Advanced Animations**:
+    - Hover scale transforms on interactive elements
+    - Icon animations with shadow glow effects
+    - Backdrop blur effects on glass-morphism cards
+    - Gradient background orbs with pulse animations
+  - **Layout Patterns**:
+    - Two-column alternating layouts per step
+    - Glassmorphism cards with white/5 opacity backgrounds
+    - Grid-based feature showcases
+    - Full-screen CTA section with grid pattern overlay
+  - **Design Inspiration Sources**:
+    - Awwwards "20 Extremely Creative Web Layouts" techniques
+    - Scrollytelling patterns from award-winning sites
+    - Progressive disclosure and scroll-triggered animations
+    - Modern gradient aesthetics and micro-interactions
+
+### Added
+- **New Icon Components**: Created 6 custom SVG icon components for how-it-works page
+  - **UploadCloudIcon**: Upload/cloud storage representation
+  - **ShareLinkIcon**: Link sharing visualization
+  - **PlayCircleIcon**: Video playback icon
+  - **CloudStorageIcon**: Cloud storage with server representation
+  - **DevicesIcon**: Multi-device compatibility (desktop, mobile, tablet)
+  - **SetupIcon**: Configuration/settings gear icon
+  - All components follow consistent pattern with className prop for styling
+
+### Changed
+- **How-It-Works Page Complete Redesign**: Modern, creative redesign replacing dated orange/yellow theme
+  - **Color Scheme**: Replaced orange/yellow gradients with sophisticated indigo/purple/teal palette
+    - Primary: Indigo-600 to Purple-600 gradients
+    - Secondary: Purple-500 to Pink-600 gradients
+    - Tertiary: Teal-500 to Cyan-600 gradients
+  - **Navigation**: Sticky nav with backdrop blur, gradient logo text, improved hover states
+  - **Hero Section**: Dark gradient background (slate-900 via indigo-900 to purple-900) with grid pattern overlay
+  - **Layout Changes**:
+    - **Three-step overview**: Clean horizontal flow without card containers
+      - Large circular gradient icons (32x32) centered above each step
+      - Arrow indicators between steps showing visual flow
+      - Center-aligned text layout for each step
+      - Subtle gradient background orbs for depth
+      - Icon scale animation on hover with enhanced shadow effects
+      - Grid layout: step, arrow, step, arrow, step pattern
+    - Two-column detailed sections with alternating layouts
+    - Modern card designs with shadows, borders, and gradient accents
+    - Terminal mockup for setup instructions with syntax highlighting
+    - Phone mockup for viewing experience demonstration
+    - Improved FAQ section with hover effects
+    - Updated CTA with dark gradient background and grid pattern
+  - **Icons**: Replaced all emoji icons with custom SVG components throughout page
+  - **Footer**: Updated to match standardized 5-column footer design with Solutions section
+  - **Typography**: Enhanced hierarchy with better font weights, sizes, and spacing
+  - **Visual Effects**:
+    - Gradient glow effects on hover
+    - Backdrop blur effects
+    - Box shadows with color tints
+    - Transform animations on interactive elements
+  - Overall impression: Creative, modern, professional design that clearly communicates value proposition
+
+### Added
+- **EmailTooLargeIcon Component**: New reusable SVG icon component for email file size issues
+  - Created at `/src/components/icons/EmailTooLargeIcon.tsx`
+  - Follows same pattern as other icon components (LockIcon, ShareIcon, PlayIcon, etc.)
+  - Supports className prop for styling customization
+  - SVG depicts email with alert symbol for file size limit warnings
+
+- **UnlockIcon Component**: New reusable SVG icon component for unlocked/open access scenarios
+  - Created at `/src/components/icons/UnlockIcon.tsx`
+  - Follows same pattern as other icon components
+  - Supports className prop for styling customization
+  - SVG depicts an open padlock for representing unrestricted access
+
+- **VideoCameraIcon Component**: New reusable SVG icon component for video/recording features
+  - Created at `/src/components/icons/VideoCameraIcon.tsx`
+  - Follows same pattern as other icon components
+  - Supports className prop for styling customization
+  - SVG depicts a professional video camera for video-related features
+
+### Changed
+- **Icon Updates on Landing Pages**: Replaced emoji icons with professional SVG components
+  - **Email/File Size Icons**:
+    - Coaches page: "Email Bounced—File Too Large" with EmailTooLargeIcon (emerald-600 fill)
+    - Videographers page: "File Size Exceeds Limit" with EmailTooLargeIcon (slate-600 fill)
+  - **Lock/Unlock Icons**:
+    - Coaches page: "Anyone With the Link Can Watch" with UnlockIcon (teal-600 fill)
+    - Educators page: "Works Through School Firewalls" with UnlockIcon (blue-600 fill)
+  - **Video Camera Icons** (replaced 🎥 and 🎬 emojis):
+    - Fitness page: "Build Your Exercise Library" and "Form Cues They Can Actually See" (red-600 fill)
+    - Educators page: "Record Your Way" and "Lab-Quality Demonstrations" (blue-600 fill)
+    - Coaches page: "This Doesn't Look Professional" and "Presentation-Quality Video" (cyan-600 fill)
+    - Videographers page: "Export in Full Quality" (slate-600 fill)
+    - Family page: "I Can Actually See Their Faces!" (purple-600 fill)
+    - Creators page: "YouTube Compresses My 4K Course" and "Uncompressed Quality" (indigo-600 fill)
+  - Icons are properly sized (w-10 h-10, w-12 h-12, or w-16 h-16) and color-coordinated per page theme
+  - Improved visual consistency across landing pages with reusable icon components
+
+### Changed
+- **Footer Navigation Standardization**: Unified footer design across all pages
+  - Adopted homepage footer design across all landing pages
+  - Changed to 5-column grid layout: Cheesebox (brand + social), Product, Solutions, Developers, Company
+  - Added "Solutions" section between Product and Developers columns with links to all audience-specific pages:
+    - For Families (/family)
+    - For Creators (/creators)
+    - For Fitness Trainers (/fitness)
+    - For Coaches (/coaches)
+    - For Educators (/educators)
+    - For Videographers (/videographers)
+  - Restored "Product" column with Get Started, AWS Setup, and Email Setup links
+  - Added "Developers" column with GitHub Repo, MIT License, Report Issue, and Contributing links
+  - Improved footer styling with black background, white/10 borders, and enhanced spacing
+  - Added social media links (GitHub, Twitter) in brand section
+  - Updated footers in: homepage, family, creators, fitness, coaches, educators, videographers pages
+  - Creates consistent navigation experience across all landing pages
+
+### Added
+- **Videographers Landing Page**: New landing page targeting professional videographers and photographers
+  - Accessible at `/videographers` route
+  - Cinematic slate/gray/zinc color scheme (professional/minimal theme)
+  - Hero: "You Shot It in 4K. Deliver It in 4K."
+  - Addresses videographer pain points: email file size limits, WeTransfer expiration, Vimeo compression
+  - Benefits: Pixel-perfect delivery, instant streaming, permanent links, professional presentation
+  - Cost comparison: WeTransfer Pro ($180/yr) vs Vimeo Pro ($240/yr) vs Frame.io ($228/yr) vs Cheesebox (~$60/yr)
+  - Real testimonials from wedding videographers, commercial producers, real estate videographers, photographers
+  - Unique value prop: Zero compression preserves color grades and cinematic quality
+  - Technical details: Supports ProRes, 4K/6K/8K, high frame rates (60fps, 120fps)
+  - Client-focused: Instant streaming vs downloads, never-expiring links, clean player with no ads
+
+### Added
+- **Fitness Trainers Landing Page**: New landing page targeting fitness professionals
+  - Accessible at `/fitness` route
+  - Energetic red/orange/yellow color scheme (fitness/energy theme)
+  - Hero: "Your Clients Deserve Perfect Form—In Perfect Quality"
+  - Addresses trainer pain points: blurry form videos, manual video sending, platform fees
+  - Benefits: Crystal-clear form demonstrations, exercise library reuse, private programs
+  - Cost comparison: Trainerize ($360-600/yr) vs Vimeo ($240/yr) vs Cheesebox (~$60/yr)
+  - Real testimonials from personal trainers, online coaches, yoga instructors, specialty coaches
+  - Unique value prop: HD quality matters for form cues and technique demonstrations
+
+- **Coaches & Consultants Landing Page**: New landing page for business coaches and consultants
+  - Accessible at `/coaches` route
+  - Professional emerald/teal/cyan color scheme (trust/expertise theme)
+  - Hero: "Your Clients Pay for Your Insights—Deliver Them Flawlessly"
+  - Addresses coach pain points: email attachment limits, "anyone with link" privacy issues, unprofessional delivery
+  - Benefits: True confidentiality, presentation-quality video, permanent links, premium positioning
+  - Cost comparison: Loom Business ($150/yr) vs WeTransfer Pro ($180/yr) vs Cheesebox (~$60/yr)
+  - Real testimonials from executive coaches, business consultants, life coaches, leadership development
+  - Unique value prop: Privacy and professional delivery for high-ticket client work
+
+- **Educators Landing Page**: New landing page for teachers and professors
+  - Accessible at `/educators` route
+  - Academic blue/indigo/violet color scheme (education/learning theme)
+  - Hero: "Your Lectures Deserve Better Than YouTube—And So Do Your Students"
+  - Addresses educator pain points: YouTube blocked at schools, Zoom time limits, parent access complexity
+  - Benefits: Works through firewalls, ad-free learning, unlimited length, parent-friendly sharing
+  - Cost comparison: EdPuzzle ($144/yr) vs Screencastify ($49/yr) vs Cheesebox (~$60/yr for unlimited teachers)
+  - Real testimonials from high school science teachers, math professors, arts teachers, ESL instructors
+  - Unique value prop: Bypasses school firewalls, no distractions, FERPA-friendly
+
+### Added
+- **Creators Landing Page**: New landing page targeting content creators and course creators
+  - Accessible at `/creators` route
+  - Professional indigo/purple color scheme for creator audience
+  - Hero section with dark gradient overlay emphasizing premium content
+  - Problem section addressing creator pain points:
+    - YouTube compression ruining 4K courses
+    - "Unlisted" videos not truly private for paid content
+    - Platform fees and revenue sharing on creator content
+  - Solution highlighting full control, uncompressed quality, zero platform fees
+  - Benefits section emphasizing true privacy, ownership, and cost savings
+  - Use cases with testimonials for:
+    - Course creators (online courses, tutorials)
+    - Patreon & membership creators (exclusive content)
+    - Workshop & webinar hosts (premium recordings)
+    - Photography & videography professionals (client deliverables)
+  - Cost comparison: Vimeo Pro ($240/yr) vs Teachable ($468-1,428/yr) vs Cheesebox+AWS (~$60/yr)
+  - Creator-specific FAQ covering privacy, quality, downloads, storage needs
+  - Messaging focused on: premium content, true exclusivity, no compression, platform independence
+  - Target audience: Course creators, Patreon creators, workshop hosts, membership sites
+
+### Changed
+- **Renamed /personal to /family**: Personal landing page route changed from `/personal` to `/family`
+  - Updated all internal links in how-it-works page
+  - Better reflects target audience of families and parents
+  - All existing personal page content and styling preserved
+
+### Changed
+- **Personal Landing Page - Content Refresh**: Made content more personable and relatable with real-world examples
+  - Hero section: "Remember When Grandma Could Actually See the Baby's First Steps?" - emotional, specific scenario
+  - Updated tagline to reference real moments: daughter's graduation, son's first goal, dog's birthday party
+  - Problem section rewritten with storytelling approach:
+    - "It Came Through Blurry": Daughter's piano recital in 4K becomes pixelated mess for Aunt Marie
+    - "The File's Too Large": Son's winning goal video won't send via iMessage/Gmail
+    - "I Have Android, He Has iPhone": Niece's first words filmed on iPhone, arrives blurry to Samsung user
+  - Solution section now conversational: "Here's How It Actually Works" with relatable explanations
+  - Benefits section transformed into testimonial-style quotes:
+    - "I Can Actually See Their Faces!" - nephew's birthday candles in 4K
+    - "My Mom Could Actually Use It" - 72-year-old mother-in-law uses it easily
+    - "Only Family Sees This" - kid's bathtime giggles stay private, not on Facebook
+    - "I'm Not Tech-Savvy—This Was Easy" - simple as texting a photo
+    - "Wait, This is Actually Free?" - $0 for Cheesebox, just AWS storage costs
+    - "These Are MY Videos" - daughter's first birthday in YOUR Amazon account
+  - "How It Works" section with specific scenarios:
+    - "Just filmed your daughter's soccer game? Open Cheesebox, tap upload, grab a coffee"
+    - Examples include driving home, family group chats, Grandma's iPad
+  - Cost transparency section reframed as "Okay, But What's The Catch?" with honest, conversational tone
+    - "Like paying for a storage unit—except costs as much as one fancy coffee per month"
+    - "50GB of videos: ~$1.15/month (that's like 50 birthday party videos)"
+    - "Your daughter's first steps are in YOUR account. If we go out of business, they're still there."
+    - Humorous setup guide CTA: "Even your dad could do it. (No offense to your dad.)"
+  - Final CTA: "Your Kid's Graduation is in 4K. Share It That Way." - emotional call to action
+  - Changed CTA buttons to conversational: "Alright, I'm convinced. Let me try it →"
+  - Overall tone shift from corporate/sterile to warm, relatable, story-driven copy that connects emotionally
+- **Personal Landing Page - Hero Background Video**: Added emotional background video to hero section
+  - Auto-playing, looping video of baby taking first steps perfectly matches the headline
+  - Semi-transparent gradient overlay (initially 95%, reduced to 50-60%) maintains readability
+  - Responsive video using `object-cover` for proper display on all screen sizes
+  - Mobile-optimized with `playsInline` attribute
+  - Creates immediate emotional connection and visual engagement
+  - Video positioned absolutely behind content with proper z-index layering
+  - Added React ref and useEffect to ensure video plays across all browsers
+- **Personal Landing Page - Color Scheme Update**: Changed from Cheddar (orange/amber) to soft parent-friendly palette
+  - Primary colors: Purple (#7C3AED) for buttons and accents
+  - Accent colors: Soft pink, gentle blue, lavender purple
+  - Hero gradient overlay: Pink → Blue → Purple (soft, nurturing tones)
+  - Problem section cards: Pink-50, Blue-50, Purple-50 backgrounds
+  - Solution section: Blue-50 to Purple-50 gradient
+  - How It Works section: Pink-50 to Purple-50 gradient
+  - Cost transparency card: Pink-50 to Purple-50 gradient
+  - FAQ section: Blue-50 to Pink-50 gradient
+  - Final CTA: Purple-600 to Pink-500 gradient
+  - Navigation updated with purple accents
+  - All buttons changed from orange to purple
+  - Color palette appeals to young new parents with soft, warm, comforting tones
+
+
+### Added
+- **Personal Landing Page**: New consumer-focused landing page for families and personal users
+  - Warm, inviting design using Cheddar theme (orange/amber color scheme)
+  - Accessible at `/personal` route
+  - Hero section with emotional headline: "Share Life's Moments Without Losing the Magic"
+  - Problem section highlighting common video sharing frustrations (compression, file size limits, iPhone/Android issues)
+  - Solution walkthrough with 3-step process (Upload, Share Link, Watch)
+  - Benefits section with 6 key features (No Quality Loss, Works on Everything, Private & Secure, etc.)
+  - "How It Works" section with numbered steps and clear explanations
+  - Cost transparency section emphasizing "100% Free Forever"
+    - Clearly explains Cheesebox is free software
+    - Shows typical AWS S3 storage costs ($1.15/mo for 50GB, $4.60/mo for 200GB)
+    - Highlights benefits: own your videos forever, no vendor lock-in, scale anytime
+    - Links to AWS setup guide for easy onboarding
+  - FAQ accordion with 7 questions covering free model, AWS costs, and setup
+  - Multiple CTAs throughout page optimized for conversion
+  - Fully responsive mobile-first design
+  - Conversational, friendly tone avoiding technical jargon
+  - Emphasis on family memories, simplicity, and cross-platform compatibility
+  - Clear messaging: users bring their own AWS storage and pay Amazon directly
+- **How It Works Page**: Detailed step-by-step guide explaining the entire Cheesebox process
+  - Accessible at `/how-it-works` route
+  - Linked from "See How It Works" button on personal landing page hero section
+  - Overview section with visual 3-step summary
+  - Step 1: One-Time Setup
+    - Explains why Amazon storage (ownership, cheap, no commitment, reliable)
+    - Lists what you'll need (AWS account, credit card, 5 minutes)
+    - Links to AWS setup guide with prominent CTA
+  - Step 2: Upload Your Video
+    - Upload options from phone or computer
+    - 4-step process breakdown (select, upload, optimize, get link)
+    - Pro tips: 5GB max, processing time, link generation
+  - Step 3: Share Your Link
+    - Share anywhere (text, email, social media)
+    - Privacy & control features (private by default, no account needed, stop sharing anytime)
+  - Step 4: They Watch Instantly
+    - Works on every device (iPhone, Android, computer, tablet)
+    - 4-step viewer experience
+    - Quality guarantee messaging
+  - FAQ section with 4 common questions
+  - Final CTA to get started
+  - Full navigation with back to personal page
+  - Consistent warm Cheddar theme throughout
 
 ## [1.8.5] - 2026-01-15
 ### Fixed
