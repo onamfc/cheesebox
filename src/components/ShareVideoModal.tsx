@@ -51,6 +51,8 @@ export default function ShareVideoModal({
   const [previouslySharedUsers, setPreviouslySharedUsers] = useState<PreviouslySharedUser[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<PreviouslySharedUser[]>([]);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [videoVisibility, setVideoVisibility] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -89,6 +91,9 @@ export default function ShareVideoModal({
           }
           if (video.groupShares) {
             setGroupShares(video.groupShares);
+          }
+          if (video.visibility) {
+            setVideoVisibility(video.visibility);
           }
         }
       }
@@ -244,6 +249,17 @@ export default function ShareVideoModal({
     } catch (error) {
       dev.error("Error removing group share:", error, {tag: "share-video"});
       alert("Failed to remove group share");
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const videoUrl = `${window.location.origin}/embed/${videoId}`;
+    try {
+      await navigator.clipboard.writeText(videoUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (error) {
+      dev.error("Failed to copy link:", error, { tag: "share-video" });
     }
   };
 
@@ -499,6 +515,64 @@ export default function ShareVideoModal({
             )}
           </>
         )}
+
+        {/* Copy Link Button */}
+        <div className="mt-4 mb-2">
+          <button
+            onClick={handleCopyLink}
+            disabled={videoVisibility !== "PUBLIC"}
+            className={`w-full px-4 py-2 text-sm border rounded-md flex items-center justify-center gap-2 transition-colors ${
+              videoVisibility === "PUBLIC"
+                ? "border-gray-300 text-gray-700 hover:bg-gray-50"
+                : "border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50"
+            }`}
+          >
+            {linkCopied ? (
+              <>
+                <svg
+                  className="h-5 w-5 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span className="text-green-600">Link Copied!</span>
+              </>
+            ) : (
+              <>
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  />
+                </svg>
+                <span>Copy Link</span>
+              </>
+            )}
+          </button>
+          {videoVisibility === "PUBLIC" ? (
+            <p className="mt-2 text-xs text-gray-500 text-center">
+              Use the direct video link to share the video.
+            </p>
+          ) : (
+            <p className="mt-2 text-xs text-gray-500 text-center">
+              To get the direct video link, set video visibility to public.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
