@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import VideoPlayer from "./VideoPlayer";
 import ShareVideoModal from "./ShareVideoModal";
 import EmbedCodeModal from "./EmbedCodeModal";
@@ -11,6 +11,7 @@ import { fetchWithCsrf } from "@/lib/csrf-client";
 import { useTheme } from "@/contexts/ThemeContext";
 import { theme as defaultTheme } from "@/themes/asiago/theme";
 import dev from "@onamfc/developer-log";
+import { SortOption } from "@/types/video";
 
 interface Video {
   id: string;
@@ -32,9 +33,10 @@ interface VideoListProps {
   groupId?: string | null;
   viewMode?: "grid" | "list";
   compact?: boolean;
+  sortBy?: SortOption;
 }
 
-export default function VideoList({ type, teamId, groupId, viewMode = "grid", compact = false }: VideoListProps) {
+export default function VideoList({ type, teamId, groupId, viewMode = "grid", compact = false, sortBy = SortOption.NEWEST }: VideoListProps) {
   const { themeConfig } = useTheme();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +52,28 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
   // Debug logging
   dev.log("VideoList - Layout:", layout, {tag: 'layout'});
   dev.log("VideoList - ViewMode:", viewMode, "->", effectiveViewMode, {tag: 'layout'});
+
+  // Sort videos based on sortBy option
+  const sortedVideos = useMemo(() => {
+    if (!videos.length) return videos;
+
+    const sorted = [...videos];
+    switch (sortBy) {
+      case "newest":
+        sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+      case "oldest":
+        sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        break;
+      case "a-z":
+        sorted.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
+        break;
+      case "z-a":
+        sorted.sort((a, b) => b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
+        break;
+    }
+    return sorted;
+  }, [videos, sortBy]);
 
   // Generate grid class names based on theme using explicit conditionals
   // This ensures Tailwind can detect all possible classes at build time
@@ -162,7 +186,7 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
   return (
     <>
       <div className={effectiveViewMode === "grid" || effectiveViewMode === "masonry" ? getGridClasses() : "space-y-4"}>
-        {videos.map((video) => (
+        {sortedVideos.map((video) => (
           <div
             key={video.id}
             className={`bg-white shadow rounded-lg hover:shadow-lg transition-shadow ${

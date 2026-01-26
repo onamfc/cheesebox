@@ -12,6 +12,7 @@ import { LinkButton, Button } from "@/components/ui/Button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { theme as defaultTheme } from "@/themes/asiago/theme";
 import dev from "@onamfc/developer-log";
+import { SortOption } from "@/types/video";
 
 type Tab = "my-videos" | "shared";
 type ViewMode = "grid" | "list";
@@ -40,6 +41,13 @@ export default function DashboardPage() {
       return (saved as ViewMode) || "grid";
     }
     return "grid";
+  });
+  const [sortOption, setSortOption] = useState<SortOption>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("videoSortOption");
+      return (saved as SortOption) || SortOption.NEWEST;
+    }
+    return SortOption.NEWEST;
   });
 
   // Get theme configuration
@@ -187,6 +195,18 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as SortOption)}
+                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                title="Sort videos"
+              >
+                <option value={SortOption.NEWEST}>Newest First</option>
+                <option value={SortOption.OLDEST}>Oldest First</option>
+                <option value={SortOption.A_TO_Z}>A → Z</option>
+                <option value={SortOption.Z_TO_A}>Z → A</option>
+              </select>
+
               <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
                 <button
                   onClick={() => setViewMode("grid")}
@@ -233,6 +253,7 @@ export default function DashboardPage() {
                 : null
             }
             viewMode={viewMode}
+            sortBy={sortOption}
           />
         </div>
 
