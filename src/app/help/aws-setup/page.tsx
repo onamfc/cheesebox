@@ -427,13 +427,20 @@ export default function AWSSetupGuide() {
                     1
                   </span>
                   <span>
-                    Click the &quot;Launch Stack&quot; button below to open AWS
-                    CloudFormation
+                    Click &quot;Download Template&quot; below to save the CloudFormation template
                   </span>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     2
+                  </span>
+                  <span>
+                    Click &quot;Launch Stack in AWS&quot; to open CloudFormation and upload the template
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                    3
                   </span>
                   <span>
                     Enter a unique bucket name (e.g.,{" "}
@@ -445,7 +452,7 @@ export default function AWSSetupGuide() {
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    3
+                    4
                   </span>
                   <span>
                     Check the box acknowledging IAM resource creation
@@ -453,13 +460,13 @@ export default function AWSSetupGuide() {
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    4
+                    5
                   </span>
                   <span>Click &quot;Create Stack&quot; and wait ~2 minutes</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    5
+                    6
                   </span>
                   <span>
                     Copy all 5 credentials from the &quot;Outputs&quot; tab
@@ -467,7 +474,7 @@ export default function AWSSetupGuide() {
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    6
+                    7
                   </span>
                   <span>
                     Paste them into your{" "}
@@ -523,25 +530,69 @@ export default function AWSSetupGuide() {
               </div>
             </div>
 
-            <div className="text-center">
-              <a
-                href={`https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://raw.githubusercontent.com/onamfc/cheesebox/main/public/cloudformation/private-video-setup.yaml&stackName=CheeseboxSetup`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-lg shadow-xl transition-all transform hover:scale-105 text-lg"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
+            <div className="text-center space-y-4">
+              <div>
+                <a
+                  href="/cloudformation/private-video-setup.yaml"
+                  download="cheesebox-setup.yaml"
+                  className="inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-4 px-8 rounded-lg shadow-xl transition-all text-lg"
                 >
-                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                    />
+                  </svg>
+                  Step 1: Download Template
+                </a>
+                <p className="mt-2 text-sm text-gray-300">
+                  Save the CloudFormation template to your computer
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-purple-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                  />
                 </svg>
-                Launch Stack in AWS
-              </a>
-              <p className="mt-3 text-sm text-gray-300">
-                Opens AWS CloudFormation Console in a new tab
-              </p>
+              </div>
+
+              <div>
+                <a
+                  href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/template"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-lg shadow-xl transition-all transform hover:scale-105 text-lg"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                  </svg>
+                  Step 2: Launch Stack in AWS
+                </a>
+                <p className="mt-2 text-sm text-gray-300">
+                  Opens AWS CloudFormation Console - upload the downloaded template
+                </p>
+              </div>
             </div>
           </div>
         </section>

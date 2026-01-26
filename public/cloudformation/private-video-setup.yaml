@@ -49,9 +49,8 @@ Resources:
               - HEAD
               - PUT
             AllowedOrigins:
-              - 'http://localhost:3000'
               - !Ref AppDomain
-            ExposeHeaders:
+            ExposedHeaders:
               - Content-Length
               - Content-Range
               - ETag
