@@ -42,13 +42,7 @@ export default function DashboardPage() {
     }
     return "grid";
   });
-  const [sortOption, setSortOption] = useState<SortOption>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("videoSortOption");
-      return (saved as SortOption) || SortOption.NEWEST;
-    }
-    return SortOption.NEWEST;
-  });
+  const [sortOption, setSortOption] = useState<SortOption>(SortOption.NEWEST);
 
   // Get theme configuration
   const spacing = themeConfig?.spacing || defaultTheme.spacing;
