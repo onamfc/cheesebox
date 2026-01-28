@@ -12,6 +12,7 @@ import { LinkButton, Button } from "@/components/ui/Button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { theme as defaultTheme } from "@/themes/asiago/theme";
 import dev from "@onamfc/developer-log";
+import { SortOption, isSortOption } from "@/types/video";
 
 type Tab = "my-videos" | "shared";
 type ViewMode = "grid" | "list";
@@ -41,6 +42,13 @@ export default function DashboardPage() {
     }
     return "grid";
   });
+  const [sortOption, setSortOption] = useState<SortOption>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("videoSortOption");
+      return saved && isSortOption(saved) ? saved : SortOption.NEWEST;
+    }
+    return SortOption.NEWEST;
+  });
 
   // Get theme configuration
   const spacing = themeConfig?.spacing || defaultTheme.spacing;
@@ -57,6 +65,12 @@ export default function DashboardPage() {
       localStorage.setItem("videoViewMode", viewMode);
     }
   }, [viewMode]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("videoSortOption", sortOption);
+    }
+  }, [sortOption]);
 
   useEffect(() => {
     // Check if user has AWS credentials or is part of a team
@@ -187,6 +201,29 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <label
+                    htmlFor="video-sort"
+                    className="text-sm text-gray-700 font-medium"
+                  >
+                  Sort:
+                </label>
+              <select
+                id="video-sort"
+                value={sortOption}
+                onChange={(e) => {
+                  if (isSortOption(e.target.value)) {
+                    setSortOption(e.target.value);
+                  }
+                }}
+                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                title="Sort videos"
+              >
+                <option value={SortOption.NEWEST}>Newest First</option>
+                <option value={SortOption.OLDEST}>Oldest First</option>
+                <option value={SortOption.A_TO_Z}>A → Z</option>
+                <option value={SortOption.Z_TO_A}>Z → A</option>
+              </select>
+
               <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
                 <button
                   onClick={() => setViewMode("grid")}
@@ -233,6 +270,7 @@ export default function DashboardPage() {
                 : null
             }
             viewMode={viewMode}
+            sortBy={sortOption}
           />
         </div>
 
