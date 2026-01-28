@@ -58,10 +58,12 @@ git commit -m "v1.9.0"
 
 # Push and create PR into main
 git push -u origin release/1.9.0
-gh pr create --base main --title "v1.9.0"
+gh pr create --base main --title "v1.9.0" --body "Release v1.9.0 - See CHANGELOG.md for details."
 ```
 
 ## After Merging to Main
+
+Merge the PR via the **GitHub web UI**, then run these commands locally:
 
 ```bash
 # Tag the release
