@@ -3,6 +3,69 @@
 import { useState } from "react";
 import Link from "next/link";
 
+function CodeBlock({
+  code,
+  language,
+  index,
+  copiedIndex,
+  onCopy,
+}: {
+  code: string;
+  language: string;
+  index: number;
+  copiedIndex: number | null;
+  onCopy: (text: string, index: number) => void;
+}) {
+  return (
+    <div className="relative my-4 rounded-lg bg-gray-900 p-4">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-xs font-medium text-gray-400 uppercase">
+          {language}
+        </span>
+        <button
+          onClick={() => onCopy(code, index)}
+          className="rounded bg-gray-700 px-3 py-1 text-xs text-white hover:bg-gray-600 transition-colors"
+        >
+          {copiedIndex === index ? "✓ Copied!" : "Copy"}
+        </button>
+      </div>
+      <pre className="overflow-x-auto text-sm">
+        <code className="text-green-400">{code}</code>
+      </pre>
+    </div>
+  );
+}
+
+function StepHeader({
+  number,
+  title,
+  isCompleted,
+  onToggle,
+}: {
+  number: number;
+  title: string;
+  isCompleted: boolean;
+  onToggle: (stepNumber: number) => void;
+}) {
+  return (
+    <div className="mb-4 flex items-start gap-4">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => onToggle(number)}
+          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+            isCompleted
+              ? "bg-purple-500 border-purple-500 text-white"
+              : "border-purple-400 text-purple-400"
+          }`}
+        >
+          {isCompleted ? "✓" : number}
+        </button>
+        <h2 className="text-2xl font-bold text-white">{title}</h2>
+      </div>
+    </div>
+  );
+}
+
 export default function AWSSetupGuide() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
@@ -24,57 +87,6 @@ export default function AWSSetupGuide() {
       return newSet;
     });
   };
-
-  const CodeBlock = ({
-    code,
-    language,
-    index,
-  }: {
-    code: string;
-    language: string;
-    index: number;
-  }) => (
-    <div className="relative my-4 rounded-lg bg-gray-900 p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-400 uppercase">
-          {language}
-        </span>
-        <button
-          onClick={() => copyToClipboard(code, index)}
-          className="rounded bg-gray-700 px-3 py-1 text-xs text-white hover:bg-gray-600 transition-colors"
-        >
-          {copiedIndex === index ? "✓ Copied!" : "Copy"}
-        </button>
-      </div>
-      <pre className="overflow-x-auto text-sm">
-        <code className="text-green-400">{code}</code>
-      </pre>
-    </div>
-  );
-
-  const StepHeader = ({
-    number,
-    title,
-  }: {
-    number: number;
-    title: string;
-  }) => (
-    <div className="mb-4 flex items-start gap-4">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => toggleStepComplete(number)}
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-            completedSteps.has(number)
-              ? "bg-purple-500 border-purple-500 text-white"
-              : "border-purple-400 text-purple-400"
-          }`}
-        >
-          {completedSteps.has(number) ? "✓" : number}
-        </button>
-        <h2 className="text-2xl font-bold text-white">{title}</h2>
-      </div>
-    </div>
-  );
 
   const iamPolicy = `{
   "Version": "2012-10-17",
@@ -427,20 +439,13 @@ export default function AWSSetupGuide() {
                     1
                   </span>
                   <span>
-                    Click &quot;Download Template&quot; below to save the CloudFormation template
+                    Click the &quot;Launch Stack&quot; button below to open AWS
+                    CloudFormation
                   </span>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     2
-                  </span>
-                  <span>
-                    Click &quot;Launch Stack in AWS&quot; to open CloudFormation and upload the template
-                  </span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    3
                   </span>
                   <span>
                     Enter a unique bucket name (e.g.,{" "}
@@ -452,7 +457,7 @@ export default function AWSSetupGuide() {
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    4
+                    3
                   </span>
                   <span>
                     Check the box acknowledging IAM resource creation
@@ -460,13 +465,13 @@ export default function AWSSetupGuide() {
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    5
+                    4
                   </span>
                   <span>Click &quot;Create Stack&quot; and wait ~2 minutes</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    6
+                    5
                   </span>
                   <span>
                     Copy all 5 credentials from the &quot;Outputs&quot; tab
@@ -474,7 +479,7 @@ export default function AWSSetupGuide() {
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    7
+                    6
                   </span>
                   <span>
                     Paste them into your{" "}
@@ -530,69 +535,25 @@ export default function AWSSetupGuide() {
               </div>
             </div>
 
-            <div className="text-center space-y-4">
-              <div>
-                <a
-                  href="/cloudformation/private-video-setup.yaml"
-                  download="cheesebox-setup.yaml"
-                  className="inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-4 px-8 rounded-lg shadow-xl transition-all text-lg"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
-                    />
-                  </svg>
-                  Step 1: Download Template
-                </a>
-                <p className="mt-2 text-sm text-gray-300">
-                  Save the CloudFormation template to your computer
-                </p>
-              </div>
-
-              <div className="flex items-center justify-center">
+            <div className="text-center">
+              <a
+                href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://www.cheesebox.io/cloudformation/private-video-setup.yaml&stackName=CheeseboxSetup"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-lg shadow-xl transition-all transform hover:scale-105 text-lg"
+              >
                 <svg
-                  className="w-6 h-6 text-purple-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 14l-7 7m0 0l-7-7m7 7V3"
-                  />
+                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                 </svg>
-              </div>
-
-              <div>
-                <a
-                  href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/template"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-lg shadow-xl transition-all transform hover:scale-105 text-lg"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                  </svg>
-                  Step 2: Launch Stack in AWS
-                </a>
-                <p className="mt-2 text-sm text-gray-300">
-                  Opens AWS CloudFormation Console - upload the downloaded template
-                </p>
-              </div>
+                Launch Stack in AWS
+              </a>
+              <p className="mt-3 text-sm text-gray-300">
+                Opens AWS CloudFormation Console in a new tab
+              </p>
             </div>
           </div>
         </section>
@@ -642,7 +603,7 @@ export default function AWSSetupGuide() {
         <div className="space-y-8">
           {/* Step 1: Create S3 Bucket */}
           <section className="bg-white/5 rounded-lg shadow-sm p-8 border border-white/10">
-            <StepHeader number={1} title="Create an S3 Bucket" />
+            <StepHeader number={1} title="Create an S3 Bucket" isCompleted={completedSteps.has(1)} onToggle={toggleStepComplete} />
 
             <div className="ml-12 space-y-4">
               <p className="text-gray-300">
@@ -711,7 +672,7 @@ export default function AWSSetupGuide() {
                   </li>
                   <li>Paste this configuration:</li>
                 </ol>
-                <CodeBlock code={corsConfig} language="JSON" index={1} />
+                <CodeBlock code={corsConfig} language="JSON" index={1} copiedIndex={copiedIndex} onCopy={copyToClipboard} />
                 <p className="text-sm text-gray-300 mt-2">
                   <strong>Important:</strong> Replace{" "}
                   <code className="bg-yellow-500/20 px-2 py-1 rounded">
@@ -725,7 +686,7 @@ export default function AWSSetupGuide() {
 
           {/* Step 2: Create IAM User */}
           <section className="bg-white/5 rounded-lg shadow-sm p-8 border border-white/10">
-            <StepHeader number={2} title="Create IAM User with Permissions" />
+            <StepHeader number={2} title="Create IAM User with Permissions" isCompleted={completedSteps.has(2)} onToggle={toggleStepComplete} />
 
             <div className="ml-12 space-y-4">
               <p className="text-gray-300">
@@ -804,7 +765,7 @@ export default function AWSSetupGuide() {
                   </li>
                   <li>Click &quot;Create policy&quot;</li>
                 </ol>
-                <CodeBlock code={iamPolicy} language="JSON" index={2} />
+                <CodeBlock code={iamPolicy} language="JSON" index={2} copiedIndex={copiedIndex} onCopy={copyToClipboard} />
               </div>
 
               <div className="bg-black/40 rounded-lg p-4 border border-white/10 mt-4">
@@ -869,7 +830,7 @@ export default function AWSSetupGuide() {
 
           {/* Step 3: Create MediaConvert Role */}
           <section className="bg-white/5 rounded-lg shadow-sm p-8 border border-white/10">
-            <StepHeader number={3} title="Create MediaConvert IAM Role" />
+            <StepHeader number={3} title="Create MediaConvert IAM Role" isCompleted={completedSteps.has(3)} onToggle={toggleStepComplete} />
 
             <div className="ml-12 space-y-4">
               <p className="text-gray-300">
@@ -952,6 +913,8 @@ export default function AWSSetupGuide() {
                   code={mediaConvertPolicy}
                   language="JSON"
                   index={3}
+                  copiedIndex={copiedIndex}
+                  onCopy={copyToClipboard}
                 />
               </div>
 
