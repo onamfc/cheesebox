@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
+import { VideoVisibility } from "@/types/video";
 
 interface RouteParams {
   params: Promise<{
@@ -24,7 +25,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const { visibility } = body;
 
-    if (!visibility || !["PRIVATE", "PUBLIC"].includes(visibility)) {
+    const validVisibilities = Object.values(VideoVisibility);
+    if (!visibility || !validVisibilities.includes(visibility)) {
       return NextResponse.json(
         { error: "Invalid visibility value" },
         { status: 400 }

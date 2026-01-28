@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { fetchWithCsrf } from "@/lib/csrf-client";
 import dev from "@onamfc/developer-log";
+import type { VideoVisibility } from "@/types/video";
 
 interface ShareVideoModalProps {
   videoId: string;
@@ -52,7 +53,7 @@ export default function ShareVideoModal({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<PreviouslySharedUser[]>([]);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [videoVisibility, setVideoVisibility] = useState<string | null>(null);
+  const [videoVisibility, setVideoVisibility] = useState<VideoVisibility | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
