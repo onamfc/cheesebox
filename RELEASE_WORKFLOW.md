@@ -25,24 +25,38 @@ feature branches → dev (via PRs) → release branch → main (release PR)
 
 When ready to release:
 
+### Step 1: Find the last release tag
+
 ```bash
-# 1. Create release branch from dev
+git tag --sort=-v:refname | head -1
+```
+
+This returns your most recent tag (e.g., `v1.8.1`). You'll need this to see what changed.
+
+### Step 2: Review changes since last release
+
+```bash
+# Replace v1.8.1 with your actual last tag from Step 1
+git log v1.8.1..dev --oneline --no-merges
+```
+
+### Step 3: Create the release
+
+```bash
+# Create release branch from dev
 git checkout dev && git pull
 git checkout -b release/1.9.0
 
-# 2. Bump version in package.json
+# Bump version in package.json
 npm version minor --no-git-tag-version  # or patch/major
 
-# 3. Update CHANGELOG.md
-#    - Review commits since last release
-#    - Add entries under new version header
-git log v1.8.8..dev --oneline --no-merges
+# Update CHANGELOG.md with the changes you reviewed in Step 2
 
-# 4. Commit version bump and changelog
-git add package.json CHANGELOG.md
+# Commit version bump and changelog
+git add package.json package-lock.json CHANGELOG.md
 git commit -m "v1.9.0"
 
-# 5. Push and create PR into main
+# Push and create PR into main
 git push -u origin release/1.9.0
 gh pr create --base main --title "v1.9.0"
 ```
@@ -98,12 +112,21 @@ The changelog follows [Keep a Changelog](https://keepachangelog.com/) format:
 - Security improvements
 ```
 
-## Viewing Changes Since Last Release
+## Useful Git Commands
 
 ```bash
-# See commits since last tag
-git log v1.8.8..dev --oneline --no-merges
+# Find your latest tag
+git tag --sort=-v:refname | head -1
 
-# See file changes
-git diff v1.8.8..dev --stat
+# List all tags
+git tag --sort=-v:refname
+
+# See commits since a tag (replace v1.8.1 with your tag)
+git log v1.8.1..dev --oneline --no-merges
+
+# See which files changed since a tag
+git diff v1.8.1..dev --stat
+
+# See full diff of changes
+git diff v1.8.1..dev
 ```

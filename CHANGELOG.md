@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.8.9] - 2026-01-28
+### Added
+- Add sorting functionality for video list and dashboard
+- Introduced SortOption enum to define sorting criteria.
+- Implemented sorting in VideoList component based on selected sort option.
+- Added sort option selector in DashboardPage for user preference.
+- Completed removing storing sort option in localstorage
+- Implement persistent sorting for video list and update sorting options
+- Add type guard for sort options and improve sort option handling in dashboard
+- Refactor video visibility handling to use a centralized VideoVisibility type
+- Add URL utility functions for consistent embed URL construction
+- Converted SVG into an icons
+- implemented easy copy for public video URL
+- Add a suggested release workflow
 ## [1.8.8] - 2026-01-21
 ### Added
 - Add Google Analytics
