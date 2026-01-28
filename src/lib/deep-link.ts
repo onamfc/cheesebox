@@ -1,4 +1,5 @@
 import { VideoVisibility } from "@/types/video";
+import { getEmbedUrl } from "@/lib/url-utils";
 
 /**
  * Deep Link Service using LinkForty
@@ -36,7 +37,7 @@ export class DeepLinkService {
 
     // Public videos can be viewed via /embed (no authentication required)
     if (visibility === VideoVisibility.PUBLIC) {
-      return `${this.webAppUrl}/embed/${videoId}`;
+      return getEmbedUrl(videoId, this.webAppUrl);
     }
 
     // Private videos require authentication - direct to watch page
