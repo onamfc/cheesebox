@@ -713,9 +713,12 @@ export default function AWSSetupGuide() {
                   <li>Click &quot;Create user&quot;</li>
                   <li>
                     <strong>User name:</strong>{" "}
-                    <code className="bg-white/10 px-2 py-1 rounded text-sm">
-                      private-video-user
-                    </code>
+                    <InlineCode
+                      text="private-video-user"
+                      index={100}
+                      copiedIndex={copiedIndex}
+                      onCopy={copyToClipboard}
+                    />
                   </li>
                   <li>Click &quot;Next&quot;</li>
                   <li>Select &quot;Attach policies directly&quot;</li>
@@ -759,9 +762,12 @@ export default function AWSSetupGuide() {
                   <li>Click &quot;Next&quot;</li>
                   <li>
                     <strong>Policy name:</strong>{" "}
-                    <code className="bg-white/10 px-2 py-1 rounded text-sm">
-                      PrivateVideoPolicy
-                    </code>
+                    <InlineCode
+                      text="PrivateVideoPolicy"
+                      index={101}
+                      copiedIndex={copiedIndex}
+                      onCopy={copyToClipboard}
+                    />
                   </li>
                   <li>Click &quot;Create policy&quot;</li>
                 </ol>
@@ -868,9 +874,12 @@ export default function AWSSetupGuide() {
                   <li>Click &quot;Next&quot; (skip permissions for now)</li>
                   <li>
                     <strong>Role name:</strong>{" "}
-                    <code className="bg-white/10 px-2 py-1 rounded text-sm">
-                      MediaConvertRole
-                    </code>
+                    <InlineCode
+                      text="MediaConvertRole"
+                      index={102}
+                      copiedIndex={copiedIndex}
+                      onCopy={copyToClipboard}
+                    />
                   </li>
                   <li>Click &quot;Create role&quot;</li>
                 </ol>
@@ -903,9 +912,12 @@ export default function AWSSetupGuide() {
                   <li>Click &quot;Next&quot;</li>
                   <li>
                     <strong>Policy name:</strong>{" "}
-                    <code className="bg-white/10 px-2 py-1 rounded text-sm">
-                      S3BucketAccess
-                    </code>
+                    <InlineCode
+                      text="S3BucketAccess"
+                      index={103}
+                      copiedIndex={copiedIndex}
+                      onCopy={copyToClipboard}
+                    />
                   </li>
                   <li>Click &quot;Create policy&quot;</li>
                 </ol>

@@ -4,6 +4,7 @@ import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import ThemeProviderWrapper from "@/components/ThemeProviderWrapper";
 import { Analytics } from "@vercel/analytics/react";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -60,6 +61,7 @@ export default async function RootLayout({
           <SessionProvider>{children}</SessionProvider>
         </ThemeProviderWrapper>
         <Analytics />
+        <GoogleAnalytics />
       </body>
     </html>
   );
