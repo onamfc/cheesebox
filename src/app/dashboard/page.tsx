@@ -12,7 +12,7 @@ import { LinkButton, Button } from "@/components/ui/Button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { theme as defaultTheme } from "@/themes/asiago/theme";
 import dev from "@onamfc/developer-log";
-import { SortOption } from "@/types/video";
+import { SortOption, isSortOption } from "@/types/video";
 
 type Tab = "my-videos" | "shared";
 type ViewMode = "grid" | "list";
@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const [sortOption, setSortOption] = useState<SortOption>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("videoSortOption");
-      return (saved as SortOption) || SortOption.NEWEST;
+      return saved && isSortOption(saved) ? saved : SortOption.NEWEST;
     }
     return SortOption.NEWEST;
   });
@@ -210,7 +210,11 @@ export default function DashboardPage() {
               <select
                 id="video-sort"
                 value={sortOption}
-                onChange={(e) => setSortOption(e.target.value as SortOption)}
+                onChange={(e) => {
+                  if (isSortOption(e.target.value)) {
+                    setSortOption(e.target.value);
+                  }
+                }}
                 className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                 title="Sort videos"
               >
