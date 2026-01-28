@@ -59,16 +59,16 @@ export default function VideoList({ type, teamId, groupId, viewMode = "grid", co
 
     const sorted = [...videos];
     switch (sortBy) {
-      case "newest":
+      case SortOption.NEWEST:
         sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         break;
-      case "oldest":
+      case SortOption.OLDEST:
         sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         break;
-      case "a-z":
+      case SortOption.A_TO_Z:
         sorted.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
         break;
-      case "z-a":
+      case SortOption.Z_TO_A:
         sorted.sort((a, b) => b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
         break;
     }
