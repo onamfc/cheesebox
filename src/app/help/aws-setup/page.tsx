@@ -585,7 +585,7 @@ export default function AWSSetupGuide() {
 
             <div className="text-center">
               <a
-                href={`https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://raw.githubusercontent.com/onamfc/cheesebox/main/public/cloudformation/private-video-setup.yaml&stackName=CheeseboxSetup`}
+                href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://www.cheesebox.io/cloudformation/private-video-setup.yaml&stackName=CheeseboxSetup"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-lg shadow-xl transition-all transform hover:scale-105 text-lg"
