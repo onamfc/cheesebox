@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getEmbedUrl } from "@/lib/url-utils";
 
 interface EmbedCodeModalProps {
   videoId: string;
@@ -16,13 +17,7 @@ export default function EmbedCodeModal({
     "responsive"
   );
 
-  // Get the app URL (works for both local dev and production)
-  const getAppUrl = () => {
-    if (typeof window === "undefined") return "";
-    return window.location.origin;
-  };
-
-  const embedUrl = `${getAppUrl()}/embed/${videoId}`;
+  const embedUrl = getEmbedUrl(videoId);
 
   // Generate embed code
   const getEmbedCode = () => {

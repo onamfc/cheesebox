@@ -9,6 +9,7 @@ import VisibilityToggle from "./VisibilityToggle";
 import { Button } from "./ui/Button";
 import { fetchWithCsrf } from "@/lib/csrf-client";
 import { useTheme } from "@/contexts/ThemeContext";
+import type { VideoVisibility } from "@/types/video";
 import { theme as defaultTheme } from "@/themes/asiago/theme";
 import dev from "@onamfc/developer-log";
 import { SortOption } from "@/types/video";
@@ -18,7 +19,7 @@ interface Video {
   title: string;
   description: string | null;
   transcodingStatus: string;
-  visibility: "PRIVATE" | "PUBLIC";
+  visibility: VideoVisibility;
   createdAt: string;
   shares?: Array<{ sharedWithEmail: string; createdAt: string }>;
   sharedBy?: string;
