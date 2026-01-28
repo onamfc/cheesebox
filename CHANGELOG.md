@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [1.8.10] - 2026-01-28
+-Update AWS setup guide and CloudFormation template download instructions
+- CloudFormation Template (private-video-setup.yaml)
+  - Fixed typo: ExposeHeaders → ExposedHeaders
+  - Removed redundant hardcoded localhost:3000 from CORS (the AppDomain parameter with localhost default already handles this)
+  - The StepHeader and CodeBlock components were moved outside the main component and now receive state/callbacks as props to prevent the components from being recreated on every render
+- 1.Synced with dev - The dev branch already had the component refactoring (including InlineCode) done properly 
+- Applied URL fix - Changed the template URL from raw.githubusercontent.com to www.cheesebox.io
 ## [1.8.9] - 2026-01-28
 ### Added
 - Add sorting functionality for video list and dashboard
