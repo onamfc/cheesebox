@@ -1,3 +1,6 @@
+import { VideoVisibility } from "@/types/video";
+import { getEmbedUrl } from "@/lib/url-utils";
+
 /**
  * Deep Link Service using LinkForty
  *
@@ -9,7 +12,7 @@
 interface DeepLinkOptions {
   videoId: string;
   recipientEmail?: string;
-  visibility?: 'PUBLIC' | 'PRIVATE';
+  visibility?: VideoVisibility;
 }
 
 export class DeepLinkService {
@@ -30,11 +33,11 @@ export class DeepLinkService {
    * TODO: Switch back to universal deep links when mobile app launches
    */
   generateVideoShareLink(options: DeepLinkOptions): string {
-    const { videoId, visibility = 'PUBLIC' } = options;
+    const { videoId, visibility = VideoVisibility.PUBLIC } = options;
 
     // Public videos can be viewed via /embed (no authentication required)
-    if (visibility === 'PUBLIC') {
-      return `${this.webAppUrl}/embed/${videoId}`;
+    if (visibility === VideoVisibility.PUBLIC) {
+      return getEmbedUrl(videoId, this.webAppUrl);
     }
 
     // Private videos require authentication - direct to watch page
