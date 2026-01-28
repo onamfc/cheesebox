@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 
-function CodeBlock({
+// Component definitions outside main component
+const CodeBlock = ({
   code,
   language,
   index,
@@ -15,56 +16,103 @@ function CodeBlock({
   index: number;
   copiedIndex: number | null;
   onCopy: (text: string, index: number) => void;
-}) {
-  return (
-    <div className="relative my-4 rounded-lg bg-gray-900 p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-400 uppercase">
-          {language}
-        </span>
-        <button
-          onClick={() => onCopy(code, index)}
-          className="rounded bg-gray-700 px-3 py-1 text-xs text-white hover:bg-gray-600 transition-colors"
-        >
-          {copiedIndex === index ? "✓ Copied!" : "Copy"}
-        </button>
-      </div>
-      <pre className="overflow-x-auto text-sm">
-        <code className="text-green-400">{code}</code>
-      </pre>
+}) => (
+  <div className="relative my-4 rounded-lg bg-gray-900 p-4">
+    <div className="mb-2 flex items-center justify-between">
+      <span className="text-xs font-medium text-gray-400 uppercase">
+        {language}
+      </span>
+      <button
+        onClick={() => onCopy(code, index)}
+        className="rounded bg-gray-700 px-3 py-1 text-xs text-white hover:bg-gray-600 transition-colors"
+      >
+        {copiedIndex === index ? "✓ Copied!" : "Copy"}
+      </button>
     </div>
-  );
-}
+    <pre className="overflow-x-auto text-sm">
+      <code className="text-green-400">{code}</code>
+    </pre>
+  </div>
+);
 
-function StepHeader({
+const InlineCode = ({
+  text,
+  index,
+  copiedIndex,
+  onCopy,
+}: {
+  text: string;
+  index: number;
+  copiedIndex: number | null;
+  onCopy: (text: string, index: number) => void;
+}) => (
+  <span className="inline-flex items-center gap-1.5 bg-white/10 px-2 py-1 rounded text-sm">
+    <code>{text}</code>
+    <button
+      onClick={() => onCopy(text, index)}
+      className="inline-flex items-center justify-center hover:bg-white/10 rounded p-0.5 transition-colors"
+      title="Copy to clipboard"
+    >
+      {copiedIndex === index ? (
+        <svg
+          className="w-3.5 h-3.5 text-green-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      ) : (
+        <svg
+          className="w-3.5 h-3.5 text-gray-400 hover:text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+          />
+        </svg>
+      )}
+    </button>
+  </span>
+);
+
+const StepHeader = ({
   number,
   title,
-  isCompleted,
+  completedSteps,
   onToggle,
 }: {
   number: number;
   title: string;
-  isCompleted: boolean;
+  completedSteps: Set<number>;
   onToggle: (stepNumber: number) => void;
-}) {
-  return (
-    <div className="mb-4 flex items-start gap-4">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => onToggle(number)}
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-            isCompleted
-              ? "bg-purple-500 border-purple-500 text-white"
-              : "border-purple-400 text-purple-400"
-          }`}
-        >
-          {isCompleted ? "✓" : number}
-        </button>
-        <h2 className="text-2xl font-bold text-white">{title}</h2>
-      </div>
+}) => (
+  <div className="mb-4 flex items-start gap-4">
+    <div className="flex items-center gap-3">
+      <button
+        onClick={() => onToggle(number)}
+        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+          completedSteps.has(number)
+            ? "bg-purple-500 border-purple-500 text-white"
+            : "border-purple-400 text-purple-400"
+        }`}
+      >
+        {completedSteps.has(number) ? "✓" : number}
+      </button>
+      <h2 className="text-2xl font-bold text-white">{title}</h2>
     </div>
-  );
-}
+  </div>
+);
 
 export default function AWSSetupGuide() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -603,7 +651,12 @@ export default function AWSSetupGuide() {
         <div className="space-y-8">
           {/* Step 1: Create S3 Bucket */}
           <section className="bg-white/5 rounded-lg shadow-sm p-8 border border-white/10">
-            <StepHeader number={1} title="Create an S3 Bucket" isCompleted={completedSteps.has(1)} onToggle={toggleStepComplete} />
+            <StepHeader
+              number={1}
+              title="Create an S3 Bucket"
+              completedSteps={completedSteps}
+              onToggle={toggleStepComplete}
+            />
 
             <div className="ml-12 space-y-4">
               <p className="text-gray-300">
@@ -672,7 +725,13 @@ export default function AWSSetupGuide() {
                   </li>
                   <li>Paste this configuration:</li>
                 </ol>
-                <CodeBlock code={corsConfig} language="JSON" index={1} copiedIndex={copiedIndex} onCopy={copyToClipboard} />
+                <CodeBlock
+                  code={corsConfig}
+                  language="JSON"
+                  index={1}
+                  copiedIndex={copiedIndex}
+                  onCopy={copyToClipboard}
+                />
                 <p className="text-sm text-gray-300 mt-2">
                   <strong>Important:</strong> Replace{" "}
                   <code className="bg-yellow-500/20 px-2 py-1 rounded">
@@ -686,7 +745,12 @@ export default function AWSSetupGuide() {
 
           {/* Step 2: Create IAM User */}
           <section className="bg-white/5 rounded-lg shadow-sm p-8 border border-white/10">
-            <StepHeader number={2} title="Create IAM User with Permissions" isCompleted={completedSteps.has(2)} onToggle={toggleStepComplete} />
+            <StepHeader
+              number={2}
+              title="Create IAM User with Permissions"
+              completedSteps={completedSteps}
+              onToggle={toggleStepComplete}
+            />
 
             <div className="ml-12 space-y-4">
               <p className="text-gray-300">
@@ -771,7 +835,13 @@ export default function AWSSetupGuide() {
                   </li>
                   <li>Click &quot;Create policy&quot;</li>
                 </ol>
-                <CodeBlock code={iamPolicy} language="JSON" index={2} copiedIndex={copiedIndex} onCopy={copyToClipboard} />
+                <CodeBlock
+                  code={iamPolicy}
+                  language="JSON"
+                  index={2}
+                  copiedIndex={copiedIndex}
+                  onCopy={copyToClipboard}
+                />
               </div>
 
               <div className="bg-black/40 rounded-lg p-4 border border-white/10 mt-4">
@@ -836,7 +906,12 @@ export default function AWSSetupGuide() {
 
           {/* Step 3: Create MediaConvert Role */}
           <section className="bg-white/5 rounded-lg shadow-sm p-8 border border-white/10">
-            <StepHeader number={3} title="Create MediaConvert IAM Role" isCompleted={completedSteps.has(3)} onToggle={toggleStepComplete} />
+            <StepHeader
+              number={3}
+              title="Create MediaConvert IAM Role"
+              completedSteps={completedSteps}
+              onToggle={toggleStepComplete}
+            />
 
             <div className="ml-12 space-y-4">
               <p className="text-gray-300">
