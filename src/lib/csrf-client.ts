@@ -7,12 +7,14 @@
 'use client';
 
 let cachedToken: string | null = null;
+let tokenTimestamp: number = 0;
+const TOKEN_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 /**
  * Fetch CSRF token from the server
  */
 export async function fetchCsrfToken(): Promise<string> {
-  if (cachedToken) {
+  if (cachedToken && (Date.now() - tokenTimestamp) < TOKEN_TTL_MS) {
     return cachedToken;
   }
 
@@ -22,6 +24,7 @@ export async function fetchCsrfToken(): Promise<string> {
 
     if (data.csrfToken && typeof data.csrfToken === 'string') {
       cachedToken = data.csrfToken;
+      tokenTimestamp = Date.now();
       return data.csrfToken;
     }
 
@@ -37,6 +40,7 @@ export async function fetchCsrfToken(): Promise<string> {
  */
 export function clearCsrfToken(): void {
   cachedToken = null;
+  tokenTimestamp = 0;
 }
 
 /**
@@ -71,11 +75,15 @@ export async function fetchWithCsrf(
       headers,
     });
 
-    // If we get CSRF error, clear cache and let caller retry
+    // If we get CSRF error, clear cache, fetch fresh token, and retry once
     if (response.status === 403) {
-      const data = await response.json().catch(() => ({}));
+      const cloned = response.clone();
+      const data = await cloned.json().catch(() => ({}));
       if (data.error?.includes('CSRF')) {
         clearCsrfToken();
+        const freshToken = await fetchCsrfToken();
+        headers.set('x-csrf-token', freshToken);
+        return fetch(url, { ...options, headers });
       }
     }
 
