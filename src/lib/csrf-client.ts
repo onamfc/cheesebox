@@ -79,10 +79,11 @@ export async function fetchWithCsrf(
     if (response.status === 403) {
       const cloned = response.clone();
       const data = await cloned.json().catch(() => ({}));
-      if (data.error?.includes('CSRF')) {
+      if (data.error?.toLowerCase().includes('csrf')) {
         clearCsrfToken();
         const freshToken = await fetchCsrfToken();
         headers.set('x-csrf-token', freshToken);
+        // Use raw fetch() intentionally to avoid infinite retry recursion
         return fetch(url, { ...options, headers });
       }
     }

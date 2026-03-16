@@ -6,7 +6,7 @@ import { Button } from "./ui/Button";
 import Input from "./ui/Input";
 import { useTheme } from "@/contexts/ThemeContext";
 import { theme as defaultTheme } from "@/themes/asiago/theme";
-import { fetchCsrfToken } from "@/lib/csrf-client";
+import { fetchWithCsrf } from "@/lib/csrf-client";
 import dev from "@onamfc/developer-log";
 
 type RecordingMode = "webcam" | "screen";
@@ -377,7 +377,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
 
       // Step 1: Request presigned URL from backend
       dev.log("Step 1: Requesting presigned URL...", { tag: "video-upload" });
-      const uploadUrlResponse = await fetch("/api/videos/upload-url", {
+      const uploadUrlResponse = await fetchWithCsrf("/api/videos/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -441,7 +441,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
 
       // Step 3: Notify backend to start transcoding
       dev.log("Step 3: Starting transcoding...", { videoId }, { tag: "video-upload" });
-      const completeResponse = await fetch("/api/videos/complete-upload", {
+      const completeResponse = await fetchWithCsrf("/api/videos/complete-upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -463,7 +463,7 @@ export default function VideoRecorder({ onComplete, initialMode }: VideoRecorder
         dev.log(`Sharing with ${selectedGroups.length} groups`, { videoId, groups: selectedGroups }, { tag: "video-upload" });
         for (const groupId of selectedGroups) {
           try {
-            await fetch(`/api/videos/${videoId}/share`, {
+            await fetchWithCsrf(`/api/videos/${videoId}/share`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ groupId }),
